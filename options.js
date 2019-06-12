@@ -69,7 +69,7 @@ $('.add-group').click(() => {
                             <label for="group${groupNum}">Group Name</label>
                             <input id="group${groupNum}" type="text" class="validate">
                         </div>
-                        <div class="col s6 l1">
+                        <div class="col s1 l1">
                             <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
@@ -134,7 +134,7 @@ $(document).on('click','.edit-group-name',function(e) {
                     <label for="${groupName}">Group Name</label>
                     <input id="${groupName}" type="text" class="validate">
                 </div>
-                <div class="col s6 l1">
+                <div class="col s1 l1">
                     <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
                 </div>
             </form>
@@ -162,10 +162,10 @@ $(document).on('click','.add-link',function() {
                       <label for="url${urlNum}">Url</label>
                       <input id="url${urlNum}" type="text" class="validate url-input">
                     </div>
-                    <div class="col s6 l1 center">
+                    <div class="col s12 l1">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
-                    <div class="col s6 l1 center">
+                    <div class="col s12 l1">
                         <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
@@ -248,10 +248,10 @@ $(document).on('click','.url-edit',function(e) {
                       <label for="url${urlNum}" class="active">Url</label>
                       <input id="url${urlNum}" type="text" class="validate url-input" value="${url}">
                     </div>
-                    <div class="col s6 l1 center">
+                    <div class="col s12 l1">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
-                    <div class="col s6 l1 center">
+                    <div class="col s12 l1">
                         <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>

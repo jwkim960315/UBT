@@ -13,7 +13,7 @@ const idGenerator = lst => {
     let res;
 
     for (let i=0;i < lst.length;i++) {
-        if (lst[i].includes('group')) {
+        if (typeof lst[i] === 'string') {
             if (!lst[i].includes(i)) {
                 return i;
             }
@@ -23,7 +23,7 @@ const idGenerator = lst => {
             }
         }
     }
-    if (lst[0].includes('group')) {
+    if (typeof lst[0] === 'string') {
         return parseInt(lst[lst.length-1].slice(-1))+1;
     } else {
         return lst[lst.length-1]+1;
@@ -81,10 +81,10 @@ const renderLinks = (groupData,index,lst) => {
                             ${linkName}
                         </a>
                     </div>
-                    <div class="col s2 m1">
+                    <div class="col s12 m1">
                         <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
                     </div>
-                    <div class="col s2 m1">
+                    <div class="col s12 m1">
                         <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
