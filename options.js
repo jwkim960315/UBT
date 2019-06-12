@@ -2,36 +2,14 @@ let data;
 
 // chrome.storage.sync.clear();
 
-const renderLinks = (groupData,index) => {
-
-    const urlData = groupData[`group${index}`].data;
-
-    if (!Object.keys(urlData).length) {
-        return '';
-    }
-
-    const urlDataHTML = urlData
-        .map((urlDatum,i) => {
-            const { url, linkName, iconLink } = urlDatum;
-
-            return `
-                <div class="row">
-                    <a href="https://${url}" class="url" target="_blank">
-                        <img class="link-icon" src="${iconLink}" width="25" height="25"/>
-                        ${linkName}
-                    </a>
-                </div>
-            `;
-        });
-
-    return urlDataHTML.join('');
-};
-
 // Initialization
 $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
 
         data = res;
+
+        urlFormIds = urlIdsToLst(data);
+
 
         // rendering all the storage data
         Object.keys(data).forEach((groupKey,index) => {
@@ -41,7 +19,7 @@ $(document).ready(() => {
                         <div class="row">
                                 <span id="group${index}" class="card-title">${data[groupKey].groupName}</span>
                         </div>
-                        ${renderLinks(data,index)}
+                        ${renderLinks(data,index,urlFormIds)}
                         <div class="row">
                             <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
                         </div>
@@ -67,7 +45,15 @@ $('.add-group').click(() => {
         <div class="card">
             <div class="card-content">
                 <div class="row">
-                        <span id="group${groupNum}" class="card-title">${groupName}</span>
+                    <form class="add-group-form">
+                        <div class="input-field col s10 l8">
+                            <input id="group${groupNum}" type="text" class="validate">
+                            <label for="group${groupNum}">Group Name</label>
+                        </div>
+                        <div class="col s6 l1">
+                            <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></button>
+                        </div>
+                    </form>
                 </div>
                 <div class="row">
                     <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
@@ -83,43 +69,64 @@ $('.add-group').click(() => {
     data[`group${groupNum}`] = newGroupData;
 });
 
+// onSubmit add-group-form
+$(document).on('submit','.add-group-form',function(e) {
+    e.preventDefault();
+    const inputElem = $(this).find('input');
+    const inputVal = inputElem.val();
+    const groupName = inputElem.prop('id');
+
+    data[groupName].groupName = inputVal;
+
+    const groupData = data[groupName];
+
+    chrome.storage.sync.set({[groupName]: groupData},() => {
+        console.log('group name successfully saved!');
+        location.reload();
+    });
+});
+
 // Add new link form
 $(document).on('click','.add-link',function() {
 
-    let lst = [];
+    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+
+    const urlNum = urlIdFinder(urlFormIds);
+    // urlFormIds.push(urlNum);
 
     $(this).parent().prev().after(`
         <div class="row">
-            <form class="add-url-form">
+            <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">
-                        <input id="urlName${lst.length}" type="text" class="validate url-name-input">
-                        <label for="urlName${lst.length}">Name</label>
+                        <input id="urlName${urlNum}" type="text" class="validate url-name-input">
+                        <label for="urlName${urlNum}">Name</label>
                     </div>
                     <div class="input-field col s8 l6">
-                      <input id="url${lst.length}" type="text" class="validate url-input">
-                      <label for="url${lst.length}">Url</label>
+                      <input id="url${urlNum}" type="text" class="validate url-input">
+                      <label for="url${urlNum}">Url</label>
                     </div>
                     <div class="col s6 l1 center">
-                        <button class="waves-effect waves-light btn" type="submit">Save</button>
+                        <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     <div class="col s6 l1 center">
-                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button">Delete</button>
+                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
             </form>
         </div>
     `);
 
-    lst.push('');
+
 });
 
-// Submit Url
+// onSubmit add-url-form
 $(document).on('submit','.add-url-form',function(e) {
     e.preventDefault();
 
     const url = $(this).find('.url-input').val();
     const linkName = $(this).find('.url-name-input').val();
+    const urlId = parseInt($(this).prop('id').slice(-1));
 
     axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
         .then(res => {
@@ -127,12 +134,22 @@ $(document).on('submit','.add-url-form',function(e) {
             const iconLink = res.data.icons[0].url;
             const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
-            data[groupName].data.push({ url, iconLink, linkName });
+            if (urlFormIds.includes(urlId)) {
+                data[groupName].data.forEach((urlData,index) => {
+                    if (urlData.urlId === urlId) {
+                        data[groupName].data[index] = { urlId, url, iconLink, linkName };
+                    }
+                });
+            } else {
+                data[groupName].data.push({ urlId, url, iconLink, linkName });
+            }
+
             const groupData = data[groupName];
             chrome.storage.sync.set({
                 [groupName]: groupData
             },() => {
                 console.log('stored successfully!');
+                location.reload();
             });
 
 
@@ -150,7 +167,48 @@ $(document).on('click','.url-delete',function(e) {
     $(this).parents('form[class="add-url-form"]').remove();
 });
 
+// Edit url
+$(document).on('click','.url-edit',function(e) {
+    const name = $(this).parents('.url-buttons').find('a').text().trim();
 
+    const url = $(this).parents('.url-buttons').find('a').prop('href').slice(8);
+
+    const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
+
+    console.log(typeof urlNum);
+    console.log(typeof parseInt(urlNum));
+
+    urlFormIds.push(urlNum);
+
+
+
+
+    $(this).parents('.url-buttons').replaceWith(`
+        <div class="row">
+            <form class="add-url-form" id="new-url-form-${urlNum}">
+                <div class="row">
+                    <div class="input-field col s4 l4">
+                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" value="${name}">
+                        <label for="urlName${urlNum}" class="active">Name</label>
+                    </div>
+                    <div class="input-field col s8 l6">
+                      <input id="url${urlNum}" type="text" class="validate url-input" value="${url}">
+                      <label for="url${urlNum}" class="active">Url</label>
+                    </div>
+                    <div class="col s6 l1 center">
+                        <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
+                    </div>
+                    <div class="col s6 l1 center">
+                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    `);
+
+
+
+});
 
 // Chrome storage data structure
 /*
@@ -160,6 +218,7 @@ const data = {
         groupName: '',
         data: [
             {
+                id: 0,
                 linkName: '',
                 url: '',
                 iconLink: ''
