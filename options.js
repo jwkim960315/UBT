@@ -10,29 +10,48 @@ $(document).ready(() => {
 
         urlFormIds = urlIdsToLst(data);
 
+        groupIds = Object.keys(data);
 
         // rendering all the storage data
         Object.keys(data).forEach((groupKey,index) => {
             $('.group-cont').append(`
-                <div class="card">
+                <div class="card" id="${groupKey}">
                     <div class="card-content">
                         <div class="row">
-                                <span id="group${index}" class="card-title">${data[groupKey].groupName}</span>
+                            <div class="col s12 m11">
+                                <span id="${groupKey}" class="card-title">${data[groupKey].groupName}</span>
+                            </div>
+                            <div class="col s12 m1">
+                                <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
+                                <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
+                                    <li><a class="change-color">change color</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="edit-group-name">edit group name</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="delete-group red-text">delete group</a></li>
+                                </ul>
+                            </div>
                         </div>
-                        ${renderLinks(data,index,urlFormIds)}
-                        <div class="row">
-                            <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                        ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
+                        <div class="row new-url-data">
+                            <div class="col">
+                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             `);
         });
+
+        // initialize group settings dropdown
+        $('.dropdown-trigger').dropdown();
     });
 });
 
 // Add new group
 $('.add-group').click(() => {
-    let groupNum = Object.keys(data).length;
+
+    let groupNum = idGenerator(groupIds);
 
     const groupName = `Group${groupNum}`;
 
@@ -51,7 +70,7 @@ $('.add-group').click(() => {
                             <label for="group${groupNum}">Group Name</label>
                         </div>
                         <div class="col s6 l1">
-                            <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></button>
+                            <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
                 </div>
@@ -72,6 +91,7 @@ $('.add-group').click(() => {
 // onSubmit add-group-form
 $(document).on('submit','.add-group-form',function(e) {
     e.preventDefault();
+
     const inputElem = $(this).find('input');
     const inputVal = inputElem.val();
     const groupName = inputElem.prop('id');
@@ -80,10 +100,29 @@ $(document).on('submit','.add-group-form',function(e) {
 
     const groupData = data[groupName];
 
-    chrome.storage.sync.set({[groupName]: groupData},() => {
-        console.log('group name successfully saved!');
-        location.reload();
+    if (inputVal !== '') {
+        chrome.storage.sync.set({[groupName]: groupData},() => {
+            console.log('group name successfully saved!');
+            location.reload();
+        });
+    }
+});
+
+// delete group
+$(document).on('click','.delete-group',function(e) {
+
+    const groupName = $(this).parents('.card').prop('id');
+
+    delete data[groupName];
+
+    chrome.storage.sync.remove(groupName,() => {
+        console.log('successfully deleted group!');
     });
+
+    $(this).parents('.card').remove();
+
+
+
 });
 
 // Add new link form
@@ -91,10 +130,10 @@ $(document).on('click','.add-link',function() {
 
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
-    const urlNum = urlIdFinder(urlFormIds);
+    const urlNum = idGenerator(urlFormIds);
     // urlFormIds.push(urlNum);
 
-    $(this).parent().prev().after(`
+    $(this).parents('.new-url-data').prev().after(`
         <div class="row">
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
@@ -175,9 +214,6 @@ $(document).on('click','.url-edit',function(e) {
 
     const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
 
-    console.log(typeof urlNum);
-    console.log(typeof parseInt(urlNum));
-
     urlFormIds.push(urlNum);
 
 
@@ -205,10 +241,30 @@ $(document).on('click','.url-edit',function(e) {
             </form>
         </div>
     `);
-
-
-
 });
+
+// delete url data
+$(document).on('click','.url-delete',function(e) {
+    e.preventDefault();
+
+    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+    const urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
+
+    data[groupName].data.forEach((urlData,index) => {
+        if (urlData.urlId === urlId) {
+            data[groupName].data.splice(index,1);
+        }
+    });
+    const groupData = data[groupName];
+
+    chrome.storage.sync.set({[groupName]: groupData});
+
+    $(this).parents('.url-buttons').remove();
+});
+
+
+// delete group data
+
 
 // Chrome storage data structure
 /*
@@ -218,7 +274,7 @@ const data = {
         groupName: '',
         data: [
             {
-                id: 0,
+                urlId: 0,
                 linkName: '',
                 url: '',
                 iconLink: ''

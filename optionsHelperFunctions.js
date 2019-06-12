@@ -1,7 +1,8 @@
 let urlFormIds = [];
+let groupIds = [];
 
-// finds url id by sorting current url ids
-const urlIdFinder = lst => {
+// generates id by sorting current url ids
+const idGenerator = lst => {
 
     if (!lst.length) {
         return 0;
@@ -12,14 +13,26 @@ const urlIdFinder = lst => {
     let res;
 
     for (let i=0;i < lst.length;i++) {
-        if (lst[i] !== i) {
-            return i;
+        if (lst[i].includes('group')) {
+            if (!lst[i].includes(i)) {
+                return i;
+            }
+        } else {
+            if (lst[i] !== i) {
+                return i;
+            }
         }
     }
+    if (lst[0].includes('group')) {
+        return parseInt(lst[lst.length-1].slice(-1))+1;
+    } else {
+        return lst[lst.length-1]+1;
+    }
 
-    return lst[lst.length-1]+1;
 };
 
+
+// converts chrome storage data to a url list
 const urlIdsToLst = data => {
     let lst = [];
     const dataKeys = Object.keys(data);
@@ -29,7 +42,6 @@ const urlIdsToLst = data => {
     }
 
     let urlDataLst;
-
 
 
     for (let i=0; i < dataKeys.length; i++) {
@@ -46,11 +58,6 @@ const urlIdsToLst = data => {
     }
 
     return lst;
-};
-
-// checking duplicate url ids
-const isDuplicateIds = () => {
-
 };
 
 // render function
