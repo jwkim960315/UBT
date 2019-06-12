@@ -66,8 +66,8 @@ $('.add-group').click(() => {
                 <div class="row">
                     <form class="add-group-form">
                         <div class="input-field col s10 l8">
-                            <input id="group${groupNum}" type="text" class="validate">
                             <label for="group${groupNum}">Group Name</label>
+                            <input id="group${groupNum}" type="text" class="validate">
                         </div>
                         <div class="col s6 l1">
                             <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
@@ -120,9 +120,26 @@ $(document).on('click','.delete-group',function(e) {
     });
 
     $(this).parents('.card').remove();
+});
 
+// edit group name
+$(document).on('click','.edit-group-name',function(e) {
 
+    const groupName = $(this).parents('.card').prop('id');
 
+    $(this).parents('.card-content > div.row').replaceWith(`
+        <div class="row">
+            <form class="add-group-form">
+                <div class="input-field col s10 l8">
+                    <label for="${groupName}">Group Name</label>
+                    <input id="${groupName}" type="text" class="validate">
+                </div>
+                <div class="col s6 l1">
+                    <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
+                </div>
+            </form>
+        </div>
+    `);
 });
 
 // Add new link form
@@ -138,12 +155,12 @@ $(document).on('click','.add-link',function() {
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">
-                        <input id="urlName${urlNum}" type="text" class="validate url-name-input">
                         <label for="urlName${urlNum}">Name</label>
+                        <input id="urlName${urlNum}" type="text" class="validate url-name-input">
                     </div>
                     <div class="input-field col s8 l6">
-                      <input id="url${urlNum}" type="text" class="validate url-input">
                       <label for="url${urlNum}">Url</label>
+                      <input id="url${urlNum}" type="text" class="validate url-input">
                     </div>
                     <div class="col s6 l1 center">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
@@ -224,12 +241,12 @@ $(document).on('click','.url-edit',function(e) {
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">
-                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" value="${name}">
                         <label for="urlName${urlNum}" class="active">Name</label>
+                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" value="${name}">
                     </div>
                     <div class="input-field col s8 l6">
-                      <input id="url${urlNum}" type="text" class="validate url-input" value="${url}">
                       <label for="url${urlNum}" class="active">Url</label>
+                      <input id="url${urlNum}" type="text" class="validate url-input" value="${url}">
                     </div>
                     <div class="col s6 l1 center">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
