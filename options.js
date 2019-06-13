@@ -12,6 +12,8 @@ $(document).ready(() => {
 
         groupIds = Object.keys(data);
 
+
+
         // rendering all the storage data
         Object.keys(data).forEach((groupKey,index) => {
             $('.group-cont').append(`
@@ -24,7 +26,7 @@ $(document).ready(() => {
                             <div class="col s12 m1">
                                 <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
                                 <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
-                                    <li><a class="change-color">change color</a></li>
+                                    <li><a class="change-color ${groupKey}">change color</a></li>
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a class="edit-group-name">edit group name</a></li>
                                     <li class="divider" tabindex="-1"></li>
@@ -40,11 +42,14 @@ $(document).ready(() => {
                         </div>
                     </div>
                 </div>
+                <div class="color-picker-placeholder"></div>
             `);
         });
 
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
+
+
     });
 });
 
@@ -140,6 +145,23 @@ $(document).on('click','.edit-group-name',function(e) {
             </form>
         </div>
     `);
+});
+
+// change group color
+$(document).on('click','.change-color',function(e) {
+    const groupId = $(this).attr('class').split(' ')[1];
+    console.log(groupId);
+    $(this).parents('.card').next('.color-picker-placeholder').replaceWith(`
+        <div class="color-picker">
+            <form class="color-picker-form" >
+                <input type="text" id="color" name="color" value="#123456" />
+            </form>
+            <div id="colorpicker" class="color-picker-input"></div>
+        </div>
+    `);
+
+    // initialize color picker
+    $('#colorpicker').farbtastic('#color');
 });
 
 // Add new link form
