@@ -30,3 +30,9 @@ nav {
 .url-text {
     color: #2196F3;
 }
+
+.color-picker-cont, .color-picker-buttons-cont {
+    display: flex;
+    flex-direction: row !important;
+    justify-content: center;
+}

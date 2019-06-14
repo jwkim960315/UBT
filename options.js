@@ -34,7 +34,9 @@ $(document).ready(() => {
                                 </ul>
                             </div>
                         </div>
-                        ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
+                        <div class="url-cont" id="url-cont-${groupKey}">
+                            ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
+                        </div>
                         <div class="row new-url-data">
                             <div class="col">
                                 <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
@@ -61,7 +63,51 @@ $(document).ready(() => {
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
 
+        // initialize sortable drag & drop
+        $('.url-cont').sortable({
+            // SortableJS options go here
+            // See: (https://github.com/SortableJS/Sortable#options)
+            group: 'shared',
+            animation: 150,
+            draggable: '.url-buttons',
+            onEnd: event => {
 
+                // console.log($(event.item));
+                const oldGroupId = $(event.from).prop('id').slice(9);
+                const newGroupId = $(event.to).prop('id').slice(9);
+                const { oldDraggableIndex, newDraggableIndex } = event;
+                const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+
+                if (oldGroupId === newGroupId) {
+                    data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
+                    data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+                } else {
+                    data[oldGroupId].data.splice(oldDraggableIndex,1);
+                    data[newGroupId].data.splice(newDraggableIndex,1,draggedUrlData);
+                }
+
+
+
+                chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
+                    console.log('Old group has been updated!');
+                    chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
+                        console.log('New group has been updated!');
+                    });
+                });
+
+                /*
+                evt.item;  // dragged HTMLElement
+                evt.to;    // target list
+                evt.from;  // previous list
+                evt.oldIndex;  // element's old index within old parent
+                evt.newIndex;  // element's new index within new parent
+                evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                evt.clone // the clone element
+                evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+                */
+            },
+        });
     });
 });
 
@@ -166,25 +212,36 @@ $(document).on('click','.change-color',function(e) {
     const groupId = $(this).attr('class').split(' ')[1];
 
     $(this).parents('.card').next('.color-picker-placeholder').replaceWith(`
-        <div class="row color-picker-cont">
-            <div class="col color-picker">
-                <div id="colorpicker${groupId}" class="color-picker-input"></div>
+        <div class="color-picker-package-cont">
+            <div class="row color-picker-cont" id="color-picker-cont${groupId}">
+                <div class="col color-picker">
+                    <div id="colorpicker${groupId}" class="color-picker-input"></div>
+                </div>
             </div>
-            <div class="col">
-                <button class="btn save-color ${groupId}"><i class="material-icons">save</i></button>
-            </div>
-            <div class="col">
-                <button class="btn close-color-picker ${groupId}"><i class="material-icons">close</i></button>
+            <div class="row color-picker-buttons-cont" id="color-picker-buttons-cont${groupId}">
+                <div class="col color-picker-buttons">
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn save-color ${groupId}"><i class="material-icons">save</i></button>
+                        </div>
+                        <div class="col">
+                            <button class="btn close-color-picker red accent-2 ${groupId}"><i class="material-icons">close</i></button>
+                        </div>
+                    </div>
+                    
+                </div>
+                
             </div>
         </div>
+        
         
     `);
 
     // initialize && control color picker
     chrome.storage.sync.get([groupId],res => {
         if (res[groupId].color) {
-            const color = tinycolor(res[groupId].color).toHexString();
-            $.farbtastic(`#colorpicker${groupId}`).setColor(color);
+            const rgbColor = tinycolor(res[groupId].color).toHexString();
+            $.farbtastic(`#colorpicker${groupId}`).setColor(rgbColor);
         }
         $.farbtastic(`#colorpicker${groupId}`).linkTo(color => {
             const hexColor = tinycolor(color);
@@ -203,7 +260,7 @@ $(document).on('click','.change-color',function(e) {
 
 // save color from color picker
 $(document).on('click','.save-color',function(e) {
-    const groupId = $(this).attr('class').split(' ')[2];
+    const groupId = `group${$(this).parents('.color-picker-buttons-cont').prop('id').slice(-1)}`;
     let color = tinycolor($.farbtastic(`#colorpicker${groupId}`).color).toRgbString();
 
     if (!color) {
@@ -222,8 +279,8 @@ $(document).on('click','.save-color',function(e) {
 
 // close color picker
 $(document).on('click','.close-color-picker',function(e) {
-    const groupId = $(this).attr('class').split(' ')[2];
-    $(this).parents('.color-picker-cont').replaceWith(`
+    const groupId = `group${$(this).parents('.color-picker-buttons-cont').prop('id').slice(-1)}`;
+    $(this).parents('.color-picker-package-cont').replaceWith(`
         <div class="color-picker-placeholder"></div>
     `);
 
@@ -253,7 +310,7 @@ $(document).on('click','.add-link',function() {
                 <div class="row">
                     <div class="input-field col s4 l4">
                         <label for="urlName${urlNum}">Name</label>
-                        <input id="urlName${urlNum}" type="text" class="validate url-name-input">
+                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" autofocus>
                     </div>
                     <div class="input-field col s8 l6">
                       <label for="url${urlNum}">Url</label>
@@ -269,8 +326,6 @@ $(document).on('click','.add-link',function() {
             </form>
         </div>
     `);
-
-
 });
 
 // onSubmit add-url-form
@@ -311,7 +366,6 @@ $(document).on('submit','.add-url-form',function(e) {
                 console.log('invalid url');
             }
         });
-
 });
 
 // Delete url input
