@@ -83,7 +83,7 @@ $(document).ready(() => {
                     data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
                 } else {
                     data[oldGroupId].data.splice(oldDraggableIndex,1);
-                    data[newGroupId].data.splice(newDraggableIndex,1,draggedUrlData);
+                    data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
                 }
 
 
