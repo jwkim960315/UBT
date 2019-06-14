@@ -76,7 +76,7 @@ const renderLinks = (groupData,index,lst) => {
             return `
                 <div class="row url-buttons" id="url-data-${lst[i]}">
                     <div class="col s12 m10">
-                        <a href="https://${url}" class="url white blue-text btn" target="_blank">
+                        <a href="https://${url}" class="url white url-text btn" target="_blank">
                             <img class="link-icon" src="${iconLink}" width="25" height="25"/>
                             ${linkName}
                         </a>
