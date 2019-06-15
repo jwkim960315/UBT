@@ -47,8 +47,8 @@ $(document).ready(() => {
                 <div class="color-picker-placeholder"></div>
             `);
             const rgbColor = tinycolor(data[groupKey].color);
-            $(`div[id="${groupKey}"]`).css('color',`${rgbColor.toRgbString()}`);
-            $(`div[id="${groupKey}"]`).find('.url-text').css('color',`${rgbColor.toRgbString()}`);
+            $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
+            $(`div[id="${groupKey}"]`).find('.url-text').css('color',rgbColor.toRgbString());
             const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
             const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
             const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
@@ -84,7 +84,14 @@ $(document).ready(() => {
                 } else {
                     data[oldGroupId].data.splice(oldDraggableIndex,1);
                     data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+
+                    // color change
+                    const rgbColor = data[newGroupId].color;
+                    $(`#${event.to.id}`).find('.url-text').css('color',rgbColor);
                 }
+
+
+
 
 
 
