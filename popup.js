@@ -22,6 +22,13 @@ $(document).ready(() => {
 
         // initialize Materialize select form
         $('select').formSelect();
+
+        // automatically inserts current page url to input
+        chrome.tabs.query({ 'active': true }, function (tabs) {
+            const { url } = tabs[0];
+            $('#url').val(url);
+            $('label[for="url"]').addClass('active');
+        });
     })
 });
 
@@ -30,7 +37,7 @@ $('select').change(function() {
     if ($(this).children('option:selected').val() === 'create-new-group') {
         $('#group-select').after(`
             <div class="row new-group-input">
-                <div class="input-field col">
+                <div class="input-field col s12">
                     <label for="new-group">Group Name</label>
                     <input id="new-group" type="text" class="validate" name="groupName"/>
                 </div>
@@ -38,7 +45,36 @@ $('select').change(function() {
         `);
     } else {
         $('.new-group-input').remove();
+
+        const groupId = $(this).children('option:selected').val();
+
+        const url = $('#url').val();
+
+        const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+
+        if (!urlExists) {
+            $('button[type="submit"]').removeClass('disabled');
+        } else {
+            $('button[type="submit"]').addClass('disabled');
+        }
     }
+
+
+});
+
+// check if url exists
+$('#url').on('propertychange change keyup paste input',function() {
+    const url = $(this).val();
+    const groupId = $('select').children('option:selected').val();
+
+    const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+
+    if (!urlExists) {
+        $('button[type="submit"]').removeClass('disabled');
+    } else {
+        $('button[type="submit"]').addClass('disabled');
+    }
+
 });
 
 // url submitted
