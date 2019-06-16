@@ -15,33 +15,57 @@
     <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
+    <div class="header">
+        <nav>
+            <div class="nav-wrapper teal lighten-4">
+                <a href="#" class="brand-logo"><img src="logo.png" width="60" height="60"></a>
+            </div>
+        </nav>
+    </div>
     <div class="container">
-        <div class="row">
-            <div class="input-field col s12">
-                <select>
-                    <option value="" disabled selected>Choose a Group</option>
-                </select>
-                <label>Group Select</label>
+
+
+        <form class="save-url">
+            <div class="row" id="group-select">
+                <div class="input-field col s12">
+                    <select name="groupId">
+                        <option value="" disabled selected>Choose a Group</option>
+                    </select>
+                    <label>Group Select</label>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="input-field col">
-                <label for="urlName">Url Name</label>
-                <input id="urlName" type="text" class="validate" autofocus>
+            <div class="row" id="url-name-input">
+                <div class="input-field col">
+                    <label for="urlName">Url Name</label>
+                    <input id="urlName" type="text" class="validate" name="urlName"/>
+                </div>
             </div>
-        </div>
+            <div class="row" id="url-input">
+                <div class="input-field col">
+                    <label for="url">Url</label>
+                    <input id="url" type="text" class="validate" name="url"/>
+                </div>
+            </div>
+            <div class="row center" id="url-submit">
+                <button class="btn" type="submit">Save</button>
+            </div>
+        </form>
+        <div class="row test"></div>
     </div>
 
 
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <!-- materialize js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-
     <!-- custom scripts -->
     <script type="text/javascript" src="popup.js"></script>
+    <script type="text/javascript" src="optionsHelperFunctions.js"></script>
 </body>
 </html>
