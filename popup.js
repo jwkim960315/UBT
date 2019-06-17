@@ -43,12 +43,16 @@ $('select').change(function() {
                 </div>
             </div>
         `);
+
+        $('button[type="submit"]').removeClass('disabled');
     } else {
         $('.new-group-input').remove();
 
         const groupId = $(this).children('option:selected').val();
 
         const url = $('#url').val();
+
+        console.log(url);
 
         const urlExists = data[groupId].data.some(urlData => urlData.url === url);
 
@@ -67,13 +71,24 @@ $('#url').on('propertychange change keyup paste input',function() {
     const url = $(this).val();
     const groupId = $('select').children('option:selected').val();
 
-    const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+    if (groupId.length) {
+        const urlExists = data[groupId].data.some(urlData => urlData.url === url);
 
-    if (!urlExists) {
-        $('button[type="submit"]').removeClass('disabled');
-    } else {
-        $('button[type="submit"]').addClass('disabled');
+        if (!urlExists) {
+            if (isUrlValid(url)) {
+                $('button[type="submit"]').removeClass('disabled');
+            } else {
+                $('input#url').addClass('invalid');
+            }
+        } else {
+            $('button[type="submit"]').addClass('disabled');
+        }
     }
+
+
+
+
+
 
 });
 
@@ -81,6 +96,9 @@ $('#url').on('propertychange change keyup paste input',function() {
 $('form.save-url').submit(function(e) {
     e.preventDefault();
     console.log($(this).serializeArray());
+
+
+
 
     let formValues = $(this).serializeArray();
 
@@ -115,25 +133,29 @@ $('form.save-url').submit(function(e) {
     console.log('linkName',linkName);
     console.log('url',url);
 
+    if (isUrlValid(url)) {
+        axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
+            .then(res => {
+                const iconLink = res.data.icons[0].url;
 
+                data[groupId].data.push({
+                    urlId,
+                    linkName,
+                    url,
+                    iconLink
+                });
 
-    axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-        .then(res => {
-            const iconLink = res.data.icons[0].url;
-
-            data[groupId].data.push({
-                urlId,
-                linkName,
-                url,
-                iconLink
+                chrome.storage.sync.set({[groupId]: data[groupId]},() => {
+                    console.log('New Group & new url has been successfully saved!');
+                });
+            },err => {
+                if (err.response.status === 404) {
+                    console.log('invalid url');
+                }
             });
+    } else {
 
-            chrome.storage.sync.set({[groupId]: data[groupId]},() => {
-                console.log('New Group & new url has been successfully saved!');
-            });
-        },err => {
-            if (err.response.status === 404) {
-                console.log('invalid url');
-            }
-        });
+    }
+
+
 });

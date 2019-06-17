@@ -37,13 +37,14 @@
             <div class="row" id="url-name-input">
                 <div class="input-field col s12">
                     <label for="urlName">Url Name</label>
-                    <input id="urlName" type="text" class="validate" name="urlName"/>
+                    <input id="urlName" type="text" class="validate" name="urlName" required/>
                 </div>
             </div>
             <div class="row" id="url-input">
                 <div class="input-field col s12">
                     <label for="url">Url</label>
-                    <input id="url" type="text" class="validate" name="url"/>
+                    <input id="url" type="text" class="validate" name="url" required/>
+                    <span class="helper-text" data-error="invalid url" data-success="valid url"></span>
                 </div>
             </div>
             <div class="row center" id="url-submit">
@@ -68,7 +69,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script>
 
     <!-- custom scripts -->
-    <script type="text/javascript" src="popup.js"></script>
+    <script type="text/javascript" src="popupHelperFunctions.js"></script>
     <script type="text/javascript" src="optionsHelperFunctions.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+
 </body>
 </html>
