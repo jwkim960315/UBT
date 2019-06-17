@@ -30,6 +30,8 @@ $(document).ready(() => {
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a class="edit-group-name">edit group name</a></li>
                                     <li class="divider" tabindex="-1"></li>
+                                    <li><a class="open-all-links ${groupKey}">open all links</a></li>
+                                    <li class="divider" tabindex="-1"></li>
                                     <li><a class="delete-group red-text">delete group</a></li>
                                 </ul>
                             </div>
@@ -54,8 +56,6 @@ $(document).ready(() => {
             const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
             const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
             $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
-
-
         });
 
 
@@ -301,6 +301,18 @@ $(document).on('click','.close-color-picker',function(e) {
     $(`div[id="${groupId}"]`).css('box-shadow',`${boxShadow}`);
 });
 
+// open all links
+$(document).on('click','.open-all-links',function(e) {
+    e.preventDefault();
+
+    const groupId = $(this).attr('class').split(' ')[1];
+    const urlLst = data[groupId].data.map(urlData => {
+        return `https://${urlData.url}`;
+    });
+
+    chrome.windows.create({ url: urlLst });
+});
+
 
 
 // Add new link form
@@ -309,7 +321,7 @@ $(document).on('click','.add-link',function() {
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
     const urlNum = idGenerator(urlFormIds);
-    // urlFormIds.push(urlNum);
+
 
     $(this).parents('.new-url-data').prev().after(`
         <div class="row">
