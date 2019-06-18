@@ -137,7 +137,7 @@ $('.add-group').click(() => {
                     <form class="add-group-form">
                         <div class="input-field col s10 l8">
                             <label for="group${groupNum}">Group Name</label>
-                            <input id="group${groupNum}" type="text" class="validate">
+                            <input id="group${groupNum}" type="text" class="validate" autofocus>
                         </div>
                         <div class="col s1 l1">
                             <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>

@@ -103,6 +103,7 @@ $('form.save-url').submit(function(e) {
 
 
     let formValues = $(this).serializeArray();
+    formValues.push({ value: $('#url').val() });
 
     let groupId;
     let urlId;
