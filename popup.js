@@ -8,7 +8,7 @@ $(document).ready(() => {
         groupIds = Object.keys(data);
 
         const optionsHTMLLst = groupIds
-            .map((groupId,index) => {
+            .map(groupId => {
                 return `
                     <option value="${groupId}">${data[groupId].groupName}</option>
                 `;
