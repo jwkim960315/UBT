@@ -137,10 +137,11 @@ $('.add-group').click(() => {
                     <form class="add-group-form">
                         <div class="input-field col s10 l8">
                             <label for="group${groupNum}">Group Name</label>
-                            <input id="group${groupNum}" type="text" class="validate" autofocus>
+                            <input id="group${groupNum}" type="text" class="group-name-input" autofocus>
+                            <span class="helper-text"></span>
                         </div>
                         <div class="col s1 l1">
-                            <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
+                            <button class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
                 </div>
@@ -158,6 +159,32 @@ $('.add-group').click(() => {
     data[`group${groupNum}`] = newGroupData;
 });
 
+// new group name on change
+$(document).on('propertychange change keyup paste input focusout blur', '.group-name-input',function() {
+    const newGroupName = $(this).val();
+    const formValues = [{
+        name: 'group name',
+        type: 'text',
+        value: newGroupName
+    }];
+
+    const validatedValues = validator(formValues);
+
+    if (validatedValues.values[0].error) {
+        $(this).next().attr('data-error',validatedValues.values[0].message);
+        $(this).removeClass('valid');
+        $(this).addClass('invalid');
+    } else {
+        $(this).next().attr('data-success',validatedValues.values[0].message);
+        $(this).removeClass('invalid');
+        $(this).addClass('valid');
+    }
+
+    if (validatedValues.submit) {
+        $(this).parent().next().find('.btn').removeClass('disabled');
+    }
+});
+
 // onSubmit add-group-form
 $(document).on('submit','.add-group-form',function(e) {
     e.preventDefault();
@@ -165,6 +192,7 @@ $(document).on('submit','.add-group-form',function(e) {
     const inputElem = $(this).find('input');
     const inputVal = inputElem.val();
     const groupName = inputElem.prop('id');
+
 
     data[groupName].groupName = inputVal;
 
@@ -330,12 +358,12 @@ $(document).on('click','.add-link',function() {
                     <div class="input-field col s4 l4">
                         <label for="urlName${urlNum}">Name</label>
                         <input id="urlName${urlNum}" type="text" class="url-name-input" autofocus>
-                        <span class="helper-text" data-success="valid name"></span>
+                        <span class="helper-text"></span>
                     </div>
                     <div class="input-field col s8 l6">
                       <label for="url${urlNum}">Url</label>
                       <input id="url${urlNum}" type="text" class="url-input">
-                      <span class="helper-text" data-success="valid url"></span>
+                      <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1 submit-btn-cont">
                         <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
