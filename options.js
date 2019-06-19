@@ -71,8 +71,6 @@ $(document).ready(() => {
             animation: 150,
             draggable: '.url-buttons',
             onEnd: event => {
-
-                // console.log($(event.item));
                 const oldGroupId = $(event.from).prop('id').slice(9);
                 const newGroupId = $(event.to).prop('id').slice(9);
                 const { oldDraggableIndex, newDraggableIndex } = event;
@@ -123,13 +121,6 @@ $('.add-group').click(() => {
 
     let groupNum = idGenerator(groupIds);
 
-    // const groupName = `Group${groupNum}`;
-    //
-    // const newGroupData = {
-    //     groupName,
-    //     data: []
-    // };
-
     $('.group-cont').append(`
         <div class="card">
             <div class="card-content">
@@ -149,12 +140,6 @@ $('.add-group').click(() => {
             </div>
         </div>
     `);
-
-    // chrome.storage.sync.set({
-    //     [`group${groupNum}`]: newGroupData
-    // });
-    //
-    // data[`group${groupNum}`] = newGroupData;
 });
 
 // new group name on change
@@ -166,7 +151,7 @@ $(document).on('propertychange change keyup paste input focusout blur', '.group-
         value: newGroupName
     }];
 
-    const validatedValues = validator(formValues);
+    const validatedValues = validator(formValues,data,'none','none');
 
     if (validatedValues.values[0].error) {
         $(this).next().attr('data-error',validatedValues.values[0].message);
@@ -181,7 +166,6 @@ $(document).on('propertychange change keyup paste input focusout blur', '.group-
     if (validatedValues.submit) {
         $(this).parent().next().find('.btn').removeClass('disabled');
     } else {
-        console.log('here');
         $(this).parent().next().find('.btn').addClass('disabled');
     }
 });
@@ -200,19 +184,7 @@ $(document).on('submit','.add-group-form',function(e) {
         value: inputVal
     }];
 
-    const validatedValues = validator(formValues);
-
-    console.log(validatedValues);
-
-    // if (validatedValues.values[0].error) {
-    //     $(this).find('.group-name-input').removeClass('valid');
-    //     $(this).find('.group-name-input').addClass('invalid');
-    //     $(this).find('.group-name-input').next('span').attr('data-error',validatedValues.values[0].message);
-    // } else {
-    //     $(this).find('.group-name-input').removeClass('invalid');
-    //     $(this).find('.group-name-input').addClass('valid');
-    //     $(this).find('.group-name-input').next('span').attr('data-success',validatedValues.values[0].message);
-    // }
+    const validatedValues = validator(formValues,data,'none','none');
 
     // check if submitted form passes all validations
     if (validatedValues.submit) {
@@ -371,7 +343,7 @@ $(document).on('click','.open-all-links',function(e) {
 
     const groupId = $(this).attr('class').split(' ')[1];
     const urlLst = data[groupId].data.map(urlData => {
-        return `https://${urlData.url}`;
+        return urlData.url;
     });
 
     chrome.windows.create({ url: urlLst });
@@ -416,43 +388,95 @@ $(document).on('click','.add-link',function() {
 // url name input validation
 $(document).on('propertychange change keyup paste input focusout blur','.url-name-input',function() {
     const urlName = $(this).val();
+    const url = $(this).parents('.add-url-form').find('.url-input').val();
 
-    if (!urlName) {
-        $(this).removeClass('valid');
-        $(this).addClass('invalid');
-        $(this).parent().next('.submit-btn-cont').find('.btn').addClass('disabled');
-        $(this).next('span').attr('data-error','name is required');
+    const formValues = [{
+        name: 'url name',
+        target: '.url-name-input',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: '.url-input',
+        type: 'url',
+        value: url
+    }];
+
+    const groupId = $(this).parents('.card').attr('id');
+    const urlId = parseInt($(this).attr('id').slice(-1));
+
+
+    let validatedValues = validator(formValues,data,groupId,urlId);
+
+    validatedValues.values.forEach((validatedValue,index) => {
+        if (validatedValue.error) {
+            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('valid');
+            $(this).parents('.add-url-form').find(validatedValue.target).addClass('invalid');
+            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-error',validatedValue.message);
+        } else {
+            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('invalid');
+            $(this).parents('.add-url-form').find(validatedValue.target).addClass('valid');
+            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-success',validatedValue.message);
+        }
+    });
+
+
+    // let urlValidation = validatedValues.values.filter(value => value.name === 'url');
+    //
+    // if (urlValidation.error === true) {
+    //     if (data[groupId].data.some(urlData => urlData.urlId === urlId)) {
+    //         urlValidation.error = false;
+    //         validatedValues.submit = true
+    //         validatedValues.values = validatedValues.values.map(value => (value.name === 'url') ? urlValidation : value);
+    //     }
+    // }
+
+    if (validatedValues.submit) {
+        $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
     } else {
-        $(this).removeClass('invalid');
-        $(this).addClass('valid');
-        $(this).parent().next('').find('.btn').removeClass('disabled');
+        $(this).parents('.add-url-form').find('button[type="submit"]').addClass('disabled');
     }
-})
+});
 
 // url input validation
 $(document).on('propertychange change keyup paste input focusout blur','.url-input',function() {
     const url = $(this).val();
+    const urlName = $(this).parents('.add-url-form').find('.url-name-input').val();
 
-    if (!url) {
-        $(this).removeClass('valid');
-        $(this).addClass('invalid');
-        $(this).parent().next('.submit-btn-cont').find('.btn').addClass('disabled');
-        $(this).next('span').attr('data-error','url is required');
-    } else {
-        if (!isUrlValid(url)) {
-            $(this).removeClass('valid');
-            $(this).addClass('invalid');
-            $(this).parent().next().find('.btn').addClass('disabled');
-            $(this).next('span').attr('data-error','invalid url: ex) https://www.google.com');
+    const formValues = [{
+        name: 'url name',
+        target: '.url-name-input',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: '.url-input',
+        type: 'url',
+        value: url
+    }];
+
+    const groupId = $(this).parents('.card').attr('id');
+    const urlId = parseInt($(this).attr('id').slice(-1));
+
+    const validatedValues = validator(formValues,data,groupId,urlId);
+
+    validatedValues.values.forEach((validatedValue,index) => {
+        if (validatedValue.error) {
+            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('valid');
+            $(this).parents('.add-url-form').find(validatedValue.target).addClass('invalid');
+            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-error',validatedValue.message);
         } else {
-            $(this).removeClass('invalid');
-            $(this).addClass('valid');
-            $(this).parent().next().find('.btn').removeClass('disabled');
+            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('invalid');
+            $(this).parents('.add-url-form').find(validatedValue.target).addClass('valid');
+            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-success',validatedValue.message);
         }
+    });
+
+    if (validatedValues.submit) {
+        $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
+    } else {
+        $(this).parents('.add-url-form').find('button[type="submit"]').addClass('disabled');
     }
-
-
-
 });
 
 // onSubmit add-url-form
@@ -467,37 +491,53 @@ $(document).on('submit','.add-url-form',function(e) {
 
     const linkName = $(this).find('.url-name-input').val();
     const urlId = parseInt($(this).prop('id').slice(-1));
+    const groupId = $(this).parents('.card').attr('id');
 
-    axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-        .then(res => {
+    const formValues = [{
+        name: 'url name',
+        type: 'text',
+        value: linkName
+    },{
+        name: 'url',
+        type: 'url',
+        value: url
+    }];
 
-            const iconLink = res.data.icons[0].url;
-            const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+    const validatedValues = validator(formValues,data,groupId,urlId);
 
-            if (urlFormIds.includes(urlId)) {
-                data[groupName].data.forEach((urlData,index) => {
-                    if (urlData.urlId === urlId) {
-                        data[groupName].data[index] = { urlId, url, iconLink, linkName };
-                    }
+    if (validatedValues.submit) {
+        axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
+            .then(res => {
+
+                const iconLink = res.data.icons[0].url;
+                const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+
+                if (urlFormIds.includes(urlId)) {
+                    data[groupName].data.forEach((urlData,index) => {
+                        if (urlData.urlId === urlId) {
+                            data[groupName].data[index] = { urlId, url, iconLink, linkName };
+                        }
+                    });
+                } else {
+                    data[groupName].data.push({ urlId, url, iconLink, linkName });
+                }
+
+                const groupData = data[groupName];
+
+                chrome.storage.sync.set({
+                    [groupName]: groupData
+                },() => {
+                    console.log('stored successfully!');
+                    location.reload();
                 });
-            } else {
-                data[groupName].data.push({ urlId, url, iconLink, linkName });
-            }
 
-            const groupData = data[groupName];
-            chrome.storage.sync.set({
-                [groupName]: groupData
-            },() => {
-                console.log('stored successfully!');
-                location.reload();
+
+            },err => {
+                if (err.response.status === 404) {
+                    console.log('invalid url');
+                }
             });
-
-
-        },err => {
-            if (err.response.status === 404) {
-                console.log('invalid url');
-            }
-        });
+    }
 });
 
 // Delete url input
@@ -510,14 +550,11 @@ $(document).on('click','.url-form-delete',function(e) {
 $(document).on('click','.url-edit',function(e) {
     const name = $(this).parents('.url-buttons').find('a').text().trim();
 
-    const url = $(this).parents('.url-buttons').find('a').prop('href').slice(8);
+    const url = $(this).parents('.url-buttons').find('a').prop('href');
 
     const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
 
     urlFormIds.push(urlNum);
-
-
-
 
     $(this).parents('.url-buttons').replaceWith(`
         <div class="row">
@@ -525,11 +562,13 @@ $(document).on('click','.url-edit',function(e) {
                 <div class="row">
                     <div class="input-field col s4 l4">
                         <label for="urlName${urlNum}" class="active">Name</label>
-                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" value="${name}" autofocus>
+                        <input id="urlName${urlNum}" type="text" class="url-name-input" value="${name}" autofocus>
+                        <span class="helper-text"></span>
                     </div>
                     <div class="input-field col s8 l6">
                       <label for="url${urlNum}" class="active">Url</label>
-                      <input id="url${urlNum}" type="text" class="validate url-input" value="${url}">
+                      <input id="url${urlNum}" type="text" class="url-input" value="${url}">
+                      <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
@@ -549,29 +588,30 @@ $(document).on('click','.url-delete',function(e) {
 
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
     let urlId;
+
     if ($(this).parents('.url-buttons').length) {
         urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
     } else {
         urlId = parseInt($(this).parents('.add-url-form').prop('id').slice(-1));
     }
 
-    console.log(groupName);
-    console.log(urlId);
-
-
-
     data[groupName].data.forEach((urlData,index) => {
-        console.log(urlData);
         if (urlData.urlId === urlId) {
-            console.log(urlData);
             data[groupName].data.splice(index,1);
         }
     });
+
     const groupData = data[groupName];
 
     chrome.storage.sync.set({[groupName]: groupData});
 
-    $(this).parents('.add-url-form').remove();
+    if ($(this).parents('.url-buttons').length) {
+        $(this).parents('.url-buttons').remove();
+    } else {
+        $(this).parents('.add-url-form').remove();
+    }
+
+
 });
 
 

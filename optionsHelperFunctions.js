@@ -56,7 +56,6 @@ const urlIdsToLst = data => {
             lst.push(urlData.urlId);
         });
     }
-    console.log(lst);
     return lst;
 };
 

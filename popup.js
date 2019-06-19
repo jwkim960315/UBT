@@ -24,17 +24,22 @@ $(document).ready(() => {
         $('select').formSelect();
 
         // automatically inserts current page url to input
-        chrome.tabs.query({ 'active': true }, function (tabs) {
-            const { url, title } = tabs[0];
+        chrome.tabs.query({ 'active': true }, tabs => {
+            let { url, title } = tabs[0];
             $('#urlName').val(title);
             $('label[for="urlName"]').addClass('active');
+
+            if (url.slice(-1) !== '/') {
+                url += '/';
+            }
+
             $('#url').val(url);
             $('label[for="url"]').addClass('active');
         });
     })
 });
 
-// create new group button selected
+// selected from dropdown menu
 $('select').change(function() {
     if ($(this).children('option:selected').val() === 'create-new-group') {
         $('#group-select').after(`
@@ -42,6 +47,7 @@ $('select').change(function() {
                 <div class="input-field col s12">
                     <label for="new-group">Group Name</label>
                     <input id="new-group" type="text" class="validate" name="groupName"/>
+                    <span class="helper-text"></span>
                 </div>
             </div>
         `);
@@ -51,92 +57,280 @@ $('select').change(function() {
         $('.new-group-input').remove();
 
         const groupId = $(this).children('option:selected').val();
-
         const url = $('#url').val();
+        const urlName = $('input[name="urlName"]').val();
 
-        console.log(url);
+        // could be undefined
+        const groupName = $(this).val();
 
-        const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+        let formValues = [];
 
-        if (!urlExists) {
+        if (groupName) {
+            formValues.push({
+                name: 'group name',
+                target: 'input[name="groupName"]',
+                type: 'text',
+                value: groupName
+            });
+        }
+
+        formValues = formValues.concat([{
+            name: 'url name',
+            target: 'input[name="urlName"]',
+            type: 'text',
+            value: urlName
+        }, {
+            name: 'url',
+            target: 'input[name="url"]',
+            type: 'url',
+            value: url
+        }]);
+
+        const validatedValues = validator(formValues,data,groupId,undefined);
+
+        validatedValues.values.forEach(({ error, target, message },index) => {
+            if (error) {
+                $(target).removeClass('valid');
+                $(target).addClass('invalid');
+                $(target).next('span').attr('data-error',message);
+            } else {
+                $(target).removeClass('invalid');
+                $(target).addClass('valid');
+                $(target).next('span').attr('data-success',message);
+            }
+        });
+
+        // let urlExists;
+        //
+        // // check whether user has selected a group from dropdown menu
+        // if (groupId) {
+        //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
+        // } else {
+        //     urlExists = true;
+        // }
+
+        if (validatedValues.submit) {
             $('button[type="submit"]').removeClass('disabled');
         } else {
             $('button[type="submit"]').addClass('disabled');
         }
+
+
+
+        // if (!urlExists) {
+        //     $('button[type="submit"]').removeClass('disabled');
+        // } else {
+        //     $('button[type="submit"]').addClass('disabled');
+        // }
     }
 
 
 });
 
-// check if url exists
-$('#url').on('propertychange change keyup paste input',function() {
-    const url = $(this).val();
+// group name validation
+$(document).on('propertychange change keyup paste input focusout blur','#new-group',function() {
+    const urlName = $('input[name="urlName"]').val();
     const groupId = $('select').children('option:selected').val();
+    const url = $('input[name="url"]').val();
 
-    if (groupId.length) {
-        const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+    // could be undefined
+    const groupName = $(this).val();
 
-        if (!urlExists) {
-            if (isUrlValid(url)) {
-                $('button[type="submit"]').removeClass('disabled');
-            } else {
-                $('input#url').addClass('invalid');
-            }
+    let formValues = [];
+
+    if (groupName) {
+        formValues.push({
+            name: 'group name',
+            target: 'input[name="groupName"]',
+            type: 'text',
+            value: groupName
+        });
+    }
+
+    formValues = formValues.concat([{
+        name: 'url name',
+        target: 'input[name="urlName"]',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: 'input[name="url"]',
+        type: 'url',
+        value: url
+    }]);
+
+    const validatedValues = validator(formValues,data,groupId,undefined);
+
+    validatedValues.values.forEach(({ error, target, message },index) => {
+        if (error) {
+            $(target).removeClass('valid');
+            $(target).addClass('invalid');
+            $(target).next('span').attr('data-error',message);
         } else {
-            $('button[type="submit"]').addClass('disabled');
+            $(target).removeClass('invalid');
+            $(target).addClass('valid');
+            $(target).next('span').attr('data-success',message);
         }
+    });
+
+    // let urlExists;
+    //
+    // // check whether user has selected a group from dropdown menu
+    // if (groupId) {
+    //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
+    // } else {
+    //     urlExists = true;
+    // }
+
+    if (validatedValues.submit) {
+        $('button[type="submit"]').removeClass('disabled');
+    } else {
+        $('button[type="submit"]').addClass('disabled');
+    }
+});
+
+// url name validation
+$('#urlName').on('propertychange change keyup paste input focusout blur',function() {
+    const urlName = $(this).val();
+    const groupId = $('select').children('option:selected').val();
+    const url = $('input[name="url"]').val();
+
+    // could be undefined
+    const groupName = $('input[name="groupName"]').val();
+
+    let formValues = [];
+
+    if (groupName) {
+        formValues.push({
+            name: 'group name',
+            target: 'input[name="groupName"]',
+            type: 'text',
+            value: groupName
+        });
+    }
+
+    formValues = formValues.concat([{
+        name: 'url name',
+        target: 'input[name="urlName"]',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: 'input[name="url"]',
+        type: 'url',
+        value: url
+    }]);
+
+    const validatedValues = validator(formValues,data,groupId,urlId,undefined);
+
+    validatedValues.values.forEach(({ error, target, message },index) => {
+        if (error) {
+            $(target).removeClass('valid');
+            $(target).addClass('invalid');
+            $(target).next('span').attr('data-error',message);
+        } else {
+            $(target).removeClass('invalid');
+            $(target).addClass('valid');
+            $(target).next('span').attr('data-success',message);
+        }
+    });
+
+    // let urlExists;
+    //
+    // // check whether user has selected a group from dropdown menu
+    // if (groupId) {
+    //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
+    // } else {
+    //     urlExists = true;
+    // }
+
+    if (validatedValues.submit && !urlExists) {
+        $('button[type="submit"]').removeClass('disabled');
+    } else {
+        $('button[type="submit"]').addClass('disabled');
     }
 
 
-
-
-
+    // if (groupId.length) {
+    //     const urlExists = data[groupId].data.some(urlData => urlData.url === url);
+    //
+    //     if (!urlExists) {
+    //         if (isUrlValid(url)) {
+    //             $('button[type="submit"]').removeClass('disabled');
+    //         } else {
+    //             $('input#url').addClass('invalid');
+    //         }
+    //     } else {
+    //         $('button[type="submit"]').addClass('disabled');
+    //     }
+    // }
 
 });
 
 // url submitted
 $('form.save-url').submit(function(e) {
     e.preventDefault();
-    console.log($(this).serializeArray());
-
-
-
 
     let formValues = $(this).serializeArray();
-    formValues.push({ value: $('#url').val() });
+
+    formValues = formValues.map(formValue => {
+        switch(formValue.name) {
+            case 'groupName':
+                formValue.target = 'input[name="groupName"]';
+                return formValue;
+            case 'urlName':
+                formValue.target = 'input[name="urlName"]';
+                return formValue;
+            case 'url':
+                formValue.target = 'input[name="url"]';
+                return formValue;
+            default:
+                return formValue;
+        }
+    });
+
+    // since url input is disabled, it has to be manually inserted to formValues
+    formValues.push({
+        name: 'url',
+        target: 'input[name="url"]',
+        value: $('#url').val()
+    });
+
+
+    formValues = morphFormValues(formValues);
 
     let groupId;
-    let urlId;
-    let linkName;
-    let url;
 
     if (formValues[0].value === 'create-new-group') {
         groupId = `group${idGenerator(groupIds)}`;
 
-
-
         formValues.splice(0,1);
-        console.log(formValues);
+
         data[groupId] = {
             groupName: formValues[0].value,
             data: []
         };
     } else {
-        groupId = formValues[0].value;
+        groupId = $('select').children('option:selected').val();
     }
 
-    urlId = idGenerator(urlIdsToLst(data));
+    const validatedValues = validator(formValues,data,groupId,undefined);
 
-    linkName = formValues[1].value;
+    if (validatedValues.submit) {
+        let urlId;
+        let linkName;
+        let url;
 
-    url = formValues[2].value;
+        urlId = idGenerator(urlIdsToLst(data));
 
-    console.log('groupId',groupId);
-    console.log('urlId',urlId);
-    console.log('linkName',linkName);
-    console.log('url',url);
+        linkName = formValues[1].value;
 
-    if (isUrlValid(url)) {
+        url = formValues[2].value;
+
+        if (url.slice(-1) !== '/') {
+            url += '/';
+        }
+
         axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
             .then(res => {
                 const iconLink = res.data.icons[0].url;
@@ -150,15 +344,12 @@ $('form.save-url').submit(function(e) {
 
                 chrome.storage.sync.set({[groupId]: data[groupId]},() => {
                     console.log('New Group & new url has been successfully saved!');
+                    // location.reload();
                 });
             },err => {
                 if (err.response.status === 404) {
                     console.log('invalid url');
                 }
             });
-    } else {
-
     }
-
-
 });
