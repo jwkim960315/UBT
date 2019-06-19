@@ -123,12 +123,12 @@ $('.add-group').click(() => {
 
     let groupNum = idGenerator(groupIds);
 
-    const groupName = `Group${groupNum}`;
-
-    const newGroupData = {
-        groupName,
-        data: []
-    };
+    // const groupName = `Group${groupNum}`;
+    //
+    // const newGroupData = {
+    //     groupName,
+    //     data: []
+    // };
 
     $('.group-cont').append(`
         <div class="card">
@@ -145,18 +145,16 @@ $('.add-group').click(() => {
                         </div>
                     </form>
                 </div>
-                <div class="row">
-                    <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-                </div>
+                <div class="add-link-placeholder"></div>
             </div>
         </div>
     `);
 
-    chrome.storage.sync.set({
-        [`group${groupNum}`]: newGroupData
-    });
-
-    data[`group${groupNum}`] = newGroupData;
+    // chrome.storage.sync.set({
+    //     [`group${groupNum}`]: newGroupData
+    // });
+    //
+    // data[`group${groupNum}`] = newGroupData;
 });
 
 // new group name on change
@@ -182,6 +180,9 @@ $(document).on('propertychange change keyup paste input focusout blur', '.group-
 
     if (validatedValues.submit) {
         $(this).parent().next().find('.btn').removeClass('disabled');
+    } else {
+        console.log('here');
+        $(this).parent().next().find('.btn').addClass('disabled');
     }
 });
 
@@ -193,12 +194,46 @@ $(document).on('submit','.add-group-form',function(e) {
     const inputVal = inputElem.val();
     const groupName = inputElem.prop('id');
 
+    const formValues = [{
+        name: 'group name',
+        type: 'text',
+        value: inputVal
+    }];
 
-    data[groupName].groupName = inputVal;
+    const validatedValues = validator(formValues);
 
-    const groupData = data[groupName];
+    console.log(validatedValues);
 
-    if (inputVal !== '') {
+    // if (validatedValues.values[0].error) {
+    //     $(this).find('.group-name-input').removeClass('valid');
+    //     $(this).find('.group-name-input').addClass('invalid');
+    //     $(this).find('.group-name-input').next('span').attr('data-error',validatedValues.values[0].message);
+    // } else {
+    //     $(this).find('.group-name-input').removeClass('invalid');
+    //     $(this).find('.group-name-input').addClass('valid');
+    //     $(this).find('.group-name-input').next('span').attr('data-success',validatedValues.values[0].message);
+    // }
+
+    // check if submitted form passes all validations
+    if (validatedValues.submit) {
+
+        if (!data[groupName]) {
+            data[groupName] = {
+                groupName: inputVal,
+                data: []
+            };
+        } else {
+            data[groupName].groupName = inputVal;
+        }
+
+        const groupData = data[groupName];
+
+        $(this).parents('.card-content').find('.add-link-placeholder').replaceWith(`
+            <div class="row">
+                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+            </div>
+        `);
+
         chrome.storage.sync.set({[groupName]: groupData},() => {
             console.log('group name successfully saved!');
             location.reload();
@@ -232,7 +267,8 @@ $(document).on('click','.edit-group-name',function(e) {
             <form class="add-group-form">
                 <div class="input-field col s10 l8">
                     <label for="${groupName}" class="active">Group Name</label>
-                    <input id="${groupName}" type="text" class="validate" value="${name}" autofocus>
+                    <input id="${groupName}" type="text" class="group-name-input" value="${name}" autofocus>
+                    <span class="helper-text"></span>
                 </div>
                 <div class="col s1 l1">
                     <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
@@ -369,7 +405,7 @@ $(document).on('click','.add-link',function() {
                         <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     <div class="col s12 l1">
-                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                        <button class="waves-effect waves-light btn red accent-2 url-form-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
             </form>
@@ -465,7 +501,7 @@ $(document).on('submit','.add-url-form',function(e) {
 });
 
 // Delete url input
-$(document).on('click','.url-delete',function(e) {
+$(document).on('click','.url-form-delete',function(e) {
     e.preventDefault();
     $(this).parents('form[class="add-url-form"]').remove();
 });
@@ -512,10 +548,22 @@ $(document).on('click','.url-delete',function(e) {
     e.preventDefault();
 
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
-    const urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
+    let urlId;
+    if ($(this).parents('.url-buttons').length) {
+        urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
+    } else {
+        urlId = parseInt($(this).parents('.add-url-form').prop('id').slice(-1));
+    }
+
+    console.log(groupName);
+    console.log(urlId);
+
+
 
     data[groupName].data.forEach((urlData,index) => {
+        console.log(urlData);
         if (urlData.urlId === urlId) {
+            console.log(urlData);
             data[groupName].data.splice(index,1);
         }
     });
@@ -523,7 +571,7 @@ $(document).on('click','.url-delete',function(e) {
 
     chrome.storage.sync.set({[groupName]: groupData});
 
-    $(this).parents('.url-buttons').remove();
+    $(this).parents('.add-url-form').remove();
 });
 
 

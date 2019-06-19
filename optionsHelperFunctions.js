@@ -56,7 +56,7 @@ const urlIdsToLst = data => {
             lst.push(urlData.urlId);
         });
     }
-
+    console.log(lst);
     return lst;
 };
 
@@ -74,7 +74,7 @@ const renderLinks = (groupData,index,lst) => {
             const { url, linkName, iconLink } = urlDatum;
 
             return `
-                <div class="row url-buttons" id="url-data-${lst[i]}">
+                <div class="row url-buttons" id="url-data-${urlDatum.urlId}">
                     <div class="col s12 m10">
                         <a href="${url}" class="url white url-text btn" target="_blank">
                             <img class="link-icon" src="${iconLink}" width="25" height="25"/>
