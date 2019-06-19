@@ -43,15 +43,15 @@
             <div class="row" id="url-input">
                 <div class="input-field col s12">
                     <label for="url">Url</label>
-                    <input id="url" type="text" class="validate" name="url" required/>
-                    <span class="helper-text" data-error="invalid url" data-success="valid url"></span>
+                    <input id="url" type="text" class="validate" name="url" required disabled/>
+                    <span class="helper-text" data-error="cannot save this url" data-success="valid url"></span>
                 </div>
             </div>
             <div class="row center" id="url-submit">
                 <button class="btn disabled" type="submit">Save</button>
             </div>
         </form>
-        <div class="row test"></div>
+        <!--<div class="row test"></div>-->
     </div>
 
 
@@ -71,6 +71,7 @@
     <!-- custom scripts -->
     <script type="text/javascript" src="popupHelperFunctions.js"></script>
     <script type="text/javascript" src="optionsHelperFunctions.js"></script>
+    <script type="text/javascript" src="validation.js"></script>
     <script type="text/javascript" src="popup.js"></script>
 
 </body>

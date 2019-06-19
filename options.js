@@ -30,6 +30,8 @@ $(document).ready(() => {
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a class="edit-group-name">edit group name</a></li>
                                     <li class="divider" tabindex="-1"></li>
+                                    <li><a class="open-all-links ${groupKey}">open all links</a></li>
+                                    <li class="divider" tabindex="-1"></li>
                                     <li><a class="delete-group red-text">delete group</a></li>
                                 </ul>
                             </div>
@@ -54,8 +56,6 @@ $(document).ready(() => {
             const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
             const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
             $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
-
-
         });
 
 
@@ -137,10 +137,11 @@ $('.add-group').click(() => {
                     <form class="add-group-form">
                         <div class="input-field col s10 l8">
                             <label for="group${groupNum}">Group Name</label>
-                            <input id="group${groupNum}" type="text" class="validate">
+                            <input id="group${groupNum}" type="text" class="group-name-input" autofocus>
+                            <span class="helper-text"></span>
                         </div>
                         <div class="col s1 l1">
-                            <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
+                            <button class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
                 </div>
@@ -158,6 +159,32 @@ $('.add-group').click(() => {
     data[`group${groupNum}`] = newGroupData;
 });
 
+// new group name on change
+$(document).on('propertychange change keyup paste input focusout blur', '.group-name-input',function() {
+    const newGroupName = $(this).val();
+    const formValues = [{
+        name: 'group name',
+        type: 'text',
+        value: newGroupName
+    }];
+
+    const validatedValues = validator(formValues);
+
+    if (validatedValues.values[0].error) {
+        $(this).next().attr('data-error',validatedValues.values[0].message);
+        $(this).removeClass('valid');
+        $(this).addClass('invalid');
+    } else {
+        $(this).next().attr('data-success',validatedValues.values[0].message);
+        $(this).removeClass('invalid');
+        $(this).addClass('valid');
+    }
+
+    if (validatedValues.submit) {
+        $(this).parent().next().find('.btn').removeClass('disabled');
+    }
+});
+
 // onSubmit add-group-form
 $(document).on('submit','.add-group-form',function(e) {
     e.preventDefault();
@@ -165,6 +192,7 @@ $(document).on('submit','.add-group-form',function(e) {
     const inputElem = $(this).find('input');
     const inputVal = inputElem.val();
     const groupName = inputElem.prop('id');
+
 
     data[groupName].groupName = inputVal;
 
@@ -301,6 +329,18 @@ $(document).on('click','.close-color-picker',function(e) {
     $(`div[id="${groupId}"]`).css('box-shadow',`${boxShadow}`);
 });
 
+// open all links
+$(document).on('click','.open-all-links',function(e) {
+    e.preventDefault();
+
+    const groupId = $(this).attr('class').split(' ')[1];
+    const urlLst = data[groupId].data.map(urlData => {
+        return `https://${urlData.url}`;
+    });
+
+    chrome.windows.create({ url: urlLst });
+});
+
 
 
 // Add new link form
@@ -309,7 +349,7 @@ $(document).on('click','.add-link',function() {
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
     const urlNum = idGenerator(urlFormIds);
-    // urlFormIds.push(urlNum);
+
 
     $(this).parents('.new-url-data').prev().after(`
         <div class="row">
@@ -317,14 +357,16 @@ $(document).on('click','.add-link',function() {
                 <div class="row">
                     <div class="input-field col s4 l4">
                         <label for="urlName${urlNum}">Name</label>
-                        <input id="urlName${urlNum}" type="text" class="validate url-name-input" autofocus>
+                        <input id="urlName${urlNum}" type="text" class="url-name-input" autofocus>
+                        <span class="helper-text"></span>
                     </div>
                     <div class="input-field col s8 l6">
                       <label for="url${urlNum}">Url</label>
-                      <input id="url${urlNum}" type="text" class="validate url-input">
+                      <input id="url${urlNum}" type="text" class="url-input">
+                      <span class="helper-text"></span>
                     </div>
-                    <div class="col s12 l1">
-                        <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
+                    <div class="col s12 l1 submit-btn-cont">
+                        <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     <div class="col s12 l1">
                         <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
@@ -335,11 +377,58 @@ $(document).on('click','.add-link',function() {
     `);
 });
 
+// url name input validation
+$(document).on('propertychange change keyup paste input focusout blur','.url-name-input',function() {
+    const urlName = $(this).val();
+
+    if (!urlName) {
+        $(this).removeClass('valid');
+        $(this).addClass('invalid');
+        $(this).parent().next('.submit-btn-cont').find('.btn').addClass('disabled');
+        $(this).next('span').attr('data-error','name is required');
+    } else {
+        $(this).removeClass('invalid');
+        $(this).addClass('valid');
+        $(this).parent().next('').find('.btn').removeClass('disabled');
+    }
+})
+
+// url input validation
+$(document).on('propertychange change keyup paste input focusout blur','.url-input',function() {
+    const url = $(this).val();
+
+    if (!url) {
+        $(this).removeClass('valid');
+        $(this).addClass('invalid');
+        $(this).parent().next('.submit-btn-cont').find('.btn').addClass('disabled');
+        $(this).next('span').attr('data-error','url is required');
+    } else {
+        if (!isUrlValid(url)) {
+            $(this).removeClass('valid');
+            $(this).addClass('invalid');
+            $(this).parent().next().find('.btn').addClass('disabled');
+            $(this).next('span').attr('data-error','invalid url: ex) https://www.google.com');
+        } else {
+            $(this).removeClass('invalid');
+            $(this).addClass('valid');
+            $(this).parent().next().find('.btn').removeClass('disabled');
+        }
+    }
+
+
+
+});
+
 // onSubmit add-url-form
 $(document).on('submit','.add-url-form',function(e) {
     e.preventDefault();
 
-    const url = $(this).find('.url-input').val();
+    let url = $(this).find('.url-input').val();
+
+    if (url.slice(-1) !== '/') {
+        url += '/';
+    }
+
     const linkName = $(this).find('.url-name-input').val();
     const urlId = parseInt($(this).prop('id').slice(-1));
 

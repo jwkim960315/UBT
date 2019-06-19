@@ -3,6 +3,3 @@ const isUrlValid = url => {
 
     return pattern.test(url);
 };
-
-
-console.log(isUrlValid('fdsfdsfdsfds'));

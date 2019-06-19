@@ -25,7 +25,9 @@ $(document).ready(() => {
 
         // automatically inserts current page url to input
         chrome.tabs.query({ 'active': true }, function (tabs) {
-            const { url } = tabs[0];
+            const { url, title } = tabs[0];
+            $('#urlName').val(title);
+            $('label[for="urlName"]').addClass('active');
             $('#url').val(url);
             $('label[for="url"]').addClass('active');
         });
@@ -101,6 +103,7 @@ $('form.save-url').submit(function(e) {
 
 
     let formValues = $(this).serializeArray();
+    formValues.push({ value: $('#url').val() });
 
     let groupId;
     let urlId;
