@@ -12,8 +12,6 @@ $(document).ready(() => {
 
         groupIds = Object.keys(data);
 
-        console.log(data);
-
         // rendering all the storage data
         Object.keys(data).forEach((groupKey,index) => {
             $('.group-cont').append(`

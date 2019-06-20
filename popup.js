@@ -194,7 +194,7 @@ $('#urlName').on('propertychange change keyup paste input focusout blur',functio
     }]);
 
     const validatedValues = validator(formValues,data,groupId,undefined);
-
+    console.log(validatedValues);
     validatedValues.values.forEach(({ error, target, message },index) => {
         if (error) {
             $(target).removeClass('valid');
