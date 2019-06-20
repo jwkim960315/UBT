@@ -77,7 +77,7 @@ const renderLinks = (groupData,index,lst) => {
                     <div class="col s12 m10">
                         <a href="${url}" class="url white url-text btn" target="_blank">
                             <img class="link-icon" src="${iconLink}" width="25" height="25"/>
-                            ${linkName}
+                            <p>${linkName}</p>
                         </a>
                     </div>
                     <div class="col s12 m1">

@@ -100,28 +100,11 @@ $('select').change(function() {
             }
         });
 
-        // let urlExists;
-        //
-        // // check whether user has selected a group from dropdown menu
-        // if (groupId) {
-        //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
-        // } else {
-        //     urlExists = true;
-        // }
-
         if (validatedValues.submit) {
             $('button[type="submit"]').removeClass('disabled');
         } else {
             $('button[type="submit"]').addClass('disabled');
         }
-
-
-
-        // if (!urlExists) {
-        //     $('button[type="submit"]').removeClass('disabled');
-        // } else {
-        //     $('button[type="submit"]').addClass('disabled');
-        // }
     }
 
 
@@ -172,15 +155,6 @@ $(document).on('propertychange change keyup paste input focusout blur','#new-gro
             $(target).next('span').attr('data-success',message);
         }
     });
-
-    // let urlExists;
-    //
-    // // check whether user has selected a group from dropdown menu
-    // if (groupId) {
-    //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
-    // } else {
-    //     urlExists = true;
-    // }
 
     if (validatedValues.submit) {
         $('button[type="submit"]').removeClass('disabled');
@@ -235,35 +209,11 @@ $('#urlName').on('propertychange change keyup paste input focusout blur',functio
         }
     });
 
-    // let urlExists;
-    //
-    // // check whether user has selected a group from dropdown menu
-    // if (groupId) {
-    //     urlExists = data[groupId].data.some(urlData => urlData.url === url);
-    // } else {
-    //     urlExists = true;
-    // }
-
     if (validatedValues.submit && !urlExists) {
         $('button[type="submit"]').removeClass('disabled');
     } else {
         $('button[type="submit"]').addClass('disabled');
     }
-
-
-    // if (groupId.length) {
-    //     const urlExists = data[groupId].data.some(urlData => urlData.url === url);
-    //
-    //     if (!urlExists) {
-    //         if (isUrlValid(url)) {
-    //             $('button[type="submit"]').removeClass('disabled');
-    //         } else {
-    //             $('input#url').addClass('invalid');
-    //         }
-    //     } else {
-    //         $('button[type="submit"]').addClass('disabled');
-    //     }
-    // }
 
 });
 
@@ -333,7 +283,15 @@ $('form.save-url').submit(function(e) {
 
         axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
             .then(res => {
-                const iconLink = res.data.icons[0].url;
+                let iconLink;
+                if (!res.data.icons.length) {
+                    const domainInitialIndex = (url.includes('www.')) ? url.indexOf('www.')+4 : url.indexOf('//')+2;
+                    const domainInitial = url[domainInitialIndex].toUpperCase();
+                    iconLink = `https://besticon-demo.herokuapp.com/lettericons/${domainInitial}-120.png`
+                } else {
+                    iconLink = res.data.icons[0].url;
+                }
+
 
                 data[groupId].data.push({
                     urlId,
@@ -344,7 +302,7 @@ $('form.save-url').submit(function(e) {
 
                 chrome.storage.sync.set({[groupId]: data[groupId]},() => {
                     console.log('New Group & new url has been successfully saved!');
-                    // location.reload();
+                    $.notify("url has been successfully saved!",'success');
                 });
             },err => {
                 if (err.response.status === 404) {

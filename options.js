@@ -50,7 +50,7 @@ $(document).ready(() => {
             `);
             const rgbColor = tinycolor(data[groupKey].color);
             $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
-            $(`div[id="${groupKey}"]`).find('.url-text').css('color',rgbColor.toRgbString());
+            $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
             const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
             const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
             const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
@@ -85,7 +85,7 @@ $(document).ready(() => {
 
                     // color change
                     const rgbColor = data[newGroupId].color;
-                    $(`#${event.to.id}`).find('.url-text').css('color',rgbColor);
+                    $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
                 }
 
 
@@ -192,7 +192,8 @@ $(document).on('submit','.add-group-form',function(e) {
         if (!data[groupName]) {
             data[groupName] = {
                 groupName: inputVal,
-                data: []
+                data: [],
+                color: 'rgb(0,0,0)'
             };
         } else {
             data[groupName].groupName = inputVal;
@@ -295,7 +296,7 @@ $(document).on('click','.change-color',function(e) {
 
             $(this).parents('.card').css('color',`${color}`);
             $(this).parents('.card').css('box-shadow',`${boxShadow}`);
-            $(this).parents('.card').find('.url-text').css('color',color);
+            $(this).parents('.card').find('.url-text > p').css('color',color);
         });
     });
 
@@ -329,7 +330,7 @@ $(document).on('click','.close-color-picker',function(e) {
 
     const rgbColor = tinycolor(data[groupId].color);
     $(`div[id="${groupId}"]`).css('color',`${rgbColor.toRgbString()}`);
-    $(`div[id="${groupId}"]`).find('.url-text').css('color',`${rgbColor.toRgbString()}`);
+    $(`div[id="${groupId}"]`).find('.url-text > p').css('color',`${rgbColor.toRgbString()}`);
     const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
     const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
     const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();

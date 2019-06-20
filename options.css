@@ -31,6 +31,12 @@ nav {
     color: #2196F3;
 }
 
+.url-text > p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .color-picker-cont, .color-picker-buttons-cont {
     display: flex;
     flex-direction: row !important;
