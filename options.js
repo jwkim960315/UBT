@@ -13,7 +13,7 @@ $(document).ready(() => {
         groupIds = Object.keys(data);
 
         // rendering all the storage data
-        Object.keys(data).forEach((groupKey,index) => {
+        Object.keys(data).forEach(groupKey => {
             $('.group-cont').append(`
                 <div class="card" id="${groupKey}">
                     <div class="card-content">
@@ -114,6 +114,111 @@ $(document).ready(() => {
     });
 });
 
+// search input change
+$('#search').on('propertychange change keyup paste input focusout blur', function() {
+    const keyword = $(this).val();
+    if (!keyword) {
+        $('.group-cont').html('');
+        // rendering all the storage data
+        Object.keys(data).forEach(groupKey => {
+            $('.group-cont').append(`
+                <div class="card" id="${groupKey}">
+                    <div class="card-content">
+                        <div class="row">
+                            <div class="col s12 m11">
+                                <span id="${groupKey}" class="card-title">${data[groupKey].groupName}</span>
+                            </div>
+                            <div class="col s12 m1">
+                                <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
+                                <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
+                                    <li><a class="change-color ${groupKey}">change color</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="edit-group-name">edit group name</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="open-all-links ${groupKey}">open all links</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="delete-group red-text">delete group</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="url-cont" id="url-cont-${groupKey}">
+                            ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
+                        </div>
+                        <div class="row new-url-data">
+                            <div class="col">
+                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="color-picker-placeholder"></div>
+            `);
+            const rgbColor = tinycolor(data[groupKey].color);
+            $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
+            $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
+            const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
+            const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
+            const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
+            const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
+            $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
+        });
+    } else {
+        const filteredData = filterWithKeyword(keyword,data);
+        if (!Object.keys(filteredData).length) {
+            $('.group-cont').html(`
+                <div class="row no-data">
+                    <p>No data matching with ${keyword}...</p>
+                </div>
+            `);
+        } else {
+            $('.group-cont').html('');
+            Object.keys(filteredData).forEach(groupKey => {
+                $('.group-cont').append(`<div class="card" id="${groupKey}">
+                            <div class="card-content">
+                                <div class="row">
+                                    <div class="col s12 m11">
+                                        <span id="${groupKey}" class="card-title">${filteredData[groupKey].groupName}</span>
+                                    </div>
+                                    <div class="col s12 m1">
+                                        <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
+                                        <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
+                                            <li><a class="change-color ${groupKey}">change color</a></li>
+                                            <li class="divider" tabindex="-1"></li>
+                                            <li><a class="edit-group-name">edit group name</a></li>
+                                            <li class="divider" tabindex="-1"></li>
+                                            <li><a class="open-all-links ${groupKey}">open all links</a></li>
+                                            <li class="divider" tabindex="-1"></li>
+                                            <li><a class="delete-group red-text">delete group</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="url-cont" id="url-cont-${groupKey}">
+                                    ${renderLinks(filteredData,parseInt(groupKey.slice(-1)),urlFormIds)}
+                                </div>
+                                <div class="row new-url-data">
+                                    <div class="col">
+                                        <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="color-picker-placeholder"></div>`);
+                const rgbColor = tinycolor(filteredData[groupKey].color);
+                $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
+                $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
+                const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
+                const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
+                const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
+                const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
+                $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
+            });
+            $(".url-buttons").mark(keyword);
+            $('.card-title').mark(keyword);
+        }
+    }
+
+});
+
 // Add new group
 $('.add-group').click(() => {
 
@@ -175,6 +280,7 @@ $(document).on('submit','.add-group-form',function(e) {
     const inputElem = $(this).find('input');
     const inputVal = inputElem.val();
     const groupName = inputElem.prop('id');
+    const groupId = $(this).find('input').attr('id');
 
     const formValues = [{
         name: 'group name',
@@ -207,7 +313,36 @@ $(document).on('submit','.add-group-form',function(e) {
 
         chrome.storage.sync.set({[groupName]: groupData},() => {
             console.log('group name successfully saved!');
-            location.reload();
+            $('.add-group-form').parents('.card').replaceWith(`<div class="card" id="${groupId}">
+                    <div class="card-content">
+                        <div class="row">
+                            <div class="col s12 m11">
+                                <span id="${groupId}" class="card-title">${data[groupId].groupName}</span>
+                            </div>
+                            <div class="col s12 m1">
+                                <button class='dropdown-trigger btn' data-target='group-settings${groupId.slice(-1)}'><i class="material-icons">settings</i></button>
+                                <ul id='group-settings${groupId.slice(-1)}' class='dropdown-content'>
+                                    <li><a class="change-color ${groupId}">change color</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="edit-group-name">edit group name</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="open-all-links ${groupId}">open all links</a></li>
+                                    <li class="divider" tabindex="-1"></li>
+                                    <li><a class="delete-group red-text">delete group</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="url-cont" id="url-cont-${groupId}">
+                            ${renderLinks(data,parseInt(groupId.slice(-1)),urlFormIds)}
+                        </div>
+                        <div class="row new-url-data">
+                            <div class="col">
+                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="color-picker-placeholder"></div>`);
         });
     }
 });
@@ -313,7 +448,6 @@ $(document).on('click','.save-color',function(e) {
     data[groupId].color = color;
     chrome.storage.sync.set({[groupId]: data[groupId]}, () => {
         console.log('color has been saved successfully!');
-        // location.reload();
 
         $(this).parent().next().find('.close-color-picker').trigger('click');
     });
@@ -359,7 +493,7 @@ $(document).on('click','.add-link',function() {
 
 
     $(this).parents('.new-url-data').prev().after(`
-        <div class="row">
+        <div class="row add-url-form-cont">
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">
@@ -369,7 +503,7 @@ $(document).on('click','.add-link',function() {
                     </div>
                     <div class="input-field col s8 l6">
                       <label for="url${urlNum}">Url</label>
-                      <input id="url${urlNum}" type="text" class="url-input">
+                      <input id="url${urlNum}" type="text" class="url-input" />
                       <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1 submit-btn-cont">
@@ -418,17 +552,6 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-nam
             $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-success',validatedValue.message);
         }
     });
-
-
-    // let urlValidation = validatedValues.values.filter(value => value.name === 'url');
-    //
-    // if (urlValidation.error === true) {
-    //     if (data[groupId].data.some(urlData => urlData.urlId === urlId)) {
-    //         urlValidation.error = false;
-    //         validatedValues.submit = true
-    //         validatedValues.values = validatedValues.values.map(value => (value.name === 'url') ? urlValidation : value);
-    //     }
-    // }
 
     if (validatedValues.submit) {
         $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
@@ -490,7 +613,9 @@ $(document).on('submit','.add-url-form',function(e) {
 
     const linkName = $(this).find('.url-name-input').val();
     const urlId = parseInt($(this).prop('id').slice(-1));
+    console.log(urlId);
     const groupId = $(this).parents('.card').attr('id');
+    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
     const formValues = [{
         name: 'url name',
@@ -505,11 +630,41 @@ $(document).on('submit','.add-url-form',function(e) {
     const validatedValues = validator(formValues,data,groupId,urlId);
 
     if (validatedValues.submit) {
+        // if url does not exist
+
+
+
+        // let $urlForm = $(this).parents('.add-url-form-cont');
+        // $urlForm.find(`input[id="url${urlId}"]`).attr('class','invalid');
+        // $urlForm.find(`input[id="url${urlId}"]`).next().attr('data-error','url does not exist');
+        // $urlForm.find(`input[id="url${urlId}"]`).val(url);
+        // $urlForm.find('button[type="submit"]').addClass('disabled');
+
+
+        // preloader
+        $(this).parents('.add-url-form-cont').replaceWith(`
+            <div class="row preloader-cont" id="preloader-${urlId}">
+                <div class="preloader-wrapper small active">
+                    <div class="spinner-layer spinner-green-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div>
+                        <div class="gap-patch">
+                            <div class="circle"></div>
+                        </div>
+                        <div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
         axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
             .then(res => {
 
                 const iconLink = res.data.icons[0].url;
-                const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+
 
                 if (urlFormIds.includes(urlId)) {
                     data[groupName].data.forEach((urlData,index) => {
@@ -527,13 +682,64 @@ $(document).on('submit','.add-url-form',function(e) {
                     [groupName]: groupData
                 },() => {
                     console.log('stored successfully!');
-                    location.reload();
+                    $(`#preloader-${urlId}`).replaceWith(`
+                        <div class="row url-buttons" id="url-data-${urlId}">
+                            <div class="col s12 m10">
+                                <a href="${url}" class="url white url-text btn" target="_blank">
+                                    <img class="link-icon" src="${iconLink}" width="25" height="25"/>
+                                    <p>${linkName}</p>
+                                </a>
+                            </div>
+                            <div class="col s12 m1">
+                                <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                            </div>
+                            <div class="col s12 m1">
+                                <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                            </div>
+                        </div>
+                    `);
+
+                    const rgbColor = tinycolor(data[groupId].color);
+                    $(`div[id="${groupId}"]`).css('color',`${rgbColor.toRgbString()}`);
+                    $(`div[id="${groupId}"]`).find('.url-text > p').css('color',`${rgbColor.toRgbString()}`);
+                    const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
+                    const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
+                    const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
+                    const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
+                    $(`div[id="${groupId}"]`).css('box-shadow',`${boxShadow}`);
                 });
 
 
             },err => {
                 if (err.response.status === 404) {
                     console.log('invalid url');
+
+                    url = url.slice(0,url.length-1);
+
+                    $(`#preloader-${urlId}`).replaceWith(`
+                        <div class="row add-url-form-cont">
+                            <form class="add-url-form" id="new-url-form-${urlId}">
+                                <div class="row">
+                                    <div class="input-field col s4 l4">
+                                        <label for="urlName${urlId}" class="active">Name</label>
+                                        <input id="urlName${urlId}" type="text" class="url-name-input valid" value="${linkName}" autofocus>
+                                        <span class="helper-text" data-success="valid url name"></span>
+                                    </div>
+                                    <div class="input-field col s8 l6">
+                                      <label for="url${urlId}" class="active">Url</label>
+                                      <input id="url${urlId}" type="text" class="url-input invalid" value="${url}">
+                                      <span class="helper-text" data-error="url does not exist"></span>
+                                    </div>
+                                    <div class="col s12 l1">
+                                        <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
+                                    </div>
+                                    <div class="col s12 l1">
+                                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    `);
                 }
             });
     }
@@ -553,10 +759,12 @@ $(document).on('click','.url-edit',function(e) {
 
     const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
 
+    console.log(urlNum);
+
     urlFormIds.push(urlNum);
 
     $(this).parents('.url-buttons').replaceWith(`
-        <div class="row">
+        <div class="row add-url-form-cont">
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">

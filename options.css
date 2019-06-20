@@ -42,3 +42,13 @@ nav {
     flex-direction: row !important;
     justify-content: center;
 }
+
+.no-data {
+    font-family: system-ui, "Apple SD Gothic Neo", AppleGothic, sans-serif !important;
+    font-size: large;
+}
+
+.preloader-cont {
+    display: flex;
+    justify-content: center;
+}

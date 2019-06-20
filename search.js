@@ -4,11 +4,7 @@ const filterWithKeyword = (keyword,data) => {
 
     groupIdLst.forEach(groupId => {
         if (data[groupId].groupName.includes(keyword)) {
-            res[groupId] = {
-                groupName: data[groupId].groupName,
-                data     : [],
-                color: data[groupId].color
-            };
+            res[groupId] = data[groupId];
         }
 
         const groupData = data[groupId].data;
@@ -16,16 +12,16 @@ const filterWithKeyword = (keyword,data) => {
         if (groupData.length) {
             groupData.forEach(urlData => {
 
-                if (urlData.linkName.includes(keyword) || urlData.url.includes(keyword)) {
+                if (urlData.linkName.includes(keyword)) {
                     if (!res[groupId]) {
                         res[groupId] = {
                             groupName: data[groupId].groupName,
                             data     : [],
                             color: data[groupId].color
                         };
-                    }
 
-                    res[groupId].data.push(urlData);
+                        res[groupId].data.push(urlData);
+                    }
                 }
             });
         }
