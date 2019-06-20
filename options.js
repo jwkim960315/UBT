@@ -301,6 +301,7 @@ $(document).on('submit','.add-group-form',function(e) {
             };
         } else {
             data[groupName].groupName = inputVal;
+            groupIds.push(groupId);
         }
 
         const groupData = data[groupName];
@@ -342,7 +343,61 @@ $(document).on('submit','.add-group-form',function(e) {
                         </div>
                     </div>
                 </div>
-                <div class="color-picker-placeholder"></div>`);
+                <div class="color-picker-placeholder"></div>
+            `);
+            // initialize group settings dropdown
+            $('.dropdown-trigger').dropdown();
+
+            // initialize sortable drag & drop
+            $('.url-cont').sortable({
+                // SortableJS options go here
+                // See: (https://github.com/SortableJS/Sortable#options)
+                group: 'shared',
+                animation: 150,
+                draggable: '.url-buttons',
+                onEnd: event => {
+                    const oldGroupId = $(event.from).prop('id').slice(9);
+                    const newGroupId = $(event.to).prop('id').slice(9);
+                    const { oldDraggableIndex, newDraggableIndex } = event;
+                    const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+
+                    if (oldGroupId === newGroupId) {
+                        data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
+                        data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+                    } else {
+                        data[oldGroupId].data.splice(oldDraggableIndex,1);
+                        data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+
+                        // color change
+                        const rgbColor = data[newGroupId].color;
+                        $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
+                    }
+
+
+
+
+
+
+                    chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
+                        console.log('Old group has been updated!');
+                        chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
+                            console.log('New group has been updated!');
+                        });
+                    });
+
+                    /*
+                    evt.item;  // dragged HTMLElement
+                    evt.to;    // target list
+                    evt.from;  // previous list
+                    evt.oldIndex;  // element's old index within old parent
+                    evt.newIndex;  // element's new index within new parent
+                    evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                    evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                    evt.clone // the clone element
+                    evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+                    */
+                },
+            });
         });
     }
 });
@@ -492,7 +547,7 @@ $(document).on('click','.add-link',function() {
     const urlNum = idGenerator(urlFormIds);
 
 
-    $(this).parents('.new-url-data').prev().after(`
+    $(this).parents('.new-url-data').prev().append(`
         <div class="row add-url-form-cont">
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
@@ -553,6 +608,8 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-nam
         }
     });
 
+    console.log(validatedValues);
+
     if (validatedValues.submit) {
         $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
     } else {
@@ -594,6 +651,8 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-inp
         }
     });
 
+    console.log(validatedValues);
+
     if (validatedValues.submit) {
         $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
     } else {
@@ -630,16 +689,6 @@ $(document).on('submit','.add-url-form',function(e) {
     const validatedValues = validator(formValues,data,groupId,urlId);
 
     if (validatedValues.submit) {
-        // if url does not exist
-
-
-
-        // let $urlForm = $(this).parents('.add-url-form-cont');
-        // $urlForm.find(`input[id="url${urlId}"]`).attr('class','invalid');
-        // $urlForm.find(`input[id="url${urlId}"]`).next().attr('data-error','url does not exist');
-        // $urlForm.find(`input[id="url${urlId}"]`).val(url);
-        // $urlForm.find('button[type="submit"]').addClass('disabled');
-
 
         // preloader
         $(this).parents('.add-url-form-cont').replaceWith(`
@@ -666,6 +715,7 @@ $(document).on('submit','.add-url-form',function(e) {
                 const iconLink = res.data.icons[0].url;
 
 
+
                 if (urlFormIds.includes(urlId)) {
                     data[groupName].data.forEach((urlData,index) => {
                         if (urlData.urlId === urlId) {
@@ -674,6 +724,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     });
                 } else {
                     data[groupName].data.push({ urlId, url, iconLink, linkName });
+                    urlFormIds.push(urlId);
                 }
 
                 const groupData = data[groupName];
@@ -683,21 +734,72 @@ $(document).on('submit','.add-url-form',function(e) {
                 },() => {
                     console.log('stored successfully!');
                     $(`#preloader-${urlId}`).replaceWith(`
-                        <div class="row url-buttons" id="url-data-${urlId}">
-                            <div class="col s12 m10">
-                                <a href="${url}" class="url white url-text btn" target="_blank">
-                                    <img class="link-icon" src="${iconLink}" width="25" height="25"/>
-                                    <p>${linkName}</p>
-                                </a>
+                            <div class="row url-buttons" id="url-data-${urlId}">
+                                <div class="col s12 m10">
+                                    <a href="${url}" class="url white url-text btn" target="_blank">
+                                        <img class="link-icon" src="${iconLink}" width="25" height="25"/>
+                                        <p>${linkName}</p>
+                                    </a>
+                                </div>
+                                <div class="col s12 m1">
+                                    <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                                </div>
+                                <div class="col s12 m1">
+                                    <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                                </div>
                             </div>
-                            <div class="col s12 m1">
-                                <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
-                            </div>
-                            <div class="col s12 m1">
-                                <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
-                            </div>
-                        </div>
                     `);
+
+                    // initialize sortable drag & drop
+                    $('.url-cont').sortable({
+                        // SortableJS options go here
+                        // See: (https://github.com/SortableJS/Sortable#options)
+                        group: 'shared',
+                        animation: 150,
+                        draggable: '.url-buttons',
+                        onEnd: event => {
+                            const oldGroupId = $(event.from).prop('id').slice(9);
+                            const newGroupId = $(event.to).prop('id').slice(9);
+                            const { oldDraggableIndex, newDraggableIndex } = event;
+                            const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+
+                            if (oldGroupId === newGroupId) {
+                                data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
+                                data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+                            } else {
+                                data[oldGroupId].data.splice(oldDraggableIndex,1);
+                                data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+
+                                // color change
+                                const rgbColor = data[newGroupId].color;
+                                $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
+                            }
+
+
+
+
+
+
+                            chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
+                                console.log('Old group has been updated!');
+                                chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
+                                    console.log('New group has been updated!');
+                                });
+                            });
+
+                            /*
+                            evt.item;  // dragged HTMLElement
+                            evt.to;    // target list
+                            evt.from;  // previous list
+                            evt.oldIndex;  // element's old index within old parent
+                            evt.newIndex;  // element's new index within new parent
+                            evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                            evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                            evt.clone // the clone element
+                            evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+                            */
+                        },
+                    });
 
                     const rgbColor = tinycolor(data[groupId].color);
                     $(`div[id="${groupId}"]`).css('color',`${rgbColor.toRgbString()}`);
@@ -733,9 +835,6 @@ $(document).on('submit','.add-url-form',function(e) {
                                     <div class="col s12 l1">
                                         <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                                     </div>
-                                    <div class="col s12 l1">
-                                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
-                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -748,6 +847,7 @@ $(document).on('submit','.add-url-form',function(e) {
 // Delete url input
 $(document).on('click','.url-form-delete',function(e) {
     e.preventDefault();
+
     $(this).parents('form[class="add-url-form"]').remove();
 });
 
@@ -780,9 +880,6 @@ $(document).on('click','.url-edit',function(e) {
                     <div class="col s12 l1">
                         <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
-                    <div class="col s12 l1">
-                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
-                    </div>
                 </div>
             </form>
         </div>
@@ -796,11 +893,13 @@ $(document).on('click','.url-delete',function(e) {
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
     let urlId;
 
-    if ($(this).parents('.url-buttons').length) {
-        urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
-    } else {
-        urlId = parseInt($(this).parents('.add-url-form').prop('id').slice(-1));
-    }
+    urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
+
+    // if ($(this).parents('.url-buttons').length) {
+    //     urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
+    // } else {
+    //     urlId = parseInt($(this).parents('.add-url-form').prop('id').slice(-1));
+    // }
 
     data[groupName].data.forEach((urlData,index) => {
         if (urlData.urlId === urlId) {
@@ -812,11 +911,13 @@ $(document).on('click','.url-delete',function(e) {
 
     chrome.storage.sync.set({[groupName]: groupData});
 
-    if ($(this).parents('.url-buttons').length) {
-        $(this).parents('.url-buttons').remove();
-    } else {
-        $(this).parents('.add-url-form').remove();
-    }
+    $(this).parents('.url-buttons').remove();
+
+    // if ($(this).parents('.url-buttons').length) {
+    //     $(this).parents('.url-buttons').remove();
+    // } else {
+    //     $(this).parents('.add-url-form').remove();
+    // }
 
 
 });

@@ -28,13 +28,15 @@ const urlExists = (url,data,groupId,urlId) => {
         url+='/';
     }
 
-    if (groupId === 'none' || !groupId || urlId === 'none') {
+    if (groupId === 'none' || groupId === undefined || urlId === 'none') {
         return false;
-    } else if (!urlId) {
+    } else if (urlId === undefined) {
+        console.log(urlId);
         return data[groupId].data.some(urlData => urlData.url === url);
     }
 
     return data[groupId].data.some(urlData => {
+
         return urlData.url === url && urlData.urlId !== urlId || diffUrls(urlData.url,(url)) === 'www.';
     });
 };
