@@ -46,7 +46,7 @@ $('select').change(function() {
             <div class="row new-group-input">
                 <div class="input-field col s12">
                     <label for="new-group">Group Name</label>
-                    <input id="new-group" type="text" class="validate" name="groupName"/>
+                    <input id="new-group" type="text" class="" name="groupName"/>
                     <span class="helper-text"></span>
                 </div>
             </div>
@@ -121,7 +121,58 @@ $(document).on('propertychange change keyup paste input focusout blur','#new-gro
 
     let formValues = [];
 
-    if (groupName) {
+    formValues.push({
+        name: 'group name',
+        target: 'input[name="groupName"]',
+        type: 'text',
+        value: groupName
+    });
+
+    formValues = formValues.concat([{
+        name: 'url name',
+        target: 'input[name="urlName"]',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: 'input[name="url"]',
+        type: 'url',
+        value: url
+    }]);
+
+    const validatedValues = validator(formValues,data,'none','none');
+
+    validatedValues.values.forEach(({ error, target, message }) => {
+        if (error) {
+            $(target).removeClass('valid');
+            $(target).addClass('invalid');
+            $(target).next('span').attr('data-error',message);
+        } else {
+            $(target).removeClass('invalid');
+            $(target).addClass('valid');
+            $(target).next('span').attr('data-success',message);
+        }
+    });
+
+    if (validatedValues.submit) {
+        $('button[type="submit"]').removeClass('disabled');
+    } else {
+        $('button[type="submit"]').addClass('disabled');
+    }
+});
+
+// url name validation
+$('#urlName').on('propertychange change keyup paste input focusout blur',function() {
+    const urlName = $(this).val();
+    const groupId = $('select').children('option:selected').val();
+    const url = $('input[name="url"]').val();
+
+    // could be undefined
+    const groupName = $('input[name="groupName"]').val();
+
+    let formValues = [];
+
+    if (groupName !== undefined) {
         formValues.push({
             name: 'group name',
             target: 'input[name="groupName"]',
@@ -156,59 +207,6 @@ $(document).on('propertychange change keyup paste input focusout blur','#new-gro
         }
     });
 
-    if (validatedValues.submit) {
-        $('button[type="submit"]').removeClass('disabled');
-    } else {
-        $('button[type="submit"]').addClass('disabled');
-    }
-});
-
-// url name validation
-$('#urlName').on('propertychange change keyup paste input focusout blur',function() {
-    const urlName = $(this).val();
-    const groupId = $('select').children('option:selected').val();
-    const url = $('input[name="url"]').val();
-
-    // could be undefined
-    const groupName = $('input[name="groupName"]').val();
-
-    let formValues = [];
-
-    if (groupName) {
-        formValues.push({
-            name: 'group name',
-            target: 'input[name="groupName"]',
-            type: 'text',
-            value: groupName
-        });
-    }
-
-    formValues = formValues.concat([{
-        name: 'url name',
-        target: 'input[name="urlName"]',
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: 'input[name="url"]',
-        type: 'url',
-        value: url
-    }]);
-
-    const validatedValues = validator(formValues,data,groupId,urlId,undefined);
-
-    validatedValues.values.forEach(({ error, target, message },index) => {
-        if (error) {
-            $(target).removeClass('valid');
-            $(target).addClass('invalid');
-            $(target).next('span').attr('data-error',message);
-        } else {
-            $(target).removeClass('invalid');
-            $(target).addClass('valid');
-            $(target).next('span').attr('data-success',message);
-        }
-    });
-
     if (validatedValues.submit && !urlExists) {
         $('button[type="submit"]').removeClass('disabled');
     } else {
@@ -220,6 +218,8 @@ $('#urlName').on('propertychange change keyup paste input focusout blur',functio
 // url submitted
 $('form.save-url').submit(function(e) {
     e.preventDefault();
+
+    $('#cover-spin').show(0);
 
     let formValues = $(this).serializeArray();
 
@@ -302,12 +302,16 @@ $('form.save-url').submit(function(e) {
 
                 chrome.storage.sync.set({[groupId]: data[groupId]},() => {
                     console.log('New Group & new url has been successfully saved!');
+                    $('#cover-spin').hide(0);
                     $.notify("url has been successfully saved!",'success');
+                    $('button[type="submit"]').addClass('disabled');
                 });
             },err => {
                 if (err.response.status === 404) {
                     console.log('invalid url');
                 }
             });
+    } else {
+        $('#cover-spin').hide(0);
     }
 });
