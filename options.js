@@ -6,6 +6,7 @@ let data;
 $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
 
+        // setting storageData to global var
         data = res;
 
         urlFormIds = urlIdsToLst(data);
@@ -13,50 +14,7 @@ $(document).ready(() => {
         groupIds = Object.keys(data);
 
         // rendering all the storage data
-        Object.keys(data).forEach(groupKey => {
-            $('.group-cont').append(`
-                <div class="card" id="${groupKey}">
-                    <div class="card-content">
-                        <div class="row">
-                            <div class="col s12 m11">
-                                <span id="${groupKey}" class="card-title">${data[groupKey].groupName}</span>
-                            </div>
-                            <div class="col s12 m1">
-                                <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
-                                <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
-                                    <li><a class="change-color ${groupKey}">change color</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="edit-group-name">edit group name</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="open-all-links ${groupKey}">open all links</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="delete-group red-text">delete group</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="url-cont" id="url-cont-${groupKey}">
-                            ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
-                        </div>
-                        <div class="row new-url-data">
-                            <div class="col">
-                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="color-picker-placeholder"></div>
-            `);
-            const rgbColor = tinycolor(data[groupKey].color);
-            $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
-            $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
-            const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
-            const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
-            const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
-            const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
-            $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
-        });
-
-
+        renderGroups(data,'.groups-placeholder',urlFormIds);
 
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
@@ -118,50 +76,11 @@ $(document).ready(() => {
 $('#search').on('propertychange change keyup paste input focusout blur', function() {
     const keyword = $(this).val();
     if (!keyword) {
-        $('.group-cont').html('');
+        $('.group-cont').html('<div class="groups-placeholder"></div>');
+
         // rendering all the storage data
-        Object.keys(data).forEach(groupKey => {
-            $('.group-cont').append(`
-                <div class="card" id="${groupKey}">
-                    <div class="card-content">
-                        <div class="row">
-                            <div class="col s12 m11">
-                                <span id="${groupKey}" class="card-title">${data[groupKey].groupName}</span>
-                            </div>
-                            <div class="col s12 m1">
-                                <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
-                                <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
-                                    <li><a class="change-color ${groupKey}">change color</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="edit-group-name">edit group name</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="open-all-links ${groupKey}">open all links</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="delete-group red-text">delete group</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="url-cont" id="url-cont-${groupKey}">
-                            ${renderLinks(data,parseInt(groupKey.slice(-1)),urlFormIds)}
-                        </div>
-                        <div class="row new-url-data">
-                            <div class="col">
-                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="color-picker-placeholder"></div>
-            `);
-            const rgbColor = tinycolor(data[groupKey].color);
-            $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
-            $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
-            const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
-            const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
-            const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
-            const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
-            $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
-        });
+        renderGroups(data,'.groups-placeholder',urlFormIds);
+
     } else {
         const filteredData = filterWithKeyword(keyword,data);
         if (!Object.keys(filteredData).length) {
@@ -171,48 +90,12 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
                 </div>
             `);
         } else {
-            $('.group-cont').html('');
-            Object.keys(filteredData).forEach(groupKey => {
-                $('.group-cont').append(`<div class="card" id="${groupKey}">
-                            <div class="card-content">
-                                <div class="row">
-                                    <div class="col s12 m11">
-                                        <span id="${groupKey}" class="card-title">${filteredData[groupKey].groupName}</span>
-                                    </div>
-                                    <div class="col s12 m1">
-                                        <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
-                                        <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
-                                            <li><a class="change-color ${groupKey}">change color</a></li>
-                                            <li class="divider" tabindex="-1"></li>
-                                            <li><a class="edit-group-name">edit group name</a></li>
-                                            <li class="divider" tabindex="-1"></li>
-                                            <li><a class="open-all-links ${groupKey}">open all links</a></li>
-                                            <li class="divider" tabindex="-1"></li>
-                                            <li><a class="delete-group red-text">delete group</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="url-cont" id="url-cont-${groupKey}">
-                                    ${renderLinks(filteredData,parseInt(groupKey.slice(-1)),urlFormIds)}
-                                </div>
-                                <div class="row new-url-data">
-                                    <div class="col">
-                                        <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="color-picker-placeholder"></div>`);
-                const rgbColor = tinycolor(filteredData[groupKey].color);
-                $(`div[id="${groupKey}"]`).css('color',rgbColor.toRgbString());
-                $(`div[id="${groupKey}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
-                const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
-                const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
-                const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
-                const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
-                $(`div[id="${groupKey}"]`).css('box-shadow',`${boxShadow}`);
-            });
-            $(".url-buttons").mark(keyword);
+            $('.group-cont').html('<div class="groups-placeholder"></div>');
+
+            // rendering filtered storageData
+            renderGroups(filteredData,'.groups-placeholder',urlFormIds);
+
+            $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
         }
     }
@@ -225,7 +108,7 @@ $('.add-group').click(() => {
     let groupNum = idGenerator(groupIds);
 
     $('.group-cont').append(`
-        <div class="card">
+        <div class="card" id="group${groupNum}">
             <div class="card-content">
                 <div class="row">
                     <form class="add-group-form">
@@ -314,37 +197,10 @@ $(document).on('submit','.add-group-form',function(e) {
 
         chrome.storage.sync.set({[groupName]: groupData},() => {
             console.log('group name successfully saved!');
-            $('.add-group-form').parents('.card').replaceWith(`<div class="card" id="${groupId}">
-                    <div class="card-content">
-                        <div class="row">
-                            <div class="col s12 m11">
-                                <span id="${groupId}" class="card-title">${data[groupId].groupName}</span>
-                            </div>
-                            <div class="col s12 m1">
-                                <button class='dropdown-trigger btn' data-target='group-settings${groupId.slice(-1)}'><i class="material-icons">settings</i></button>
-                                <ul id='group-settings${groupId.slice(-1)}' class='dropdown-content'>
-                                    <li><a class="change-color ${groupId}">change color</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="edit-group-name">edit group name</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="open-all-links ${groupId}">open all links</a></li>
-                                    <li class="divider" tabindex="-1"></li>
-                                    <li><a class="delete-group red-text">delete group</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="url-cont" id="url-cont-${groupId}">
-                            ${renderLinks(data,parseInt(groupId.slice(-1)),urlFormIds)}
-                        </div>
-                        <div class="row new-url-data">
-                            <div class="col">
-                                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="color-picker-placeholder"></div>
-            `);
+
+            // render group w/ submitted group name
+            renderGroups(data,`div#${groupId}`,urlFormIds,groupId);
+
             // initialize group settings dropdown
             $('.dropdown-trigger').dropdown();
 
@@ -372,11 +228,6 @@ $(document).on('submit','.add-group-form',function(e) {
                         const rgbColor = data[newGroupId].color;
                         $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
                     }
-
-
-
-
-
 
                     chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
                         console.log('Old group has been updated!');
@@ -895,12 +746,6 @@ $(document).on('click','.url-delete',function(e) {
 
     urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
 
-    // if ($(this).parents('.url-buttons').length) {
-    //     urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
-    // } else {
-    //     urlId = parseInt($(this).parents('.add-url-form').prop('id').slice(-1));
-    // }
-
     data[groupName].data.forEach((urlData,index) => {
         if (urlData.urlId === urlId) {
             data[groupName].data.splice(index,1);
@@ -912,14 +757,6 @@ $(document).on('click','.url-delete',function(e) {
     chrome.storage.sync.set({[groupName]: groupData});
 
     $(this).parents('.url-buttons').remove();
-
-    // if ($(this).parents('.url-buttons').length) {
-    //     $(this).parents('.url-buttons').remove();
-    // } else {
-    //     $(this).parents('.add-url-form').remove();
-    // }
-
-
 });
 
 
