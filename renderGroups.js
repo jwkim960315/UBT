@@ -1,6 +1,4 @@
 const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
-    console.log(groupId);
-    console.log(iterableObj);
     if (groupId) {
         iterableObj = {
             [groupId]: iterableObj[groupId]
@@ -8,7 +6,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
     }
 
     let groupsHtmlLst = [];
-    console.log(iterableObj);
+
     Object.keys(iterableObj).forEach(groupKey => {
         groupsHtmlLst.push(`
             <div class="card" id="${groupKey}">
@@ -42,11 +40,13 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
             </div>
             <div class="color-picker-placeholder"></div>
         `);
-        applyColor(iterableObj,groupKey);
     });
 
     const groupsHTML = groupsHtmlLst.join('');
 
     $(target).replaceWith(groupsHTML);
 
+    Object.keys(iterableObj).forEach(groupKey => {
+        applyColor(iterableObj,groupKey);
+    });
 };

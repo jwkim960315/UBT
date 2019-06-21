@@ -1,5 +1,6 @@
 const applyColor = (iterableObj,groupId) => {
-    const rgbColor = tinycolor(data[groupId].color);
+    console.log(iterableObj[groupId].color);
+    const rgbColor = tinycolor(iterableObj[groupId].color);
     $(`div[id="${groupId}"]`).css('color',rgbColor.toRgbString());
     $(`div[id="${groupId}"]`).find('.url-text > p').css('color',rgbColor.toRgbString());
     const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();

@@ -8,9 +8,7 @@ $(document).ready(() => {
 
         // setting storageData to global var
         data = res;
-
         urlFormIds = urlIdsToLst(data);
-
         groupIds = Object.keys(data);
 
         // rendering all the storage data
@@ -19,56 +17,7 @@ $(document).ready(() => {
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
 
-        // initialize sortable drag & drop
-        $('.url-cont').sortable({
-            // SortableJS options go here
-            // See: (https://github.com/SortableJS/Sortable#options)
-            group: 'shared',
-            animation: 150,
-            draggable: '.url-buttons',
-            onEnd: event => {
-                const oldGroupId = $(event.from).prop('id').slice(9);
-                const newGroupId = $(event.to).prop('id').slice(9);
-                const { oldDraggableIndex, newDraggableIndex } = event;
-                const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
-
-                if (oldGroupId === newGroupId) {
-                    data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-                    data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
-                } else {
-                    data[oldGroupId].data.splice(oldDraggableIndex,1);
-                    data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
-
-                    // color change
-                    const rgbColor = data[newGroupId].color;
-                    $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
-                }
-
-
-
-
-
-
-                chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
-                    console.log('Old group has been updated!');
-                    chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
-                        console.log('New group has been updated!');
-                    });
-                });
-
-                /*
-                evt.item;  // dragged HTMLElement
-                evt.to;    // target list
-                evt.from;  // previous list
-                evt.oldIndex;  // element's old index within old parent
-                evt.newIndex;  // element's new index within new parent
-                evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
-                evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
-                evt.clone // the clone element
-                evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
-                */
-            },
-        });
+        initDND(data);
     });
 });
 
@@ -204,51 +153,11 @@ $(document).on('submit','.add-group-form',function(e) {
             // initialize group settings dropdown
             $('.dropdown-trigger').dropdown();
 
-            // initialize sortable drag & drop
-            $('.url-cont').sortable({
-                // SortableJS options go here
-                // See: (https://github.com/SortableJS/Sortable#options)
-                group: 'shared',
-                animation: 150,
-                draggable: '.url-buttons',
-                onEnd: event => {
-                    const oldGroupId = $(event.from).prop('id').slice(9);
-                    const newGroupId = $(event.to).prop('id').slice(9);
-                    const { oldDraggableIndex, newDraggableIndex } = event;
-                    const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+            // for editing group name
+            initDND(data);
 
-                    if (oldGroupId === newGroupId) {
-                        data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-                        data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
-                    } else {
-                        data[oldGroupId].data.splice(oldDraggableIndex,1);
-                        data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
-
-                        // color change
-                        const rgbColor = data[newGroupId].color;
-                        $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
-                    }
-
-                    chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
-                        console.log('Old group has been updated!');
-                        chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
-                            console.log('New group has been updated!');
-                        });
-                    });
-
-                    /*
-                    evt.item;  // dragged HTMLElement
-                    evt.to;    // target list
-                    evt.from;  // previous list
-                    evt.oldIndex;  // element's old index within old parent
-                    evt.newIndex;  // element's new index within new parent
-                    evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
-                    evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
-                    evt.clone // the clone element
-                    evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
-                    */
-                },
-            });
+            // update groupIds
+            groupIds.push(groupId);
         });
     }
 });
@@ -256,11 +165,13 @@ $(document).on('submit','.add-group-form',function(e) {
 // delete group
 $(document).on('click','.delete-group',function(e) {
 
-    const groupName = $(this).parents('.card').prop('id');
+    const deletingGroupId = $(this).parents('.card').prop('id');
 
-    delete data[groupName];
+    delete data[deletingGroupId];
 
-    chrome.storage.sync.remove(groupName,() => {
+    groupIds = groupIds.filter(groupId => groupId !== deletingGroupId);
+
+    chrome.storage.sync.remove(deletingGroupId,() => {
         console.log('successfully deleted group!');
     });
 
@@ -270,16 +181,16 @@ $(document).on('click','.delete-group',function(e) {
 // edit group name
 $(document).on('click','.edit-group-name',function(e) {
 
-    const groupName = $(this).parents('.card').prop('id');
+    const groupId = $(this).parents('.card').prop('id');
 
-    const name = data[groupName].groupName;
+    const name = data[groupId].groupName;
 
     $(this).parents('.card-content > div.row').replaceWith(`
         <div class="row">
             <form class="add-group-form">
                 <div class="input-field col s10 l8">
-                    <label for="${groupName}" class="active">Group Name</label>
-                    <input id="${groupName}" type="text" class="group-name-input" value="${name}" autofocus>
+                    <label for="${groupId}" class="active">Group Name</label>
+                    <input id="${groupId}" type="text" class="group-name-input" value="${name}" autofocus>
                     <span class="helper-text"></span>
                 </div>
                 <div class="col s1 l1">
@@ -316,8 +227,6 @@ $(document).on('click','.change-color',function(e) {
                 
             </div>
         </div>
-        
-        
     `);
 
     // initialize && control color picker
@@ -350,8 +259,8 @@ $(document).on('click','.save-color',function(e) {
         color = 'rgb(0,0,0)';
     }
 
-
     data[groupId].color = color;
+
     chrome.storage.sync.set({[groupId]: data[groupId]}, () => {
         console.log('color has been saved successfully!');
 
@@ -362,18 +271,13 @@ $(document).on('click','.save-color',function(e) {
 // close color picker
 $(document).on('click','.close-color-picker',function(e) {
     const groupId = `group${$(this).parents('.color-picker-buttons-cont').prop('id').slice(-1)}`;
+
     $(this).parents('.color-picker-package-cont').replaceWith(`
         <div class="color-picker-placeholder"></div>
     `);
 
-    const rgbColor = tinycolor(data[groupId].color);
-    $(`div[id="${groupId}"]`).css('color',`${rgbColor.toRgbString()}`);
-    $(`div[id="${groupId}"]`).find('.url-text > p').css('color',`${rgbColor.toRgbString()}`);
-    const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
-    const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
-    const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
-    const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
-    $(`div[id="${groupId}"]`).css('box-shadow',`${boxShadow}`);
+    // apply previous color
+    applyColor(data,groupId);
 });
 
 // open all links
@@ -396,7 +300,6 @@ $(document).on('click','.add-link',function() {
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
     const urlNum = idGenerator(urlFormIds);
-
 
     $(this).parents('.new-url-data').prev().append(`
         <div class="row add-url-form-cont">
@@ -601,65 +504,9 @@ $(document).on('submit','.add-url-form',function(e) {
                             </div>
                     `);
 
-                    // initialize sortable drag & drop
-                    $('.url-cont').sortable({
-                        // SortableJS options go here
-                        // See: (https://github.com/SortableJS/Sortable#options)
-                        group: 'shared',
-                        animation: 150,
-                        draggable: '.url-buttons',
-                        onEnd: event => {
-                            const oldGroupId = $(event.from).prop('id').slice(9);
-                            const newGroupId = $(event.to).prop('id').slice(9);
-                            const { oldDraggableIndex, newDraggableIndex } = event;
-                            const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+                    initDND(data);
 
-                            if (oldGroupId === newGroupId) {
-                                data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-                                data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
-                            } else {
-                                data[oldGroupId].data.splice(oldDraggableIndex,1);
-                                data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
-
-                                // color change
-                                const rgbColor = data[newGroupId].color;
-                                $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
-                            }
-
-
-
-
-
-
-                            chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
-                                console.log('Old group has been updated!');
-                                chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
-                                    console.log('New group has been updated!');
-                                });
-                            });
-
-                            /*
-                            evt.item;  // dragged HTMLElement
-                            evt.to;    // target list
-                            evt.from;  // previous list
-                            evt.oldIndex;  // element's old index within old parent
-                            evt.newIndex;  // element's new index within new parent
-                            evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
-                            evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
-                            evt.clone // the clone element
-                            evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
-                            */
-                        },
-                    });
-
-                    const rgbColor = tinycolor(data[groupId].color);
-                    $(`div[id="${groupId}"]`).css('color',`${rgbColor.toRgbString()}`);
-                    $(`div[id="${groupId}"]`).find('.url-text > p').css('color',`${rgbColor.toRgbString()}`);
-                    const rgbRightShadow = rgbColor.setAlpha(.14).toRgbString();
-                    const rgbTopShadow = rgbColor.setAlpha(.12).toRgbString();
-                    const rgbLeftShadow = rgbColor.setAlpha(.2).toRgbString();
-                    const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
-                    $(`div[id="${groupId}"]`).css('box-shadow',`${boxShadow}`);
+                    applyColor(data,groupId);
                 });
 
 
@@ -712,7 +559,7 @@ $(document).on('click','.url-edit',function(e) {
 
     console.log(urlNum);
 
-    urlFormIds.push(urlNum);
+    // urlFormIds.push(urlNum);
 
     $(this).parents('.url-buttons').replaceWith(`
         <div class="row add-url-form-cont">
@@ -758,27 +605,3 @@ $(document).on('click','.url-delete',function(e) {
 
     $(this).parents('.url-buttons').remove();
 });
-
-
-// delete group data
-
-
-// Chrome storage data structure
-/*
-
-const data = {
-    'group${index}': {
-        groupName: '',
-        color: '',
-        data: [
-            {
-                urlId: 0,
-                linkName: '',
-                url: '',
-                iconLink: ''
-            }
-        ]
-    }
-}
-
-*/
