@@ -31,9 +31,9 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                     <div class="url-cont" id="url-cont-${groupKey}">
                         ${renderLinks(iterableObj,parseInt(groupKey.slice(5)),urlFormIds)}
                     </div>
-                    <div class="row new-url-data">
+                    <div id="new-url-data-${groupKey}" class="row new-url-data">
                         <div class="col">
-                            <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                            <a id="add-link-${groupKey}" class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
                         </div>
                     </div>
                 </div>

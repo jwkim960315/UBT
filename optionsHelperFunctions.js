@@ -69,21 +69,21 @@ const renderLinks = (groupData,index,lst) => {
 
     const urlDataHTML = urlData
         .map((urlDatum,i) => {
-            const { url, linkName, iconLink } = urlDatum;
+            const { url, linkName, iconLink, urlId } = urlDatum;
 
             return `
-                <div class="row url-buttons" id="url-data-${urlDatum.urlId}">
+                <div class="row url-buttons" id="url-data-${urlId}">
                     <div class="col s12 m10">
-                        <a href="${url}" class="url white url-text btn" target="_blank">
+                        <a href="${url}" id="url-${urlId}" class="url white url-text btn" target="_blank">
                             <img class="link-icon" src="${iconLink}" width="25" height="25"/>
-                            <p>${linkName}</p>
+                            <p id="name-${urlId}">${linkName}</p>
                         </a>
                     </div>
                     <div class="col s12 m1">
-                        <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                        <button id="url-edit-${urlId}" class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
                     </div>
                     <div class="col s12 m1">
-                        <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                        <button id="url-delete-${urlId}" class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
             `;

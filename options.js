@@ -84,7 +84,7 @@ $('.add-group').click(() => {
 });
 
 // new group name on change
-$(document).on('propertychange change keyup paste input focusout blur', '.group-name-input',function() {
+$(document).on('propertychange change keyup paste input focusout blur click', '.group-name-input',function() {
     const newGroupName = $(this).val();
     const groupId = $(this).attr('id');
     const formValues = [{
@@ -182,12 +182,12 @@ $(document).on('click','.edit-group-name',function() {
         `<div class="row">
                     <form class="add-group-form" id="new-group-form-${groupId}">
                         <div class="input-field col s10 l8">
-                            <label for="${groupId}">Group Name</label>
+                            <label for="${groupId}" class="active">Group Name</label>
                             <input id="${groupId}" type="text" class="group-name-input" value="${name}" autofocus>
                             <span class="helper-text"></span>
                         </div>
                         <div class="col s1 l1">
-                            <button id="submit-new-${groupId}" class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
+                            <button id="submit-new-${groupId}" class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
                 </div>`
@@ -288,12 +288,12 @@ $(document).on('click','.open-all-links',function(e) {
 // Add new link form
 $(document).on('click','.add-link',function() {
 
-    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+    const groupId = $(this).prop('id').slice(9);
 
     const urlNum = idGenerator(urlIds);
 
-    $(this).parents('.new-url-data').prev().append(`
-        <div class="row add-url-form-cont">
+    $(`#new-url-data-${groupId}`).prev().append(`
+        <div id="add-url-form-cont-${urlNum}" class="row add-url-form-cont">
             <form class="add-url-form" id="new-url-form-${urlNum}">
                 <div class="row">
                     <div class="input-field col s4 l4">
@@ -310,7 +310,7 @@ $(document).on('click','.add-link',function() {
                         <button id="submit-new-url-${urlNum}" class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     <div class="col s12 l1">
-                        <button class="waves-effect waves-light btn red accent-2 url-form-delete" type="button"><i class="material-icons">delete</i></button>
+                        <button id="url-form-delete-${urlNum}" class="waves-effect waves-light btn red accent-2 url-form-delete" type="button"><i class="material-icons">delete</i></button>
                     </div>
                 </div>
             </form>
@@ -321,8 +321,8 @@ $(document).on('click','.add-link',function() {
 // url name input validation
 $(document).on('propertychange change keyup paste input focusout blur','.url-name-input',function() {
     const urlName = $(this).val();
-    const url = $(this).parents('.add-url-form').find('.url-input').val();
-    const urlId = parseInt($(this).attr('id').slice(-1));
+    const urlId = parseInt($(this).attr('id').slice(7));
+    const url = $(`#url${urlId}`).val();
 
     const formValues = [{
         name: 'url name',
@@ -336,7 +336,7 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-nam
         value: url
     }];
 
-    const groupId = $(this).parents('.card').attr('id');
+    const groupId = $(this).parents('.card').attr('id').slice(5);
     const buttonTar = `#submit-new-url-${urlId}`;
 
     let validatedValues = validator(formValues,storageData,groupId,urlId);
@@ -347,8 +347,9 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-nam
 // url input validation
 $(document).on('propertychange change keyup paste input focusout blur','.url-input',function() {
     const url = $(this).val();
-    const urlName = $(this).parents('.add-url-form').find('.url-name-input').val();
-    const urlId = parseInt($(this).attr('id').slice(-1));
+    const urlId = parseInt($(this).attr('id').slice(3));
+    const urlName = $(`#urlName${urlId}`).val();
+
 
     const formValues = [{
         name: 'url name',
@@ -362,7 +363,7 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-inp
         value: url
     }];
 
-    const groupId = $(this).parents('.card').attr('id');
+    const groupId = $(this).parents('.card').attr('id').slice(5);
     const buttonTar = `#submit-new-url-${urlId}`;
 
     const validatedValues = validator(formValues,storageData,groupId,urlId);
@@ -374,17 +375,17 @@ $(document).on('propertychange change keyup paste input focusout blur','.url-inp
 $(document).on('submit','.add-url-form',function(e) {
     e.preventDefault();
 
-    let url = $(this).find('.url-input').val();
+    const urlId = parseInt($(this).attr('id').slice(13));
+    let url = $(`#url${urlId}`).val();
 
     if (url.slice(-1) !== '/') {
         url += '/';
     }
 
-    const linkName = $(this).find('.url-name-input').val();
-    const urlId = parseInt($(this).prop('id').slice(-1));
+    const linkName = $(`#urlName${urlId}`).val();
 
-    const groupId = $(this).parents('.card').attr('id');
-    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
+    const groupId = $(this).parents('.card').attr('id').slice(5);
+    const { groupName } = storageData[groupId];
 
     const formValues = [{
         name: 'url name',
@@ -401,7 +402,7 @@ $(document).on('submit','.add-url-form',function(e) {
     if (validatedValues.submit) {
 
         // preloader
-        $(this).parents('.add-url-form-cont').replaceWith(`
+        $(`#add-url-form-cont-${urlId}`).replaceWith(`
             <div class="row preloader-cont" id="preloader-${urlId}">
                 <div class="preloader-wrapper small active">
                     <div class="spinner-layer spinner-green-only">
@@ -425,33 +426,33 @@ $(document).on('submit','.add-url-form',function(e) {
                 const iconLink = res.data.icons[0].url;
 
                 if (urlIds.includes(urlId)) {
-                    storageData[groupName].data.forEach((urlData,index) => {
+                    storageData[groupId].data.forEach((urlData,index) => {
                         if (urlData.urlId === urlId) {
-                            storageData[groupName].data[index] = { urlId, url, iconLink, linkName };
+                            storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
                         }
                     });
                 } else {
-                    storageData[groupName].data.push({ urlId, url, iconLink, linkName });
+                    storageData[groupId].data.push({ urlId, url, iconLink, linkName });
                     urlIds.push(urlId);
                 }
 
                 chrome.storage.sync.set({
-                    [groupName]: storageData[groupName]
+                    [groupId]: storageData[groupId]
                 },() => {
                     console.log('stored successfully!');
                     $(`#preloader-${urlId}`).replaceWith(`
                             <div class="row url-buttons" id="url-data-${urlId}">
                                 <div class="col s12 m10">
-                                    <a href="${url}" class="url white url-text btn" target="_blank">
+                                    <a href="${url}" id="url-${urlId}" class="url white url-text btn" target="_blank">
                                         <img class="link-icon" src="${iconLink}" width="25" height="25"/>
-                                        <p>${linkName}</p>
+                                        <p id="name-${urlId}">${linkName}</p>
                                     </a>
                                 </div>
                                 <div class="col s12 m1">
-                                    <button class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                                    <button id="url-edit-${urlId}" class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
                                 </div>
                                 <div class="col s12 m1">
-                                    <button class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                                    <button id="url-delete-${urlId}" class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
                                 </div>
                             </div>
                     `);
@@ -469,7 +470,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     url = url.slice(0,url.length-1);
 
                     $(`#preloader-${urlId}`).replaceWith(`
-                        <div class="row add-url-form-cont">
+                        <div id="add-url-form-cont-${urlId}" class="row add-url-form-cont">
                             <form class="add-url-form" id="new-url-form-${urlId}">
                                 <div class="row">
                                     <div class="input-field col s4 l4">
@@ -483,7 +484,7 @@ $(document).on('submit','.add-url-form',function(e) {
                                       <span class="helper-text" data-error="url does not exist"></span>
                                     </div>
                                     <div class="col s12 l1">
-                                        <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
+                                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                                     </div>
                                 </div>
                             </form>
@@ -496,33 +497,34 @@ $(document).on('submit','.add-url-form',function(e) {
 
 // Delete url input
 $(document).on('click','.url-form-delete',function() {
-    $(this).parents('form[class="add-url-form"]').remove();
+    const urlId = parseInt($(this).attr('id').slice(16));
+    $(`#add-url-form-cont-${urlId}`).remove();
 });
 
 // Edit url
 $(document).on('click','.url-edit',function() {
-    const name = $(this).parents('.url-buttons').find('a').text().trim();
+    const urlId = parseInt($(this).prop('id').slice(8));
 
-    const url = $(this).parents('.url-buttons').find('a').prop('href');
+    const name = $(`#name-${urlId}`).text().trim();
 
-    const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
+    const url = $(`#url-${urlId}`).prop('href');
 
     $(this).parents('.url-buttons').replaceWith(`
-        <div class="row add-url-form-cont">
-            <form class="add-url-form" id="new-url-form-${urlNum}">
+        <div id="add-url-form-cont-${urlId}" class="row add-url-form-cont">
+            <form class="add-url-form" id="new-url-form-${urlId}">
                 <div class="row">
                     <div class="input-field col s4 l4">
-                        <label for="urlName${urlNum}" class="active">Name</label>
-                        <input id="urlName${urlNum}" type="text" class="url-name-input" value="${name}" autofocus>
+                        <label for="urlName${urlId}" class="active">Name</label>
+                        <input id="urlName${urlId}" type="text" class="url-name-input" value="${name}" autofocus>
                         <span class="helper-text"></span>
                     </div>
                     <div class="input-field col s8 l6">
-                      <label for="url${urlNum}" class="active">Url</label>
-                      <input id="url${urlNum}" type="text" class="url-input" value="${url}">
+                      <label for="url${urlId}" class="active">Url</label>
+                      <input id="url${urlId}" type="text" class="url-input" value="${url}">
                       <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1">
-                        <button class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
+                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                 </div>
             </form>
@@ -532,18 +534,16 @@ $(document).on('click','.url-edit',function() {
 
 // delete url data
 $(document).on('click','.url-delete',function() {
-    const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
-    let urlId;
+    const groupId = $(this).parents('.url-cont').prop('id').slice(9);
+    const urlId = parseInt($(this).prop('id').slice(11));
 
-    urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
-
-    storageData[groupName].data.forEach((urlData,index) => {
+    storageData[groupId].data.forEach((urlData,index) => {
         if (urlData.urlId === urlId) {
-            storageData[groupName].data.splice(index,1);
+            storageData[groupId].data.splice(index,1);
         }
     });
 
-    chrome.storage.sync.set({[groupName]: storageData[groupName]});
+    chrome.storage.sync.set({[groupId]: storageData[groupId]});
 
-    $(this).parents('.url-buttons').remove();
+    $(`#url-data-${urlId}`).remove();
 });
