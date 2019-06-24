@@ -1,5 +1,4 @@
-let urlFormIds = [];
-let groupIds = [];
+
 
 // generates id by sorting current url ids
 const idGenerator = lst => {

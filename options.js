@@ -1,4 +1,7 @@
-let data;
+// Global Vars
+let storageData;
+let urlIds = [];
+let groupIds = [];
 
 // chrome.storage.sync.clear();
 
@@ -7,17 +10,19 @@ $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
 
         // setting storageData to global var
-        data = res;
-        urlFormIds = urlIdsToLst(data);
-        groupIds = Object.keys(data);
+        storageData = res;
+        urlIds = urlIdsToLst(storageData);
+        groupIds = Object.keys(storageData);
+
+        console.log(storageData);
 
         // rendering all the storage data
-        renderGroups(data,'.groups-placeholder',urlFormIds);
+        renderGroups(storageData,'.groups-placeholder',urlIds);
 
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
 
-        initDND(data);
+        initDND(storageData);
     });
 });
 
@@ -28,10 +33,11 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
         $('.group-cont').html('<div class="groups-placeholder"></div>');
 
         // rendering all the storage data
-        renderGroups(data,'.groups-placeholder',urlFormIds);
+        renderGroups(storageData,'.groups-placeholder',urlIds);
 
     } else {
-        const filteredData = filterWithKeyword(keyword,data);
+        const filteredData = filterWithKeyword(keyword,storageData);
+
         if (!Object.keys(filteredData).length) {
             $('.group-cont').html(`
                 <div class="row no-data">
@@ -42,7 +48,7 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
             $('.group-cont').html('<div class="groups-placeholder"></div>');
 
             // rendering filtered storageData
-            renderGroups(filteredData,'.groups-placeholder',urlFormIds);
+            renderGroups(filteredData,'.groups-placeholder',urlIds);
 
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
@@ -54,24 +60,24 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
 // Add new group
 $('.add-group').click(() => {
 
-    let groupNum = idGenerator(groupIds);
+    let groupId = `group${idGenerator(groupIds)}`;
 
     $('.group-cont').append(`
-        <div class="card" id="group${groupNum}">
+        <div class="card" id="card-${groupId}">
             <div class="card-content">
                 <div class="row">
-                    <form class="add-group-form">
+                    <form class="add-group-form" id="new-group-form-${groupId}">
                         <div class="input-field col s10 l8">
-                            <label for="group${groupNum}">Group Name</label>
-                            <input id="group${groupNum}" type="text" class="group-name-input" autofocus>
+                            <label for="${groupId}">Group Name</label>
+                            <input id="${groupId}" type="text" class="group-name-input" autofocus>
                             <span class="helper-text"></span>
                         </div>
                         <div class="col s1 l1">
-                            <button class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
+                            <button id="submit-new-${groupId}" class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
                         </div>
                     </form>
                 </div>
-                <div class="add-link-placeholder"></div>
+                <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>
             </div>
         </div>
     `);
@@ -80,39 +86,28 @@ $('.add-group').click(() => {
 // new group name on change
 $(document).on('propertychange change keyup paste input focusout blur', '.group-name-input',function() {
     const newGroupName = $(this).val();
+    const groupId = $(this).attr('id');
     const formValues = [{
         name: 'group name',
         type: 'text',
-        value: newGroupName
+        value: newGroupName,
+        target: `input[id="${groupId}"]`
     }];
 
-    const validatedValues = validator(formValues,data,'none','none');
+    const buttonTar = `#submit-new-${groupId}`;
 
-    if (validatedValues.values[0].error) {
-        $(this).next().attr('data-error',validatedValues.values[0].message);
-        $(this).removeClass('valid');
-        $(this).addClass('invalid');
-    } else {
-        $(this).next().attr('data-success',validatedValues.values[0].message);
-        $(this).removeClass('invalid');
-        $(this).addClass('valid');
-    }
+    const validatedValues = validator(formValues,storageData,'none','none');
 
-    if (validatedValues.submit) {
-        $(this).parent().next().find('.btn').removeClass('disabled');
-    } else {
-        $(this).parent().next().find('.btn').addClass('disabled');
-    }
+    renderValidationError(validatedValues,buttonTar);
 });
 
 // onSubmit add-group-form
 $(document).on('submit','.add-group-form',function(e) {
     e.preventDefault();
 
-    const inputElem = $(this).find('input');
+    const groupId = $(this).attr('id').slice(15);
+    const inputElem = $(`input[id="${groupId}"]`);
     const inputVal = inputElem.val();
-    const groupName = inputElem.prop('id');
-    const groupId = $(this).find('input').attr('id');
 
     const formValues = [{
         name: 'group name',
@@ -120,41 +115,39 @@ $(document).on('submit','.add-group-form',function(e) {
         value: inputVal
     }];
 
-    const validatedValues = validator(formValues,data,'none','none');
+    const validatedValues = validator(formValues,storageData,'none','none');
 
     // check if submitted form passes all validations
     if (validatedValues.submit) {
 
-        if (!data[groupName]) {
-            data[groupName] = {
+        if (!storageData[groupId]) {
+            storageData[groupId] = {
                 groupName: inputVal,
                 data: [],
                 color: 'rgb(0,0,0)'
             };
         } else {
-            data[groupName].groupName = inputVal;
+            storageData[groupId].groupName = inputVal;
             groupIds.push(groupId);
         }
 
-        const groupData = data[groupName];
-
-        $(this).parents('.card-content').find('.add-link-placeholder').replaceWith(`
+        $(`#add-link-placeholder-${groupId}`).replaceWith(`
             <div class="row">
                 <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
             </div>
         `);
 
-        chrome.storage.sync.set({[groupName]: groupData},() => {
+        chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
             console.log('group name successfully saved!');
 
             // render group w/ submitted group name
-            renderGroups(data,`div#${groupId}`,urlFormIds,groupId);
+            renderGroups(storageData,`#card-${groupId}`,urlIds,groupId);
 
             // initialize group settings dropdown
             $('.dropdown-trigger').dropdown();
 
             // for editing group name
-            initDND(data);
+            initDND(storageData);
 
             // update groupIds
             groupIds.push(groupId);
@@ -163,11 +156,11 @@ $(document).on('submit','.add-group-form',function(e) {
 });
 
 // delete group
-$(document).on('click','.delete-group',function(e) {
+$(document).on('click','.delete-group',function() {
 
-    const deletingGroupId = $(this).parents('.card').prop('id');
+    const deletingGroupId = $(this).prop('id').slice(7);
 
-    delete data[deletingGroupId];
+    delete storageData[deletingGroupId];
 
     groupIds = groupIds.filter(groupId => groupId !== deletingGroupId);
 
@@ -175,51 +168,51 @@ $(document).on('click','.delete-group',function(e) {
         console.log('successfully deleted group!');
     });
 
-    $(this).parents('.card').remove();
+    $(`#card-${groupId}`).remove();
 });
 
 // edit group name
-$(document).on('click','.edit-group-name',function(e) {
+$(document).on('click','.edit-group-name',function() {
 
-    const groupId = $(this).parents('.card').prop('id');
+    const groupId = $(this).attr('id').slice(5);
 
-    const name = data[groupId].groupName;
+    const name = storageData[groupId].groupName;
 
-    $(this).parents('.card-content > div.row').replaceWith(`
-        <div class="row">
-            <form class="add-group-form">
-                <div class="input-field col s10 l8">
-                    <label for="${groupId}" class="active">Group Name</label>
-                    <input id="${groupId}" type="text" class="group-name-input" value="${name}" autofocus>
-                    <span class="helper-text"></span>
-                </div>
-                <div class="col s1 l1">
-                    <button class="waves-effect waves-light btn right" type="submit"><i class="material-icons">save</i></button>
-                </div>
-            </form>
-        </div>
-    `);
+    $(`#card-header-${groupId}`).replaceWith(
+        `<div class="row">
+                    <form class="add-group-form" id="new-group-form-${groupId}">
+                        <div class="input-field col s10 l8">
+                            <label for="${groupId}">Group Name</label>
+                            <input id="${groupId}" type="text" class="group-name-input" value="${name}" autofocus>
+                            <span class="helper-text"></span>
+                        </div>
+                        <div class="col s1 l1">
+                            <button id="submit-new-${groupId}" class="waves-effect waves-light btn right disabled" type="submit"><i class="material-icons">save</i></button>
+                        </div>
+                    </form>
+                </div>`
+    );
 });
 
 // change group color
-$(document).on('click','.change-color',function(e) {
-    const groupId = $(this).attr('class').split(' ')[1];
+$(document).on('click','.change-color',function() {
+    const groupId = $(this).attr('id').slice(13);
 
-    $(this).parents('.card').next('.color-picker-placeholder').replaceWith(`
-        <div class="color-picker-package-cont">
+    $(`#colorpicker-placeholder-${groupId}`).replaceWith(`
+        <div id="colorpicker-cont-${groupId}" class="color-picker-package-cont">
             <div class="row color-picker-cont" id="color-picker-cont${groupId}">
                 <div class="col color-picker">
-                    <div id="colorpicker${groupId}" class="color-picker-input"></div>
+                    <div id="colorpicker-${groupId}" class="color-picker-input"></div>
                 </div>
             </div>
             <div class="row color-picker-buttons-cont" id="color-picker-buttons-cont${groupId}">
                 <div class="col color-picker-buttons">
                     <div class="row">
                         <div class="col">
-                            <button class="btn save-color ${groupId}"><i class="material-icons">save</i></button>
+                            <button id="save-color-${groupId}" class="btn save-color"><i class="material-icons">save</i></button>
                         </div>
                         <div class="col">
-                            <button class="btn close-color-picker red accent-2 ${groupId}"><i class="material-icons">close</i></button>
+                            <button id="close-colorpicker-${groupId}" class="btn close-colorpicker red accent-2"><i class="material-icons">close</i></button>
                         </div>
                     </div>
                     
@@ -230,62 +223,60 @@ $(document).on('click','.change-color',function(e) {
     `);
 
     // initialize && control color picker
-    chrome.storage.sync.get([groupId],res => {
-        if (res[groupId].color) {
-            const rgbColor = tinycolor(res[groupId].color).toHexString();
-            $.farbtastic(`#colorpicker${groupId}`).setColor(rgbColor);
-        }
-        $.farbtastic(`#colorpicker${groupId}`).linkTo(color => {
-            const hexColor = tinycolor(color);
-            const rgbRightShadow = hexColor.setAlpha(.14).toRgbString();
-            const rgbTopShadow = hexColor.setAlpha(.12).toRgbString();
-            const rgbLeftShadow = hexColor.setAlpha(.2).toRgbString();
-            const boxShadow = `0 2px 2px 0 ${rgbRightShadow}, 0 3px 1px -2px ${rgbTopShadow}, 0 1px 5px 0 ${rgbLeftShadow}`;
+    const rgbColor = tinycolor(storageData[groupId].color).toHexString();
 
-            $(this).parents('.card').css('color',`${color}`);
-            $(this).parents('.card').css('box-shadow',`${boxShadow}`);
-            $(this).parents('.card').find('.url-text > p').css('color',color);
-        });
+    $.farbtastic(`#colorpicker-${groupId}`).setColor(rgbColor);
+    $.farbtastic(`#colorpicker-${groupId}`).linkTo(color => {
+        storageData[groupId].color = color;
+        const obj = {
+            [groupId]: storageData[groupId]
+        };
+
+        applyColor(obj,groupId);
     });
 
 });
 
 // save color from color picker
-$(document).on('click','.save-color',function(e) {
-    const groupId = `group${$(this).parents('.color-picker-buttons-cont').prop('id').slice(-1)}`;
-    let color = tinycolor($.farbtastic(`#colorpicker${groupId}`).color).toRgbString();
+$(document).on('click','.save-color',function() {
+    const groupId = $(this).attr('id').slice(11);
+    let color = tinycolor($.farbtastic(`#colorpicker-${groupId}`).color).toRgbString();
 
     if (!color) {
         color = 'rgb(0,0,0)';
     }
 
-    data[groupId].color = color;
+    storageData[groupId].color = color;
 
-    chrome.storage.sync.set({[groupId]: data[groupId]}, () => {
+    chrome.storage.sync.set({[groupId]: storageData[groupId]}, () => {
         console.log('color has been saved successfully!');
 
-        $(this).parent().next().find('.close-color-picker').trigger('click');
+        $(`#close-colorpicker-${groupId}`).trigger('click');
     });
 });
 
 // close color picker
-$(document).on('click','.close-color-picker',function(e) {
-    const groupId = `group${$(this).parents('.color-picker-buttons-cont').prop('id').slice(-1)}`;
+$(document).on('click','.close-colorpicker',function() {
+    const groupId = $(this).prop('id').slice(18);
 
-    $(this).parents('.color-picker-package-cont').replaceWith(`
-        <div class="color-picker-placeholder"></div>
+    $(`#colorpicker-cont-${groupId}`).replaceWith(`
+        <div id="colorpicker-placeholder-${groupId}" class="colorpicker-placeholder"></div>
     `);
 
     // apply previous color
-    applyColor(data,groupId);
+    chrome.storage.sync.get([groupId], groupData => {
+        applyColor(groupData, groupId);
+        storageData[groupId].color = groupData[groupId].color;
+    });
+
 });
 
 // open all links
 $(document).on('click','.open-all-links',function(e) {
     e.preventDefault();
 
-    const groupId = $(this).attr('class').split(' ')[1];
-    const urlLst = data[groupId].data.map(urlData => {
+    const groupId = $(this).attr('id').slice(15);
+    const urlLst = storageData[groupId].data.map(urlData => {
         return urlData.url;
     });
 
@@ -299,7 +290,7 @@ $(document).on('click','.add-link',function() {
 
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
-    const urlNum = idGenerator(urlFormIds);
+    const urlNum = idGenerator(urlIds);
 
     $(this).parents('.new-url-data').prev().append(`
         <div class="row add-url-form-cont">
@@ -316,7 +307,7 @@ $(document).on('click','.add-link',function() {
                       <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1 submit-btn-cont">
-                        <button class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
+                        <button id="submit-new-url-${urlNum}" class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     <div class="col s12 l1">
                         <button class="waves-effect waves-light btn red accent-2 url-form-delete" type="button"><i class="material-icons">delete</i></button>
@@ -331,87 +322,52 @@ $(document).on('click','.add-link',function() {
 $(document).on('propertychange change keyup paste input focusout blur','.url-name-input',function() {
     const urlName = $(this).val();
     const url = $(this).parents('.add-url-form').find('.url-input').val();
+    const urlId = parseInt($(this).attr('id').slice(-1));
 
     const formValues = [{
         name: 'url name',
-        target: '.url-name-input',
+        target: `input[id="urlName${urlId}"]`,
         type: 'text',
         value: urlName
     }, {
         name: 'url',
-        target: '.url-input',
+        target: `input[id="url${urlId}"]`,
         type: 'url',
         value: url
     }];
 
     const groupId = $(this).parents('.card').attr('id');
-    const urlId = parseInt($(this).attr('id').slice(-1));
+    const buttonTar = `#submit-new-url-${urlId}`;
 
+    let validatedValues = validator(formValues,storageData,groupId,urlId);
 
-    let validatedValues = validator(formValues,data,groupId,urlId);
-
-    validatedValues.values.forEach((validatedValue,index) => {
-        if (validatedValue.error) {
-            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('valid');
-            $(this).parents('.add-url-form').find(validatedValue.target).addClass('invalid');
-            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-error',validatedValue.message);
-        } else {
-            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('invalid');
-            $(this).parents('.add-url-form').find(validatedValue.target).addClass('valid');
-            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-success',validatedValue.message);
-        }
-    });
-
-    console.log(validatedValues);
-
-    if (validatedValues.submit) {
-        $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
-    } else {
-        $(this).parents('.add-url-form').find('button[type="submit"]').addClass('disabled');
-    }
+    renderValidationError(validatedValues,buttonTar);
 });
 
 // url input validation
 $(document).on('propertychange change keyup paste input focusout blur','.url-input',function() {
     const url = $(this).val();
     const urlName = $(this).parents('.add-url-form').find('.url-name-input').val();
+    const urlId = parseInt($(this).attr('id').slice(-1));
 
     const formValues = [{
         name: 'url name',
-        target: '.url-name-input',
+        target: `input[id="urlName${urlId}"]`,
         type: 'text',
         value: urlName
     }, {
         name: 'url',
-        target: '.url-input',
+        target: `input[id="url${urlId}"]`,
         type: 'url',
         value: url
     }];
 
     const groupId = $(this).parents('.card').attr('id');
-    const urlId = parseInt($(this).attr('id').slice(-1));
+    const buttonTar = `#submit-new-url-${urlId}`;
 
-    const validatedValues = validator(formValues,data,groupId,urlId);
+    const validatedValues = validator(formValues,storageData,groupId,urlId);
 
-    validatedValues.values.forEach((validatedValue,index) => {
-        if (validatedValue.error) {
-            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('valid');
-            $(this).parents('.add-url-form').find(validatedValue.target).addClass('invalid');
-            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-error',validatedValue.message);
-        } else {
-            $(this).parents('.add-url-form').find(validatedValue.target).removeClass('invalid');
-            $(this).parents('.add-url-form').find(validatedValue.target).addClass('valid');
-            $(this).parents('.add-url-form').find(validatedValue.target).next('span').attr('data-success',validatedValue.message);
-        }
-    });
-
-    console.log(validatedValues);
-
-    if (validatedValues.submit) {
-        $(this).parents('.add-url-form').find('button[type="submit"]').removeClass('disabled');
-    } else {
-        $(this).parents('.add-url-form').find('button[type="submit"]').addClass('disabled');
-    }
+    renderValidationError(validatedValues,buttonTar);
 });
 
 // onSubmit add-url-form
@@ -426,7 +382,7 @@ $(document).on('submit','.add-url-form',function(e) {
 
     const linkName = $(this).find('.url-name-input').val();
     const urlId = parseInt($(this).prop('id').slice(-1));
-    console.log(urlId);
+
     const groupId = $(this).parents('.card').attr('id');
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
 
@@ -440,7 +396,7 @@ $(document).on('submit','.add-url-form',function(e) {
         value: url
     }];
 
-    const validatedValues = validator(formValues,data,groupId,urlId);
+    const validatedValues = validator(formValues,storageData,groupId,urlId);
 
     if (validatedValues.submit) {
 
@@ -468,23 +424,19 @@ $(document).on('submit','.add-url-form',function(e) {
 
                 const iconLink = res.data.icons[0].url;
 
-
-
-                if (urlFormIds.includes(urlId)) {
-                    data[groupName].data.forEach((urlData,index) => {
+                if (urlIds.includes(urlId)) {
+                    storageData[groupName].data.forEach((urlData,index) => {
                         if (urlData.urlId === urlId) {
-                            data[groupName].data[index] = { urlId, url, iconLink, linkName };
+                            storageData[groupName].data[index] = { urlId, url, iconLink, linkName };
                         }
                     });
                 } else {
-                    data[groupName].data.push({ urlId, url, iconLink, linkName });
-                    urlFormIds.push(urlId);
+                    storageData[groupName].data.push({ urlId, url, iconLink, linkName });
+                    urlIds.push(urlId);
                 }
 
-                const groupData = data[groupName];
-
                 chrome.storage.sync.set({
-                    [groupName]: groupData
+                    [groupName]: storageData[groupName]
                 },() => {
                     console.log('stored successfully!');
                     $(`#preloader-${urlId}`).replaceWith(`
@@ -504,9 +456,9 @@ $(document).on('submit','.add-url-form',function(e) {
                             </div>
                     `);
 
-                    initDND(data);
+                    initDND(storageData);
 
-                    applyColor(data,groupId);
+                    applyColor(storageData,groupId);
                 });
 
 
@@ -543,23 +495,17 @@ $(document).on('submit','.add-url-form',function(e) {
 });
 
 // Delete url input
-$(document).on('click','.url-form-delete',function(e) {
-    e.preventDefault();
-
+$(document).on('click','.url-form-delete',function() {
     $(this).parents('form[class="add-url-form"]').remove();
 });
 
 // Edit url
-$(document).on('click','.url-edit',function(e) {
+$(document).on('click','.url-edit',function() {
     const name = $(this).parents('.url-buttons').find('a').text().trim();
 
     const url = $(this).parents('.url-buttons').find('a').prop('href');
 
     const urlNum = $(this).parents('.url-buttons').prop('id').slice(-1);
-
-    console.log(urlNum);
-
-    // urlFormIds.push(urlNum);
 
     $(this).parents('.url-buttons').replaceWith(`
         <div class="row add-url-form-cont">
@@ -585,23 +531,19 @@ $(document).on('click','.url-edit',function(e) {
 });
 
 // delete url data
-$(document).on('click','.url-delete',function(e) {
-    e.preventDefault();
-
+$(document).on('click','.url-delete',function() {
     const groupName = $(this).parents('.card-content').find('.card-title').prop('id');
     let urlId;
 
     urlId = parseInt($(this).parents('.url-buttons').prop('id').slice(-1));
 
-    data[groupName].data.forEach((urlData,index) => {
+    storageData[groupName].data.forEach((urlData,index) => {
         if (urlData.urlId === urlId) {
-            data[groupName].data.splice(index,1);
+            storageData[groupName].data.splice(index,1);
         }
     });
 
-    const groupData = data[groupName];
-
-    chrome.storage.sync.set({[groupName]: groupData});
+    chrome.storage.sync.set({[groupName]: storageData[groupName]});
 
     $(this).parents('.url-buttons').remove();
 });

@@ -9,27 +9,27 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
 
     Object.keys(iterableObj).forEach(groupKey => {
         groupsHtmlLst.push(`
-            <div class="card" id="${groupKey}">
+            <div class="card" id="card-${groupKey}">
                 <div class="card-content">
-                    <div class="row">
+                    <div class="row" id="card-header-${groupKey}">
                         <div class="col s12 m11">
                             <span id="${groupKey}" class="card-title">${iterableObj[groupKey].groupName}</span>
                         </div>
                         <div class="col s12 m1">
-                            <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(-1)}'><i class="material-icons">settings</i></button>
-                            <ul id='group-settings${groupKey.slice(-1)}' class='dropdown-content'>
-                                <li><a class="change-color ${groupKey}">change color</a></li>
+                            <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(5)}'><i class="material-icons">settings</i></button>
+                            <ul id='group-settings${groupKey.slice(5)}' class='dropdown-content'>
+                                <li><a id="change-color-${groupKey}" class="change-color">change color</a></li>
                                 <li class="divider" tabindex="-1"></li>
-                                <li><a class="edit-group-name">edit group name</a></li>
+                                <li><a id="edit-${groupKey}" class="edit-group-name">edit group name</a></li>
                                 <li class="divider" tabindex="-1"></li>
-                                <li><a class="open-all-links ${groupKey}">open all links</a></li>
+                                <li><a id="open-all-links-${groupKey}" class="open-all-links">open all links</a></li>
                                 <li class="divider" tabindex="-1"></li>
-                                <li><a class="delete-group red-text">delete group</a></li>
+                                <li><a id="delete-${groupKey}" class="delete-group red-text">delete group</a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="url-cont" id="url-cont-${groupKey}">
-                        ${renderLinks(iterableObj,parseInt(groupKey.slice(-1)),urlFormIds)}
+                        ${renderLinks(iterableObj,parseInt(groupKey.slice(5)),urlFormIds)}
                     </div>
                     <div class="row new-url-data">
                         <div class="col">
@@ -38,7 +38,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                     </div>
                 </div>
             </div>
-            <div class="color-picker-placeholder"></div>
+            <div id="colorpicker-placeholder-${groupKey}" class="colorpicker-placeholder"></div>
         `);
     });
 

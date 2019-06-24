@@ -155,6 +155,33 @@ const validator = (formValues,data,groupId,urlId) => {
     */
 };
 
+const renderValidationError = (validatedValues,buttonTar) => {
+    validatedValues.values.forEach(({ error, target, message }) => {
+        if (error) {
+            $(target).removeClass('valid');
+            $(target).addClass('invalid');
+            $(target).next('span').attr('data-error',message);
+        } else {
+            $(target).removeClass('invalid');
+            $(target).addClass('valid');
+            $(target).next('span').attr('data-success',message);
+        }
+    });
+
+    console.log(validatedValues);
+    console.log(buttonTar);
+
+
+    if (validatedValues.submit) {
+        $(buttonTar).removeClass('disabled');
+    } else {
+        $(buttonTar).addClass('disabled');
+    }
+};
+
+
+
+
 // console.log(validator([
 //     {
 //         name: 'Group Name', type: 'text', value: ''
