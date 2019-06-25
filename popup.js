@@ -1,16 +1,17 @@
-let data;
+let storageData;
+let groupIds;
 
 $(document).ready(() => {
 
     chrome.storage.sync.get(null, res => {
-        data = res;
+        storageData = res;
 
-        groupIds = Object.keys(data);
+        groupIds = Object.keys(storageData);
 
         const optionsHTMLLst = groupIds
             .map(groupId => {
                 return `
-                    <option value="${groupId}">${data[groupId].groupName}</option>
+                    <option value="${groupId}">${storageData[groupId].groupName}</option>
                 `;
             });
 
@@ -86,25 +87,10 @@ $('select').change(function() {
             value: url
         }]);
 
-        const validatedValues = validator(formValues,data,groupId,undefined);
+        const validatedValues = validator(formValues,storageData,groupId,undefined);
+        const buttonTar = 'button[type="submit"]';
 
-        validatedValues.values.forEach(({ error, target, message },index) => {
-            if (error) {
-                $(target).removeClass('valid');
-                $(target).addClass('invalid');
-                $(target).next('span').attr('data-error',message);
-            } else {
-                $(target).removeClass('invalid');
-                $(target).addClass('valid');
-                $(target).next('span').attr('data-success',message);
-            }
-        });
-
-        if (validatedValues.submit) {
-            $('button[type="submit"]').removeClass('disabled');
-        } else {
-            $('button[type="submit"]').addClass('disabled');
-        }
+        renderValidationError(validatedValues,buttonTar);
     }
 
 
@@ -140,25 +126,10 @@ $(document).on('propertychange change keyup paste input focusout blur','#new-gro
         value: url
     }]);
 
-    const validatedValues = validator(formValues,data,'none','none');
+    const validatedValues = validator(formValues,storageData,'none','none');
+    const buttonTar = 'button[type="submit"]';
 
-    validatedValues.values.forEach(({ error, target, message }) => {
-        if (error) {
-            $(target).removeClass('valid');
-            $(target).addClass('invalid');
-            $(target).next('span').attr('data-error',message);
-        } else {
-            $(target).removeClass('invalid');
-            $(target).addClass('valid');
-            $(target).next('span').attr('data-success',message);
-        }
-    });
-
-    if (validatedValues.submit) {
-        $('button[type="submit"]').removeClass('disabled');
-    } else {
-        $('button[type="submit"]').addClass('disabled');
-    }
+    renderValidationError(validatedValues,buttonTar);
 });
 
 // url name validation
@@ -193,26 +164,10 @@ $('#urlName').on('propertychange change keyup paste input focusout blur',functio
         value: url
     }]);
 
-    const validatedValues = validator(formValues,data,groupId,undefined);
-    console.log(validatedValues);
-    validatedValues.values.forEach(({ error, target, message },index) => {
-        if (error) {
-            $(target).removeClass('valid');
-            $(target).addClass('invalid');
-            $(target).next('span').attr('data-error',message);
-        } else {
-            $(target).removeClass('invalid');
-            $(target).addClass('valid');
-            $(target).next('span').attr('data-success',message);
-        }
-    });
+    const validatedValues = validator(formValues,storageData,groupId,undefined);
+    const buttonTar = 'button[type="submit"]';
 
-    if (validatedValues.submit && !urlExists) {
-        $('button[type="submit"]').removeClass('disabled');
-    } else {
-        $('button[type="submit"]').addClass('disabled');
-    }
-
+    renderValidationError(validatedValues,buttonTar);
 });
 
 // url submitted
@@ -256,7 +211,7 @@ $('form.save-url').submit(function(e) {
 
         formValues.splice(0,1);
 
-        data[groupId] = {
+        storageData[groupId] = {
             groupName: formValues[0].value,
             data: []
         };
@@ -264,14 +219,14 @@ $('form.save-url').submit(function(e) {
         groupId = $('select').children('option:selected').val();
     }
 
-    const validatedValues = validator(formValues,data,groupId,undefined);
+    const validatedValues = validator(formValues,storageData,groupId,undefined);
 
     if (validatedValues.submit) {
         let urlId;
         let linkName;
         let url;
 
-        urlId = idGenerator(urlIdsToLst(data));
+        urlId = idGenerator(urlIdsToLst(storageData));
 
         linkName = formValues[1].value;
 
@@ -293,14 +248,14 @@ $('form.save-url').submit(function(e) {
                 }
 
 
-                data[groupId].data.push({
+                storageData[groupId].data.push({
                     urlId,
                     linkName,
                     url,
                     iconLink
                 });
 
-                chrome.storage.sync.set({[groupId]: data[groupId]},() => {
+                chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
                     console.log('New Group & new url has been successfully saved!');
                     $('#cover-spin').hide(0);
                     $.notify("url has been successfully saved!",'success');
