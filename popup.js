@@ -8,12 +8,14 @@ $(document).ready(() => {
 
         groupIds = Object.keys(storageData);
 
-        const optionsHTMLLst = groupIds
+        let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>Temporary Group</option>`]
+
+        optionsHTMLLst = optionsHTMLLst.concat(groupIds
             .map(groupId => {
                 return `
                     <option value="${groupId}">${storageData[groupId].groupName}</option>
                 `;
-            });
+            }));
 
         optionsHTMLLst.push(`<option id="create-new-group" value="create-new-group">Create new group...</option>`);
 
@@ -213,6 +215,13 @@ $('form.save-url').submit(function(e) {
 
         storageData[groupId] = {
             groupName: formValues[0].value,
+            data: []
+        };
+    } else if (formValues[0].value === 'temporary') {
+        groupId = `group${idGenerator(groupIds)}`;
+
+        storageData[groupId] = {
+            groupName: 'Temporary Group',
             data: []
         };
     } else {

@@ -19,8 +19,6 @@ $(document).ready(() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = Object.keys(storageData);
 
-                console.log(storageData);
-
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
 
@@ -251,7 +249,7 @@ $(document).on('click','.add-link',function() {
     const urlId = idGenerator(urlIds);
 
     $(`#new-url-data-${groupId}`).prev().append(
-        renderNewUrlForm('','',urlId,false,false,true)
+        renderNewUrlForm('','',urlId,false,false,true,true)
     );
 });
 
@@ -380,7 +378,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     url = url.slice(0,url.length-1);
 
                     $(`#preloader-${urlId}`).replaceWith(
-                        renderNewUrlForm(url,name,urlId,true,true,false)
+                        renderNewUrlForm(url,linkName,urlId,true,true,false,true)
                     );
 
                     $(`#urlName${urlId}`).addClass('valid');
@@ -409,7 +407,7 @@ $(document).on('click','.url-edit',function() {
     const url = $(`#url-${urlId}`).prop('href');
 
     $(this).parents('.url-buttons').replaceWith(
-        renderNewUrlForm(url,name,urlId,true,true,false)
+        renderNewUrlForm(url,name,urlId,true,true,false,false)
     );
 });
 

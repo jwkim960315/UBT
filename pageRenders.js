@@ -147,9 +147,10 @@ const renderColorPicker = (target,groupId) => {
     `);
 };
 
-const renderNewUrlForm = (url,name,urlId,isNameInputActive,isUrlInputActive,shouldRenderDelete) => {
+const renderNewUrlForm = (url,name,urlId,isNameInputActive,isUrlInputActive,shouldRenderDelete,isDisabled) => {
     const nameInputActive = (isNameInputActive) ? 'active' : '';
     const urlInputActive = (isUrlInputActive) ? 'active' : '';
+    const disabled = (isDisabled) ? 'disabled' : '';
 
     return `
         <div id="add-url-form-cont-${urlId}" class="row add-url-form-cont">
@@ -166,7 +167,7 @@ const renderNewUrlForm = (url,name,urlId,isNameInputActive,isUrlInputActive,shou
                       <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1 submit-btn-cont">
-                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn disabled" type="submit"><i class="material-icons">save</i></i></button>
+                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn ${disabled}" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     ${renderUrlFormDelete(shouldRenderDelete,urlId)}
                 </div>
