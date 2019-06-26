@@ -40,6 +40,13 @@ const storageDataGroupIdModifier = storageData => {
     return storageData;
 };
 
+const tempGroupReorder = (iterableObj,groupIds) => {
+    const tempGroupIds = groupIds.filter(groupId => iterableObj[groupId].groupName.includes('Temporary Group'));
+    const otherGroupIds = groupIds.filter(groupId => !iterableObj[groupId].groupName.includes('Temporary Group'));
+
+    return tempGroupIds.concat(otherGroupIds);
+};
+
 // console.log(storageDataGroupIdModifier({
 //     'group0': {
 //         data: []

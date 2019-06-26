@@ -5,9 +5,11 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
         };
     }
 
+    const iterableLst = tempGroupReorder(iterableObj,Object.keys(iterableObj));
+
     let groupsHtmlLst = [];
 
-    Object.keys(iterableObj).forEach(groupKey => {
+    iterableLst.forEach(groupKey => {
         groupsHtmlLst.push(`
             <div class="card" id="card-${groupKey}">
                 <div class="card-content">

@@ -4,11 +4,16 @@ let groupIds;
 $(document).ready(() => {
 
     chrome.storage.sync.get(null, res => {
+        // render preloader until url validation finishes
+        const target = '#url-input';
+
+        renderPreloader(target,0);
+
         storageData = res;
 
         groupIds = Object.keys(storageData);
 
-        let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>Temporary Group</option>`]
+        let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>Temporary Group</option>`];
 
         optionsHTMLLst = optionsHTMLLst.concat(groupIds
             .map(groupId => {
@@ -29,15 +34,58 @@ $(document).ready(() => {
         // automatically inserts current page url to input
         chrome.tabs.query({ 'active': true }, tabs => {
             let { url, title } = tabs[0];
+
             $('#urlName').val(title);
             $('label[for="urlName"]').addClass('active');
+
+            // Check whether url name exists
+            if (title === '' || undefined) {
+                $('#urlName').addClass('invalid');
+                $('#urlName').removeClass('valid');
+                $('#urlName').next('span').attr('data-error','url name is required');
+            } else {
+                $('#urlName').addClass('valid');
+                $('#urlName').removeClass('invalid');
+                $('#urlName').next('span').attr('data-success','valid url name');
+            }
 
             if (url.slice(-1) !== '/') {
                 url += '/';
             }
 
-            $('#url').val(url);
-            $('label[for="url"]').addClass('active');
+
+
+            // Check whether url exists
+            axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
+                .then(() => {
+                    // render url-input
+                    const preloaderTar = '#preloader-0';
+                    renderUrlInput(preloaderTar);
+
+                    $('#url').val(url);
+                    $('label[for="url"]').addClass('active');
+
+                    $('#url').removeClass('invalid');
+                    $('#url').addClass('valid');
+                    $('#url').next('span').attr('data-success','valid url');
+
+                    // if both url name && url are valid, enable submit
+                    if (title && title.length) {
+                        $('button[type="submit"]').removeClass('disabled');
+                    }
+                }, () => {
+                    const preloaderTar = '#preloader-0';
+                    renderUrlInput(preloaderTar);
+
+                    $('#url').val(url);
+                    $('label[for="url"]').addClass('active');
+
+                    $('#url').removeClass('valid');
+                    $('#url').addClass('invalid');
+                    $('#url').next('span').attr('data-error','invalid url: ex) https://www.google.com');
+                })
+
+
         });
     })
 });
@@ -45,17 +93,8 @@ $(document).ready(() => {
 // selected from dropdown menu
 $('select').change(function() {
     if ($(this).children('option:selected').val() === 'create-new-group') {
-        $('#group-select').after(`
-            <div class="row new-group-input">
-                <div class="input-field col s12">
-                    <label for="new-group">Group Name</label>
-                    <input id="new-group" type="text" class="" name="groupName"/>
-                    <span class="helper-text"></span>
-                </div>
-            </div>
-        `);
-
-        $('button[type="submit"]').removeClass('disabled');
+        const target = '#group-select';
+        renderNewGroupInput(target);
     } else {
         $('.new-group-input').remove();
 
@@ -215,21 +254,27 @@ $('form.save-url').submit(function(e) {
 
         storageData[groupId] = {
             groupName: formValues[0].value,
-            data: []
+            data: [],
+            color: 'rgb(0,0,0)'
         };
     } else if (formValues[0].value === 'temporary') {
         groupId = `group${idGenerator(groupIds)}`;
 
+        const curDate = `${(new Date).toDateString()}`;
+        const curTime = `${(new Date).getHours()}:${(new Date).getMinutes()}:${(new Date).getSeconds()}`;
+        const curDateNTime = `${curDate} ${curTime}`;
+
         storageData[groupId] = {
-            groupName: 'Temporary Group',
-            data: []
+            groupName: `Temporary Group - ${curDateNTime}`,
+            data: [],
+            color: 'rgb(0,0,0)'
         };
     } else {
         groupId = $('select').children('option:selected').val();
     }
 
     const validatedValues = validator(formValues,storageData,groupId,undefined);
-
+    console.log(formValues);
     if (validatedValues.submit) {
         let urlId;
         let linkName;
@@ -251,11 +296,10 @@ $('form.save-url').submit(function(e) {
                 if (!res.data.icons.length) {
                     const domainInitialIndex = (url.includes('www.')) ? url.indexOf('www.')+4 : url.indexOf('//')+2;
                     const domainInitial = url[domainInitialIndex].toUpperCase();
-                    iconLink = `https://besticon-demo.herokuapp.com/lettericons/${domainInitial}-120.png`
+                    iconLink = `https://besticon-demo.herokuapp.com/lettericons/${domainInitial}-120.png`;
                 } else {
                     iconLink = res.data.icons[0].url;
                 }
-
 
                 storageData[groupId].data.push({
                     urlId,

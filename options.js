@@ -3,21 +3,16 @@ let storageData;
 let urlIds;
 let groupIds;
 
-// chrome.storage.sync.clear();
-
 // Initialization
 $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
-
-
-
-
         // setting storageData to global var
         storageData = storageDataGroupIdModifier(res); // Re-assign group ids
+        console.log(storageData);
         chrome.storage.sync.clear(() => {
             chrome.storage.sync.set(storageData,() => {
                 urlIds = urlIdsToLst(storageData);
-                groupIds = Object.keys(storageData);
+                groupIds = tempGroupReorder(storageData,Object.keys(storageData));
 
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
@@ -400,7 +395,7 @@ $(document).on('click','.url-form-delete',function() {
 
 // Edit url
 $(document).on('click','.url-edit',function() {
-    const urlId = parseInt($(this).prop('id').slice(8));
+    const urlId = parseInt($(this).prop('id').slice(9));
 
     const name = $(`#name-${urlId}`).text().trim();
 
