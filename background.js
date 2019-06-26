@@ -80,55 +80,31 @@ chrome.contextMenus.create({
                     color: 'rgb(0,0,0)',
                     data: []
                 };
+
                 console.log(tabs);
 
-                tabs.forEach((tab,index) => {
-                    const { url } = tab;
-                    fetch(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-                        .then(result => {
-                            result.json().then(data => {
-                                console.log(data);
+                tabs.forEach(tab => {
+                    // console.log(tab);
+                    const { url, title, favIconUrl } = tab;
+                    const urlId = idGenerator(urlIds);
 
-                                let iconLink;
+                    if (!favIconUrl.length) {
+                        const iconLink =
+                    }
 
-                                if (data.icons) {
-                                    if (!data.icons.length) {
-                                        const domainInitialIndex = (url.includes('www.')) ? url.indexOf('www.')+4 : url.indexOf('//')+2;
-                                        const domainInitial = url[domainInitialIndex].toUpperCase();
-                                        iconLink = `https://besticon-demo.herokuapp.com/lettericons/${domainInitial}-120.png`;
-                                    } else {
-                                        iconLink = data.icons[0].url;
-                                    }
+                    tempGroupData.data.push({
+                        urlId,
+                        linkName: title,
+                        iconLink: favIconUrl,
+                        url
+                    });
 
-                                    const urlId = idGenerator(urlIds);
-                                    const linkName = tab.title;
-
-                                    tempGroupData.data.push({
-                                        urlId,
-                                        iconLink,
-                                        linkName,
-                                        url
-                                    });
-
-                                    urlIds.push(urlId);
-
-                                    if (tabs.length-1 === index) {
-                                        chrome.storage.sync.set({[groupId]: tempGroupData}, () => {
-                                            console.log('temporary group w/ all tabs saved successfully!');
-                                        });
-                                    }
-                                }
-
-
-                            });
-
-                        })
-                        .catch(error => {
-                            console.log(error);
-                        });
+                    urlIds.push(urlId);
                 });
 
-
+                chrome.storage.sync.set({[groupId]: tempGroupData },() => {
+                    console.log('saved all tabs!');
+                });
             })
 
 

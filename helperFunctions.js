@@ -44,6 +44,8 @@ const tempGroupReorder = (iterableObj,groupIds) => {
     const tempGroupIds = groupIds.filter(groupId => iterableObj[groupId].groupName.includes('Temporary Group'));
     const otherGroupIds = groupIds.filter(groupId => !iterableObj[groupId].groupName.includes('Temporary Group'));
 
+    tempGroupIds.reverse();
+
     return tempGroupIds.concat(otherGroupIds);
 };
 
