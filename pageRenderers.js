@@ -12,7 +12,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
     iterableLst.forEach(groupKey => {
         groupsHtmlLst.push(`
             <div class="row">
-            <div class="card" id="card-${groupKey}">
+            <div class="card amber" id="card-${groupKey}">
                 <div class="card-content">
                     <div class="row" id="card-header-${groupKey}">
                         <div class="col s12 m11">
@@ -105,7 +105,7 @@ const renderNewGroupForm = (target,groupId) => {
     const isDisabled = true;
 
     $(target).append(`
-        <div class="card" id="card-${groupId}">
+        <div class="card amber" id="card-${groupId}">
             <div class="card-content">
                 ${renderGroupForm(name,groupId,isDisabled)}
                 <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>

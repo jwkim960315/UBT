@@ -6,7 +6,7 @@
   "browser_action": {
     "default_popup": "popup.html",
     "default_title": "TabTab",
-    "default_icon": "logo.png"
+    "default_icon": "favicon.png"
   },
   "background": {
     "scripts": ["background.js"],
