@@ -1,5 +1,4 @@
 const applyColor = (iterableObj,groupId) => {
-    console.log(iterableObj[groupId].color);
     const rgbColor = tinycolor(iterableObj[groupId].color);
     $(`#card-${groupId}`).css('color',rgbColor.toRgbString());
     $(`#card-${groupId}`).find('.url-text > p').css('color',rgbColor.toRgbString());

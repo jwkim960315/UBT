@@ -11,6 +11,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
 
     iterableLst.forEach(groupKey => {
         groupsHtmlLst.push(`
+            <div class="row">
             <div class="card" id="card-${groupKey}">
                 <div class="card-content">
                     <div class="row" id="card-header-${groupKey}">
@@ -41,6 +42,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                 </div>
             </div>
             <div id="colorpicker-placeholder-${groupKey}" class="colorpicker-placeholder"></div>
+            </div>
         `);
     });
 
@@ -72,16 +74,24 @@ const renderLinks = (groupData,index) => {
 };
 
 const renderUrl = (url,urlName,iconUrl,urlId) => {
+    let iconUrlHtml;
+
+    if (!iconUrl || !iconUrl.length || iconUrl.slice(0,4) !== 'http') {
+        iconUrlHtml = '<i class="material-icons web-icon">web</i>';
+    } else {
+        iconUrlHtml = `<img class="link-icon" src="${iconUrl}" width="16" height="16"/>`;
+    }
+
     return `
         <div class="row url-buttons" id="url-data-${urlId}">
             <div class="col s12 m10">
                 <a href="${url}" id="url-${urlId}" class="url white url-text btn" target="_blank">
-                    <img class="link-icon" src="${iconUrl}" width="25" height="25"/>
+                    ${iconUrlHtml}
                     <p id="name-${urlId}">${urlName}</p>
                 </a>
             </div>
             <div class="col s12 m1">
-                <button id="url-edit-${urlId}" class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                <button id="url-edit-${urlId}" class="waves-effect waves-light btn blue lighten-1 url-edit" type="button"><i class="material-icons">edit</i></button>
             </div>
             <div class="col s12 m1">
                 <button id="url-delete-${urlId}" class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
@@ -102,6 +112,8 @@ const renderNewGroupForm = (target,groupId) => {
             </div>
         </div>
     `);
+
+    $(`input[id="${groupId}"]`).focus();
 };
 
 const renderGroupForm = (name,groupId,isDisabled) => {
@@ -125,7 +137,7 @@ const renderGroupForm = (name,groupId,isDisabled) => {
 
 const renderColorPicker = (target,groupId) => {
     $(target).replaceWith(`
-        <div id="colorpicker-cont-${groupId}" class="color-picker-package-cont">
+        <div id="colorpicker-cont-${groupId}" class="color-picker-package-cont col s12 m2 right">
             <div class="row color-picker-cont" id="color-picker-cont${groupId}">
                 <div class="col color-picker">
                     <div id="colorpicker-${groupId}" class="color-picker-input"></div>
@@ -160,7 +172,7 @@ const renderNewUrlForm = (url,name,urlId,isNameInputActive,isUrlInputActive,shou
                 <div class="row">
                     <div class="input-field col s4 l4">
                         <label for="urlName${urlId}" class="${nameInputActive}">Name</label>
-                        <input id="urlName${urlId}" type="text" class="url-name-input" value="${name}" autofocus>
+                        <input id="urlName${urlId}" type="text" class="url-name-input" value="${name}">
                         <span class="helper-text"></span>
                     </div>
                     <div class="input-field col s8 l6">

@@ -14,42 +14,40 @@
     <!-- custom CSS -->
     <link rel="stylesheet" href="popup.css" />
 </head>
-<body>
+<body class="indigo">
     <div id="cover-spin"></div>
     <div class="header">
         <nav>
-            <div class="nav-wrapper teal lighten-4">
-                <a href="#" class="brand-logo"><img src="logo.png" width="60" height="60"></a>
+            <div class="nav-wrapper amber">
+                <a href="" class="brand-logo"><img src="logo-2.png" heigth="56" width="56"/></a>
             </div>
         </nav>
     </div>
     <div class="container">
-
-
         <form class="save-url">
             <div class="row" id="group-select">
                 <div class="input-field col s12">
-                    <select name="groupId">
+                    <select class="white-text" name="groupId">
                     </select>
-                    <label>Group Select</label>
+                    <label class="white-text">Group Select</label>
                 </div>
             </div>
             <div class="row" id="url-name-input">
                 <div class="input-field col s12">
-                    <label for="urlName">Url Name</label>
-                    <input id="urlName" type="text" class="validate" name="urlName" required/>
+                    <label for="urlName" class="white-text">Url Name</label>
+                    <input id="urlName" type="text" class="white-text" name="urlName" required/>
                     <span class="helper-text"></span>
                 </div>
             </div>
             <div class="row" id="url-input">
                 <div class="input-field col s12">
-                    <label for="url">Url</label>
-                    <input id="url" type="text" class="validate" name="url" required disabled/>
+                    <label for="url" class="white-text">Url</label>
+                    <input id="url" type="text" class="white-text" name="url" required disabled/>
                     <span class="helper-text"></span>
                 </div>
             </div>
             <div class="row center" id="url-submit">
-                <button class="btn disabled" type="submit">Save</button>
+                <button class="btn" type="submit">Save</button>
             </div>
         </form>
     </div>
@@ -69,11 +67,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script>
 
     <!-- custom scripts -->
-    <script type="text/javascript" src="notify.min.js"></script>
-    <script type="text/javascript" src="popupHelperFunctions.js"></script>
+    <script type="text/javascript" src="modules/notify.min.js"></script>
     <script type="text/javascript" src="helperFunctions.js"></script>
     <script type="text/javascript" src="validationHelper.js"></script>
-    <script type="text/javascript" src="pageRenderers.js"></script>
     <script type="text/javascript" src="popupRenderers.js"></script>
     <script type="text/javascript" src="popup.js"></script>
 

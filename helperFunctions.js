@@ -1,4 +1,4 @@
-// generates id by sorting current url ids
+// generates id by sorting current ids
 const idGenerator = lst => {
     if (!lst.length) {
         return 0;
@@ -9,24 +9,19 @@ const idGenerator = lst => {
     let res;
 
     for (let i=0;i < lst.length;i++) {
-        if (typeof lst[i] === 'string') {
-            // if (!lst[i].includes(i)) {
-            //     return i;
-            // }
-        } else {
-            if (lst[i] !== i) {
-                return i;
-            }
+        if (!isLstGroupIds(lst) && lst[i] !== i) {
+            return i;
         }
     }
-    if (typeof lst[0] === 'string') {
+
+    if (isLstGroupIds(lst)) {
         return parseInt(lst[lst.length-1].slice(5))+1;
     } else {
         return lst[lst.length-1]+1;
     }
-
 };
 
+// re-assign group ids
 const storageDataGroupIdModifier = storageData => {
     const groupIds = Object.keys(storageData);
 
@@ -40,6 +35,7 @@ const storageDataGroupIdModifier = storageData => {
     return storageData;
 };
 
+// re-order groups so that temp groups are on top
 const tempGroupReorder = (iterableObj,groupIds) => {
     const tempGroupIds = groupIds.filter(groupId => iterableObj[groupId].groupName.includes('Temporary Group'));
     const otherGroupIds = groupIds.filter(groupId => !iterableObj[groupId].groupName.includes('Temporary Group'));
@@ -49,28 +45,8 @@ const tempGroupReorder = (iterableObj,groupIds) => {
     return tempGroupIds.concat(otherGroupIds);
 };
 
-// console.log(storageDataGroupIdModifier({
-//     'group0': {
-//         data: []
-//     },
-//     'group2': {
-//         data: [1,2,3]
-//     },
-//     'group1': {
-//         data: [4,5,6]
-//     }
-// }));
-
+// check whether the list is group or url
 const isLstGroupIds = lst => typeof lst[0] === 'string';
-
-const extractNumFromGroupIds = lst => {
-    if (isLstGroupIds) {
-        return lst.map(groupId => parseInt(groupId.slice(5)));
-    }
-
-    return lst;
-};
-
 
 // converts chrome storage data to a url list
 const urlIdsToLst = data => {
@@ -90,11 +66,28 @@ const urlIdsToLst = data => {
         if (!urlDataLst.length) {
             continue;
         }
-
+        console.log(urlDataLst);
         urlDataLst.forEach(urlData => {
 
             lst.push(urlData.urlId);
         });
     }
     return lst;
+};
+
+const curDateNTimeToString = () => {
+    const curDate = `${(new Date).toDateString()}`;
+    const curHr = (`${(new Date).getHours()}`.length === 1) ? `0${(new Date).getHours()}` : (new Date).getHours();
+    const curMin = (`${(new Date).getMinutes()}`.length === 1) ? `0${(new Date).getMinutes()}` : (new Date).getMinutes();
+    const curSec = (`${(new Date).getSeconds()}`.length === 1) ? `0${(new Date).getSeconds()}` : (new Date).getSeconds();
+    const curTime = `${curHr}:${curMin}:${curSec}`;
+
+    return `${curDate} ${curTime}`;
+};
+
+// validate url
+const isUrlValid = url => {
+    const pattern = new RegExp(/(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/); // fragment locater
+
+    return pattern.test(url);
 };

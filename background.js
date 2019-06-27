@@ -54,11 +54,21 @@ const urlIdsToLst = data => {
     return lst;
 };
 
+// morph current data and time to string
+const curDateNTimeToString = () => {
+    const curDate = `${(new Date).toDateString()}`;
+    const curHr = (`${(new Date).getHours()}`.length === 1) ? `0${(new Date).getHours()}` : (new Date).getHours();
+    const curMin = (`${(new Date).getMinutes()}`.length === 1) ? `0${(new Date).getMinutes()}` : (new Date).getMinutes();
+    const curSec = (`${(new Date).getSeconds()}`.length === 1) ? `0${(new Date).getSeconds()}` : (new Date).getSeconds();
+    const curTime = `${curHr}:${curMin}:${curSec}`;
+    return `${curDate} ${curTime}`;
+};
+
 chrome.contextMenus.create({
     title: 'Open in new tab',
     contexts: ["browser_action"],
     onclick: clickedData => {
-        chrome.tabs.create({ url: 'options.html' });
+        chrome.tabs.create({ url: 'index.html' });
     }
 });
 
@@ -71,9 +81,7 @@ chrome.contextMenus.create({
                 const groupId = `group${idGenerator(Object.keys(res))}`;
                 let urlIds = urlIdsToLst(res);
 
-                const curDate = `${(new Date).toDateString()}`;
-                const curTime = `${(new Date).getHours()}:${(new Date).getMinutes()}:${(new Date).getSeconds()}`;
-                const curDateNTime = `${curDate} ${curTime}`;
+                const curDateNTime = curDateNTimeToString();
 
                 let tempGroupData = {
                     groupName: `Temporary Group - ${curDateNTime}`,
@@ -81,16 +89,10 @@ chrome.contextMenus.create({
                     data: []
                 };
 
-                console.log(tabs);
-
                 tabs.forEach(tab => {
                     // console.log(tab);
                     const { url, title, favIconUrl } = tab;
                     const urlId = idGenerator(urlIds);
-
-                    if (!favIconUrl.length) {
-                        const iconLink =
-                    }
 
                     tempGroupData.data.push({
                         urlId,
@@ -104,6 +106,8 @@ chrome.contextMenus.create({
 
                 chrome.storage.sync.set({[groupId]: tempGroupData },() => {
                     console.log('saved all tabs!');
+
+                    chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
                 });
             })
 

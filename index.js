@@ -3,7 +3,16 @@ let storageData;
 let urlIds;
 let groupIds;
 
-// Initialization
+// chrome.storage.sync.clear();
+
+// reload page once all tabs are saved
+chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
+    if (req.todo === 'reloadMainPage') {
+        location.reload();
+    }
+});
+
+// initialization
 $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
         // setting storageData to global var
@@ -35,13 +44,15 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
         // rendering all the storage data
         renderGroups(storageData,'.groups-placeholder',urlIds);
 
+        // initialize group settings dropdown
+        $('.dropdown-trigger').dropdown();
     } else {
         const filteredData = filterWithKeyword(keyword,storageData);
 
         if (!Object.keys(filteredData).length) {
             $('.group-cont').html(`
                 <div class="row no-data">
-                    <p>No data matching with ${keyword}...</p>
+                    <p class="white-text">No data matching with "${keyword}"</p>
                 </div>
             `);
         } else {
@@ -50,6 +61,9 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
             // rendering filtered storageData
             renderGroups(filteredData,'.groups-placeholder',urlIds);
 
+            // initialize group settings dropdown
+            $('.dropdown-trigger').dropdown();
+
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
         }
@@ -57,11 +71,15 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
 
 });
 
-// Add new group
+// add new group
 $('.add-group').click(() => {
 
     let groupId = `group${idGenerator(groupIds)}`;
+
     const target = '.group-cont';
+
+    // update groupIds
+    groupIds.push(groupId);
 
     renderNewGroupForm(target,groupId);
 });
@@ -111,7 +129,6 @@ $(document).on('submit','.add-group-form',function(e) {
             };
         } else {
             storageData[groupId].groupName = inputVal;
-            groupIds.push(groupId);
         }
 
         $(`#add-link-placeholder-${groupId}`).replaceWith(`
@@ -131,9 +148,6 @@ $(document).on('submit','.add-group-form',function(e) {
 
             // for editing group name
             initDND(storageData);
-
-            // update groupIds
-            groupIds.push(groupId);
         });
     }
 });
@@ -152,6 +166,7 @@ $(document).on('click','.delete-group',function() {
     });
 
     $(`#card-${deletingGroupId}`).remove();
+    $(`#colorpicker-cont-${deletingGroupId}`).remove();
 });
 
 // edit group name
@@ -186,6 +201,7 @@ $(document).on('click','.change-color',function() {
         applyColor(obj,groupId);
     });
 
+    $(`#card-${groupId}`).addClass('col s12 m9');
 });
 
 // save color from color picker
@@ -220,6 +236,7 @@ $(document).on('click','.close-colorpicker',function() {
         storageData[groupId].color = groupData[groupId].color;
     });
 
+    $(`#card-${groupId}`).removeClass('col s12 m9');
 });
 
 // open all links
@@ -234,18 +251,31 @@ $(document).on('click','.open-all-links',function(e) {
     chrome.windows.create({ url: urlLst });
 });
 
+// Url onClick
+$(document).on('click','.url-text',function(e) {
+    e.preventDefault();
+    const url = $(this).attr('href');
+    chrome.tabs.create({ url },() => {
+        console.log('tab has been created');
+    });
+});
 
 
-// Add new link form
+// Add new url form
 $(document).on('click','.add-link',function() {
 
     const groupId = $(this).prop('id').slice(9);
 
     const urlId = idGenerator(urlIds);
 
+    // update urlIds
+    urlIds.push(urlId);
+
     $(`#new-url-data-${groupId}`).prev().append(
         renderNewUrlForm('','',urlId,false,false,true,true)
     );
+
+    $(`input[id="urlName${urlId}"]`).focus();
 });
 
 // url name input validation
@@ -335,55 +365,35 @@ $(document).on('submit','.add-url-form',function(e) {
         const preloaderTar = `#add-url-form-cont-${urlId}`;
         renderPreloader(preloaderTar,urlId);
 
-        axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-            .then(res => {
+        let iconLink = '';
 
-                const iconLink = res.data.icons[0].url;
+        if (isUrlValid(url)) {
+            iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+        }
 
-                if (urlIds.includes(urlId)) {
-                    storageData[groupId].data.forEach((urlData,index) => {
-                        if (urlData.urlId === urlId) {
-                            storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
-                        }
-                    });
-                } else {
-                    storageData[groupId].data.push({ urlId, url, iconLink, linkName });
-                    urlIds.push(urlId);
-                }
-
-                chrome.storage.sync.set({
-                    [groupId]: storageData[groupId]
-                },() => {
-                    console.log('stored successfully!');
-
-                    $(`#preloader-${urlId}`).replaceWith(
-                        renderUrl(url,linkName,iconLink,urlId)
-                    );
-
-                    initDND(storageData);
-
-                    applyColor(storageData,groupId);
-                });
-
-
-            },err => {
-                if (err.response.status === 404) {
-                    console.log('invalid url');
-
-                    url = url.slice(0,url.length-1);
-
-                    $(`#preloader-${urlId}`).replaceWith(
-                        renderNewUrlForm(url,linkName,urlId,true,true,false,true)
-                    );
-
-                    $(`#urlName${urlId}`).addClass('valid');
-                    $(`#urlName${urlId}`).next('span').attr('data-success','valid url name');
-
-                    $(`#url${urlId}`).addClass('invalid');
-                    $(`#url${urlId}`).next('span').attr('data-error','url does not exist');
-
+        if (urlIdsToLst(storageData).indexOf(urlId) === -1) {
+            storageData[groupId].data.push({ urlId, url, iconLink, linkName });
+        } else {
+            storageData[groupId].data.forEach((urlData,index) => {
+                if (urlData.urlId === urlId) {
+                    storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
                 }
             });
+        }
+
+        chrome.storage.sync.set({
+            [groupId]: storageData[groupId]
+        },() => {
+            console.log('stored successfully!');
+
+            $(`#preloader-${urlId}`).replaceWith(
+                renderUrl(url,linkName,iconLink,urlId)
+            );
+
+            initDND(storageData);
+
+            applyColor(storageData,groupId);
+        });
     }
 });
 
@@ -391,6 +401,11 @@ $(document).on('submit','.add-url-form',function(e) {
 $(document).on('click','.url-form-delete',function() {
     const urlId = parseInt($(this).attr('id').slice(16));
     $(`#add-url-form-cont-${urlId}`).remove();
+
+    // delete url id since it has yet to be saved
+    const urlIdIndex = urlIds.indexOf(urlId);
+    urlIds.splice(urlIdIndex,1);
+
 });
 
 // Edit url
@@ -404,6 +419,8 @@ $(document).on('click','.url-edit',function() {
     $(this).parents('.url-buttons').replaceWith(
         renderNewUrlForm(url,name,urlId,true,true,false,false)
     );
+
+    $(`input[id="urlName${urlId}"]`).focus();
 });
 
 // delete url data

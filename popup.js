@@ -7,8 +7,6 @@ $(document).ready(() => {
         // render preloader until url validation finishes
         const target = '#url-input';
 
-        renderPreloader(target,0);
-
         storageData = res;
 
         groupIds = Object.keys(storageData);
@@ -53,39 +51,8 @@ $(document).ready(() => {
                 url += '/';
             }
 
-
-
-            // Check whether url exists
-            axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-                .then(() => {
-                    // render url-input
-                    const preloaderTar = '#preloader-0';
-                    renderUrlInput(preloaderTar);
-
-                    $('#url').val(url);
-                    $('label[for="url"]').addClass('active');
-
-                    $('#url').removeClass('invalid');
-                    $('#url').addClass('valid');
-                    $('#url').next('span').attr('data-success','valid url');
-
-                    // if both url name && url are valid, enable submit
-                    if (title && title.length) {
-                        $('button[type="submit"]').removeClass('disabled');
-                    }
-                }, () => {
-                    const preloaderTar = '#preloader-0';
-                    renderUrlInput(preloaderTar);
-
-                    $('#url').val(url);
-                    $('label[for="url"]').addClass('active');
-
-                    $('#url').removeClass('valid');
-                    $('#url').addClass('invalid');
-                    $('#url').next('span').attr('data-error','invalid url: ex) https://www.google.com');
-                })
-
-
+            $('#url').val(url);
+            $('label[for="url"]').addClass('active');
         });
     })
 });
@@ -260,9 +227,7 @@ $('form.save-url').submit(function(e) {
     } else if (formValues[0].value === 'temporary') {
         groupId = `group${idGenerator(groupIds)}`;
 
-        const curDate = `${(new Date).toDateString()}`;
-        const curTime = `${(new Date).getHours()}:${(new Date).getMinutes()}:${(new Date).getSeconds()}`;
-        const curDateNTime = `${curDate} ${curTime}`;
+        const curDateNTime = curDateNTimeToString();
 
         storageData[groupId] = {
             groupName: `Temporary Group - ${curDateNTime}`,
@@ -274,7 +239,7 @@ $('form.save-url').submit(function(e) {
     }
 
     const validatedValues = validator(formValues,storageData,groupId,undefined);
-    console.log(formValues);
+
     if (validatedValues.submit) {
         let urlId;
         let linkName;
@@ -290,35 +255,37 @@ $('form.save-url').submit(function(e) {
             url += '/';
         }
 
-        axios.get(`${'https://cors-anywhere.herokuapp.com/'}https://besticon-demo.herokuapp.com/allicons.json?url=${url}`)
-            .then(res => {
-                let iconLink;
-                if (!res.data.icons.length) {
-                    const domainInitialIndex = (url.includes('www.')) ? url.indexOf('www.')+4 : url.indexOf('//')+2;
-                    const domainInitial = url[domainInitialIndex].toUpperCase();
-                    iconLink = `https://besticon-demo.herokuapp.com/lettericons/${domainInitial}-120.png`;
+        chrome.tabs.query({ active: true }, tabs => {
+            const { favIconUrl } = tabs[0];
+
+            let iconLink;
+
+            if (!favIconUrl || !favIconUrl.length) {
+                if (isUrlValid(url)) {
+                    iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
                 } else {
-                    iconLink = res.data.icons[0].url;
+                    iconLink = '';
                 }
+            } else {
+                iconLink = favIconUrl;
+            }
 
-                storageData[groupId].data.push({
-                    urlId,
-                    linkName,
-                    url,
-                    iconLink
-                });
-
-                chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
-                    console.log('New Group & new url has been successfully saved!');
-                    $('#cover-spin').hide(0);
-                    $.notify("url has been successfully saved!",'success');
-                    $('button[type="submit"]').addClass('disabled');
-                });
-            },err => {
-                if (err.response.status === 404) {
-                    console.log('invalid url');
-                }
+            storageData[groupId].data.push({
+                urlId,
+                linkName,
+                url,
+                iconLink
             });
+
+            chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+                console.log('New Group & new url has been successfully saved!');
+                $('#cover-spin').hide(0);
+                $.notify("url has been successfully saved!",'success');
+                $('button[type="submit"]').addClass('disabled');
+
+                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+            });
+        });
     } else {
         $('#cover-spin').hide(0);
     }

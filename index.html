@@ -13,18 +13,18 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
         <!-- farbtastic CSS -->
-        <link rel="stylesheet" href="farbtastic/farbtastic.css" type="text/css" />
+        <link rel="stylesheet" href="modules/farbtastic/farbtastic.css" type="text/css" />
 
         <!-- custom CSS -->
-        <link rel="stylesheet" href="options.css">
+        <link rel="stylesheet" href="index.css">
     </head>
 </head>
-<body>
+<body class="indigo">
     <nav>
-        <div class="nav-wrapper white">
-            <ul class="left hide-on-med-and-down">
-                <a href="" class="disabled brand-logo">
-                    <img src="logo.png" width="64" height="64"/>
+        <div class="nav-wrapper amber">
+            <ul class="left">
+                <a href="./index.html" class="brand-logo">
+                    <img src="logo-2.png" width="64" height="64" />
                 </a>
             </ul>
         </div>
@@ -33,9 +33,9 @@
         <div class="row">
             <div class="col">
                 <div class="input-field">
-                    <i class="material-icons prefix">search</i>
-                    <input id="search" type="text" class="" name="search">
-                    <label for="search">Search</label>
+                    <i class="material-icons prefix white-text">search</i>
+                    <input id="search" type="text" class="white-text" name="search">
+                    <label for="search" class="white-text">Search</label>
                 </div>
             </div>
             <div class="col right">
@@ -54,10 +54,10 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
     <!-- farbtastic js -->
-    <script type="text/javascript" src="farbtastic/farbtastic.js"></script>
+    <script type="text/javascript" src="modules/farbtastic/farbtastic.js"></script>
 
     <!-- tinyColor js -->
-    <script type="text/javascript" src="tinyColor.js"></script>
+    <script type="text/javascript" src="modules/tinyColor.js"></script>
 
     <!-- sortable js -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -78,9 +78,8 @@
     <script type="text/javascript" src="pageRenderers.js"></script>
     <script type="text/javascript" src="search.js"></script>
     <script type="text/javascript" src="helperFunctions.js"></script>
-    <script type="text/javascript" src="popupHelperFunctions.js"></script>
     <script type="text/javascript" src="validationHelper.js"></script>
-    <script type="text/javascript" src="options.js"></script>
+    <script type="text/javascript" src="index.js"></script>
 
 
 </body>

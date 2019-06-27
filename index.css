@@ -23,10 +23,6 @@ nav {
     margin-right: 10px;
 }
 
-.color-picker {
-    /*float: right;*/
-}
-
 .url-text {
     color: #2196F3;
 }
@@ -51,4 +47,21 @@ nav {
 .preloader-cont {
     display: flex;
     justify-content: center;
+}
+
+.web-icon {
+    font-size: 16px !important;
+    margin-right: 10px;
+}
+
+input[name="search"] {
+    border-bottom: 1px solid white !important;
+}
+
+.brand-logo > img {
+    margin: 0 10px 0 10px;
+}
+
+.brand-logo:hover {
+    background-color: #ffc107;
 }

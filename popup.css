@@ -46,3 +46,22 @@ body {
     display: flex;
     justify-content: center;
 }
+
+.select-dropdown {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.brand-logo > img {
+    margin-top: 5px !important;
+}
+
+input {
+    color: white;
+    border-bottom: 1px solid white !important;
+}
+
+.select-wrapper .caret {
+    fill: white;
+}

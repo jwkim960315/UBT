@@ -63,13 +63,6 @@ const morphFormValues = formValues => {
 };
 
 const validator = (formValues,data,groupId,urlId) => {
-    /*
-    * formValues = [{
-    *       name: String,
-    *       type: String,
-    *       value: String
-    * }]
-    */
 
     let submit = true;
     let result = {
@@ -87,7 +80,7 @@ const validator = (formValues,data,groupId,urlId) => {
                         message: 'url is required'
                     });
                     submit = false;
-                } else if (!isUrlValid(formValue.value)) {
+                } /*else if (!isUrlValid(formValue.value)) {
                     result.values.push({
                         name: formValue.name,
                         target: formValue.target,
@@ -103,7 +96,7 @@ const validator = (formValues,data,groupId,urlId) => {
                         message: `url exists in ${data[groupId].groupName}`
                     });
                     submit = false;
-                } else {
+                }*/ else {
                     result.values.push({
                         name: formValue.name,
                         target: formValue.target,
@@ -142,17 +135,6 @@ const validator = (formValues,data,groupId,urlId) => {
     result.submit = submit;
 
     return result;
-
-    /*
-    * result = {
-    *       submit: true || false,
-    *       values: [{
-    *           name: String,
-    *           error: Boolean,
-    *           message: String
-    *       }]
-    * }
-    */
 };
 
 const renderValidationError = (validatedValues,buttonTar) => {
@@ -168,38 +150,9 @@ const renderValidationError = (validatedValues,buttonTar) => {
         }
     });
 
-    console.log(validatedValues);
-    console.log(buttonTar);
-
-
     if (validatedValues.submit) {
         $(buttonTar).removeClass('disabled');
     } else {
         $(buttonTar).addClass('disabled');
     }
 };
-
-
-
-
-// console.log(validator([
-//     {
-//         name: 'Group Name', type: 'text', value: ''
-//     },
-//     {
-//         name: 'Group Name', type: 'text', value: 'Development'
-//     },
-//     {
-//         name: 'url1', type: 'url', value: 'dbfdsbafaefs'
-//     },
-//     {
-//         name: 'url2', type: 'url', value: ''
-//     },
-//     {
-//         name: 'url3', type: 'url', value: 'https://www.google.com'
-//     }
-// ]));
-//
-// console.log(validator([{
-//     name: 'Group Name', type: 'text', value: 'Development'
-// }]));
