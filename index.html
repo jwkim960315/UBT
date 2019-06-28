@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Tab Tab</title>
 
-    <link rel="shortcut icon" href="favicon.png" />
+    <link rel="shortcut icon" href="favicon.ico" />
 
     <head>
         <!-- materialize icons -->
@@ -17,34 +17,35 @@
         <!-- farbtastic CSS -->
         <link rel="stylesheet" href="modules/farbtastic/farbtastic.css" type="text/css" />
 
+        <!-- picker CSS -->
+        <link href="modules/pickerJQuery/src/picker.css" rel="stylesheet" />
+
         <!-- custom CSS -->
         <link rel="stylesheet" href="index.css">
     </head>
 </head>
 <body>
-    <!--<nav>-->
-        <!--<div class="nav-wrapper amber">-->
-            <!--<ul class="left">-->
-                <a href="./index.html" class="brand-logo">
-                    <img src="favicon.png" width="64" height="64" />
-                </a>
-            <!--</ul>-->
-        <!--</div>-->
-    <!--</nav>-->
+
+    <div class="logo-cont">
+        <a href="./index.html" class="brand-logo">
+            <img src="images/favicon-96x96.png" width="64" height="64" />
+        </a>
+    </div>
     <div class="container">
         <div class="row">
-            <div class="col">
-                <div class="input-field">
-                    <i class="material-icons prefix">search</i>
-                    <input id="search" type="text" name="search">
-                    <label for="search">Search</label>
+            <div class="header">
+                <div class="col">
+                    <div class="input-field">
+                        <i class="material-icons prefix search-icon">search</i>
+                        <input id="search" type="text" name="search">
+                        <label for="search">Search</label>
+                    </div>
+                </div>
+                <div class="col right">
+                    <a class="waves-effect waves-light btn add-group"><i class="material-icons">add</i>New Group</a>
                 </div>
             </div>
-            <div class="col right">
-                <a class="waves-effect waves-light btn add-group"><i class="material-icons">add</i>New Group</a>
-            </div>
         </div>
-
 
         <div class="row group-cont">
             <div class="groups-placeholder"></div>
@@ -54,6 +55,9 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+    <!-- picker js -->
+    <script type="text/javascript" src="modules/pickerJQuery/src/picker.js"></script>
 
     <!-- farbtastic js -->
     <script type="text/javascript" src="modules/farbtastic/farbtastic.js"></script>

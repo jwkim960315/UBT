@@ -181,27 +181,37 @@ $(document).on('click','.edit-group-name',function() {
     );
 });
 
-// change group color
+// change group color w/ wheel
 $(document).on('click','.change-color',function() {
     const groupId = $(this).attr('id').slice(13);
     const target = `#colorpicker-placeholder-${groupId}`;
 
-    renderColorPicker(target,groupId);
+    const hexColor = tinycolor(storageData[groupId].color).toHexString();
+
+    renderColorPicker(target,groupId,hexColor);
 
     // initialize && control color picker
-    const rgbColor = tinycolor(storageData[groupId].color).toHexString();
-
-    $.farbtastic(`#colorpicker-${groupId}`).setColor(rgbColor);
+    $.farbtastic(`#colorpicker-${groupId}`).setColor(hexColor);
     $.farbtastic(`#colorpicker-${groupId}`).linkTo(color => {
         storageData[groupId].color = color;
         const obj = {
             [groupId]: storageData[groupId]
         };
 
+        $(`#color-${groupId}`).val(color);
+
         applyColor(obj,groupId);
     });
 
     $(`#card-${groupId}`).addClass('col s12 m9');
+});
+
+// change group color w/ input
+$(document).on('propertychange change keyup paste input focusout blur click','.colorpicker-input',function() {
+    const hexColor = $(this).val();
+    const groupId = $(this).attr('id').slice(6);
+
+    $.farbtastic(`#colorpicker-${groupId}`).setColor(hexColor);
 });
 
 // save color from color picker
@@ -338,7 +348,7 @@ $(document).on('submit','.add-url-form',function(e) {
     const urlId = parseInt($(this).attr('id').slice(13));
     let url = $(`#url${urlId}`).val();
 
-    if (url.slice(-1) !== '/') {
+    if (url.slice(-1) !== '/' && url.length) {
         url += '/';
     }
 

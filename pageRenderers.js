@@ -19,7 +19,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                             <span id="${groupKey}" class="card-title">${iterableObj[groupKey].groupName}</span>
                         </div>
                         <div class="col s12 m1">
-                            <button class='dropdown-trigger btn' data-target='group-settings${groupKey.slice(5)}'><i class="material-icons">settings</i></button>
+                            <button class='dropdown-trigger btn ' data-target='group-settings${groupKey.slice(5)}'><i class="material-icons">settings</i></button>
                             <ul id='group-settings${groupKey.slice(5)}' class='dropdown-content'>
                                 <li><a id="change-color-${groupKey}" class="change-color">change color</a></li>
                                 <li class="divider" tabindex="-1"></li>
@@ -105,7 +105,7 @@ const renderNewGroupForm = (target,groupId) => {
     const isDisabled = true;
 
     $(target).append(`
-        <div class="" id="card-${groupId}">
+        <div class="card" id="card-${groupId}">
             <div class="card-content">
                 ${renderGroupForm(name,groupId,isDisabled)}
                 <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>
@@ -128,20 +128,23 @@ const renderGroupForm = (name,groupId,isDisabled) => {
                     <span class="helper-text"></span>
                 </div>
                 <div class="col s1 l1">
-                    <button id="submit-new-${groupId}" class="waves-effect waves-light btn right ${disabled}" type="submit"><i class="material-icons">save</i></button>
+                    <button id="submit-new-${groupId}" class="waves-effect waves-light btn right group-form-submit ${disabled}" type="submit"><i class="material-icons">save</i></button>
                 </div>
             </form>
         </div>
     `;
 };
 
-const renderColorPicker = (target,groupId) => {
+const renderColorPicker = (target,groupId,hexColor) => {
     $(target).replaceWith(`
         <div id="colorpicker-cont-${groupId}" class="color-picker-package-cont col s12 m2 right">
             <div class="row color-picker-cont" id="color-picker-cont${groupId}">
                 <div class="col color-picker">
                     <div id="colorpicker-${groupId}" class="color-picker-input"></div>
                 </div>
+            </div>
+            <div class="row colorpicker-input-cont">
+                <input class="colorpicker-input" type="text" id="color-${groupId}" name="color" value="${hexColor}" />
             </div>
             <div class="row color-picker-buttons-cont" id="color-picker-buttons-cont${groupId}">
                 <div class="col color-picker-buttons">
@@ -181,7 +184,7 @@ const renderNewUrlForm = (url,name,urlId,isNameInputActive,isUrlInputActive,shou
                       <span class="helper-text"></span>
                     </div>
                     <div class="col s12 l1 submit-btn-cont">
-                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn ${disabled}" type="submit"><i class="material-icons">save</i></i></button>
+                        <button id="submit-new-url-${urlId}" class="waves-effect waves-light btn url-form-submit ${disabled}" type="submit"><i class="material-icons">save</i></i></button>
                     </div>
                     ${renderUrlFormDelete(shouldRenderDelete,urlId)}
                 </div>
@@ -197,7 +200,7 @@ const renderUrlFormDelete = (shouldRender,urlId) => {
 
     return `
         <div class="col s12 l1">
-            <button id="url-form-delete-${urlId}" class="waves-effect waves-light btn red accent-2 url-form-delete" type="button"><i class="material-icons">delete</i></button>
+            <button id="url-form-delete-${urlId}" class="waves-effect waves-light btn url-form-delete" type="button"><i class="material-icons">delete</i></button>
         </div>
     `;
 };

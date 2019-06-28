@@ -1,0 +1,152 @@
+div#picker,
+div#picker *,
+div#picker *:before,
+div#picker *:after {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  border: 0;
+  background: none;
+  background-repeat: no-repeat;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: default;
+  margin: 0;
+  padding: 0;
+}
+
+div#picker {
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+div#picker.visible {
+  display: block;
+}
+
+div#picker div.picker_bg {
+  z-index: 1001;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+}
+
+div#picker div.picker_container {
+  z-index: 1002;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  width: 30%;
+  min-width: 300px;
+  padding: 1.5rem;
+  background-color: #EEEEEE;
+}
+
+div#picker div.picker_container form#picker_form {
+  float: left;
+  clear: both;
+  width: 100%;
+}
+
+div#picker div.picker_container form#picker_form div.picker_grid {
+  float: left;
+  clear: both;
+  width: 100%;
+  padding: 0.5rem;
+  -webkit-box-shadow: inset 1px 1px rgba(0, 0, 0, 0.2);
+          box-shadow: inset 1px 1px rgba(0, 0, 0, 0.2);
+  background-color: #FFFFFF;
+}
+
+div#picker div.picker_container form#picker_form div.picker_grid button {
+  float: left;
+  clear: none;
+  width: 5.55556%;
+  height: 0;
+  padding-bottom: 5.55556%;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity,
+div#picker div.picker_container form#picker_form div.picker_hex {
+  float: left;
+  clear: both;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity.picker_opacity,
+div#picker div.picker_container form#picker_form div.picker_hex.picker_opacity {
+  float: right;
+  width: 30%;
+  display: none;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity.picker_opacity.active,
+div#picker div.picker_container form#picker_form div.picker_hex.picker_opacity.active {
+  display: block;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity.picker_opacity.active + div.picker_hex,
+div#picker div.picker_container form#picker_form div.picker_hex.picker_opacity.active + div.picker_hex {
+  clear: none;
+  width: 70%;
+  padding-right: 1rem;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity label,
+div#picker div.picker_container form#picker_form div.picker_hex label {
+  float: left;
+  clear: both;
+  width: 100%;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity label span,
+div#picker div.picker_container form#picker_form div.picker_hex label span {
+  float: left;
+  clear: both;
+  width: 100%;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity label span.text,
+div#picker div.picker_container form#picker_form div.picker_hex label span.text {
+  float: left;
+  clear: both;
+  width: 100%;
+  font-size: 0.9rem;
+  line-height: 1em;
+  color: #B9B9B9;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity label span.input,
+div#picker div.picker_container form#picker_form div.picker_hex label span.input {
+  float: left;
+  clear: both;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+div#picker div.picker_container form#picker_form div.picker_opacity label span.input input,
+div#picker div.picker_container form#picker_form div.picker_hex label span.input input {
+  float: left;
+  clear: both;
+  width: 100%;
+  font-size: 1rem;
+  line-height: normal;
+  color: #000000;
+  padding: 0.75rem;
+  -webkit-box-shadow: inset 1px 1px rgba(0, 0, 0, 0.2);
+          box-shadow: inset 1px 1px rgba(0, 0, 0, 0.2);
+  background-color: #FFFFFF;
+}

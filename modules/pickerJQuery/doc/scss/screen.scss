@@ -1,0 +1,311 @@
+@import 'reset';
+@import 'webfonts';
+
+/* screen.scss */
+
+html,
+body {
+
+    font-family: 'Raleway Webfont';
+    font-weight: 300;
+    font-style: normal;
+
+    color: #111111;
+    background-color: #FFFFFF;
+
+}
+
+body {
+
+    padding-top: 6rem;
+    padding-right: 6rem;
+    padding-bottom: 10rem;
+    padding-left: 6rem;
+
+    & > header {
+
+        float: left;
+        clear: both;
+        width: 100%;
+
+        h1 {
+
+            float: left;
+            clear: both;
+            width: auto;
+
+            a {
+
+                float: left;
+                clear: both;
+                width: 7rem;
+                height: 1.4rem;
+
+                text-indent: -10000rem;
+
+                background-image: url(../images/ozpital_logo.svg);
+                background-size: 100% 100%;
+
+            }
+
+        }
+
+    }
+
+    & > main {
+
+        float: left;
+        clear: both;
+        width: 100%;
+
+        margin-top: 3rem;
+
+        & > header {
+
+            float: left;
+            clear: both;
+            width: 100%;
+
+            h2 {
+
+                float: left;
+                clear: both;
+                width: 100%;
+
+                font-size: 2rem;
+                line-height: 1em;
+
+                text-transform: uppercase;
+
+            }
+
+            p {
+
+                float: left;
+                clear: both;
+                width: 100%;
+
+                line-height: 1.8em;
+
+                margin-top: 1rem;
+
+            }
+
+        }
+
+        & > section {
+
+            float: left;
+            clear: both;
+            width: 100%;
+
+            margin-top: 4rem;
+
+            & > header {
+
+                float: left;
+                clear: both;
+                width: 100%;
+
+                & ~ header {
+                    margin-top: 4rem;
+                }
+
+                h2 {
+
+                    float: left;
+                    clear: both;
+                    width: 100%;
+
+                    font-weight: 600;
+                    font-size: 1.4rem;
+                    line-height: 1em;
+
+                    text-transform: uppercase;
+
+                }
+
+                h3 {
+
+                    float: left;
+                    clear: both;
+                    width: 100%;
+
+                    font-weight: 600;
+
+                    text-transform: uppercase;
+
+                }
+
+            }
+
+            & > p {
+
+                float: left;
+                clear: both;
+                width: 40rem;
+
+                line-height: 1.8em;
+
+                margin-top: 1.6rem;
+
+                strong {
+
+                    font-weight: 600;
+
+                }
+
+            }
+
+            & > code {
+
+                float: left;
+                clear: both;
+                width: auto;
+
+                font-family: "SourceCodePro Webfont";
+                font-weight: 500;
+                font-size: 0.9rem;
+                line-height: 1.8em;
+
+                text-align: center;
+
+                padding-top: 1rem;
+                padding-right: 2rem;
+                padding-bottom: 1rem;
+                padding-left: 2rem;
+
+                margin-top: 1.6rem;
+
+                background-color: #FFFFBF;
+
+                em {
+                    font-weight: 300;
+                    font-style: normal;
+                }
+
+            }
+
+        }
+
+        & > section#about {
+
+            padding: 3rem;
+
+            background-color: #EEEEEE;
+
+            p {
+                width: 36rem;
+            }
+
+        }
+
+        & > section#usage {
+
+            border-top: 1px solid #CCCCCC;
+            padding-top: 4rem;
+
+        }
+
+        & > section#demo {
+
+            border-top: 1px solid #CCCCCC;
+            padding-top: 4rem;
+
+            & > form {
+
+                float: left;
+                clear: none;
+                width: 100%;
+
+                fieldset {
+
+                    float: left;
+                    clear: none;
+                    width: 11.5rem;
+
+                    margin-top: 1.5rem;
+
+                    & ~ fieldset {
+                        margin-left: 4rem;
+                    }
+
+                    legend {
+
+                        float: left;
+                        clear: both;
+                        width: 100%;
+
+                        font-weight: 600;
+
+                    }
+
+                    label {
+
+                        float: left;
+                        clear: both;
+                        width: 100%;
+
+                        margin-top: 1.5rem;
+
+                        & + label {
+                            margin-top: 1rem;
+                        }
+
+                        span {
+
+                            float: left;
+                            clear: both;
+                            width: 100%;
+
+                            &.text {
+                                float: left;
+                                clear: both;
+                                width: auto;
+                            }
+
+                            &.input {
+
+                                float: left;
+                                clear: both;
+                                width: 100%;
+
+                                margin-top: 0.5rem;
+
+                                input {
+
+                                    float: left;
+                                    clear: both;
+                                    width: 100%;
+
+                                    min-height: 2.2rem;
+                                    padding: 0.5rem;
+                                    box-shadow: inset 1px 1px rgba(#000000, 0.2);
+
+                                    background-color: #FFFFFF;
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
+/**/
+/**/
+/**/
+
+@import 'responsive';
+
+

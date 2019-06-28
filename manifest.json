@@ -1,12 +1,15 @@
 {
-  "name": "Tab Tab",
+  "name": "UTab",
   "description": "Manages && organizes tabs && urls",
   "version": "1.0",
   "manifest_version": 2,
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "TabTab",
-    "default_icon": "favicon.png"
+    "default_title": "UTab",
+    "default_icon": {
+      "16": "images/favicon-16x16.png",
+      "32": "images/favicon-32x32.png"
+    }
   },
   "background": {
     "scripts": ["background.js"],
