@@ -52,7 +52,7 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
         if (!Object.keys(filteredData).length) {
             $('.group-cont').html(`
                 <div class="row no-data">
-                    <p class="white-text">No data matching with "${keyword}"</p>
+                    <p>No data matching with "${keyword}"</p>
                 </div>
             `);
         } else {

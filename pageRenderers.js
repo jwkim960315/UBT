@@ -12,7 +12,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
     iterableLst.forEach(groupKey => {
         groupsHtmlLst.push(`
             <div class="row">
-            <div class="card amber" id="card-${groupKey}">
+            <div class="card" id="card-${groupKey}">
                 <div class="card-content">
                     <div class="row" id="card-header-${groupKey}">
                         <div class="col s12 m11">
@@ -91,10 +91,10 @@ const renderUrl = (url,urlName,iconUrl,urlId) => {
                 </a>
             </div>
             <div class="col s12 m1">
-                <button id="url-edit-${urlId}" class="waves-effect waves-light btn blue lighten-1 url-edit" type="button"><i class="material-icons">edit</i></button>
+                <button id="url-edit-${urlId}" class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
             </div>
             <div class="col s12 m1">
-                <button id="url-delete-${urlId}" class="waves-effect waves-light btn red accent-2 url-delete" type="button"><i class="material-icons">delete</i></button>
+                <button id="url-delete-${urlId}" class="waves-effect waves-light btn url-delete" type="button"><i class="material-icons">delete</i></button>
             </div>
         </div>
     `;
@@ -105,7 +105,7 @@ const renderNewGroupForm = (target,groupId) => {
     const isDisabled = true;
 
     $(target).append(`
-        <div class="card amber" id="card-${groupId}">
+        <div class="" id="card-${groupId}">
             <div class="card-content">
                 ${renderGroupForm(name,groupId,isDisabled)}
                 <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>

@@ -54,14 +54,18 @@ nav {
     margin-right: 10px;
 }
 
-input[name="search"] {
-    border-bottom: 1px solid white !important;
-}
+/*input[name="search"] {*/
+    /*border-bottom: 1px solid white !important;*/
+/*}*/
 
 .brand-logo > img {
     margin: 0 10px 0 10px;
 }
 
 .brand-logo:hover {
-    background-color: #ffc107;
+    /*background-color: #ffc107;*/
+}
+
+body {
+    background-color: rgba(66,133,244,.3);
 }
