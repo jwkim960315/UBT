@@ -34,9 +34,13 @@ $(document).ready(() => {
         });
     });
 });
-// propertychange change keyup paste input focusout focusin blur
+
+$(document).on('mouseout',function() {
+
+});
+
 // search input change
-$('#search').on('change keyup paste input focusout focusin mouseout', function() {
+$('#search').on('input', function() {
     const keyword = $(this).val();
 
     if (!keyword) {
@@ -89,7 +93,7 @@ $('.add-group').click(() => {
 });
 
 // new group name on change
-$(document).on('propertychange change keyup paste input focusout blur click', '.group-name-input',function() {
+$(document).on('input', '.group-name-input',function() {
     const newGroupName = $(this).val();
     const groupId = $(this).attr('id');
     const formValues = [{
@@ -212,7 +216,7 @@ $(document).on('click','.change-color',function() {
 });
 
 // change group color w/ input
-$(document).on('propertychange change keyup paste input focusout blur click','.colorpicker-input',function() {
+$(document).on('input','.colorpicker-input',function() {
     const hexColor = $(this).val();
     const groupId = $(this).attr('id').slice(6);
 
@@ -294,7 +298,8 @@ $(document).on('click','.add-link',function() {
 });
 
 // url name input validation
-$(document).on('propertychange change keyup paste input focusout blur click','.url-name-input',function() {
+// propertychange change keyup paste input focusout blur click
+$(document).on('input','.url-name-input',function() {
     const urlName = $(this).val();
     const urlId = parseInt($(this).attr('id').slice(7));
     const url = $(`#url${urlId}`).val();
@@ -320,7 +325,7 @@ $(document).on('propertychange change keyup paste input focusout blur click','.u
 });
 
 // url input validation
-$(document).on('propertychange change keyup paste input focusout blur click','.url-input',function() {
+$(document).on('input','.url-input',function() {
     const url = $(this).val();
     const urlId = parseInt($(this).attr('id').slice(3));
     const urlName = $(`#urlName${urlId}`).val();

@@ -111,7 +111,7 @@ $('select').change(function() {
 });
 
 // group name validation
-$(document).on('propertychange change keyup paste input focusout blur','#new-group',function() {
+$(document).on('input','#new-group',function() {
     const urlName = $('input[name="urlName"]').val();
     const groupId = $('select').children('option:selected').val();
     const url = $('input[name="url"]').val();
@@ -147,7 +147,7 @@ $(document).on('propertychange change keyup paste input focusout blur','#new-gro
 });
 
 // url name validation
-$('#urlName').on('propertychange change keyup paste input focusout blur',function() {
+$('#urlName').on('input',function() {
     const urlName = $(this).val();
     const groupId = $('select').children('option:selected').val();
     const url = $('input[name="url"]').val();
