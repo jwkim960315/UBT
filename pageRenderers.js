@@ -51,8 +51,6 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
 
     $(target).replaceWith(groupsHTML);
 
-    initDND(iterableObj);
-
     Object.keys(iterableObj).forEach(groupKey => {
         applyColor(iterableObj,groupKey);
     });

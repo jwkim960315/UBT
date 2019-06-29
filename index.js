@@ -34,9 +34,9 @@ $(document).ready(() => {
         });
     });
 });
-
+// propertychange change keyup paste input focusout focusin blur
 // search input change
-$('#search').on('propertychange change keyup paste input focusout focusin blur', function() {
+$('#search').on('change keyup paste input focusout focusin mouseout', function() {
     const keyword = $(this).val();
 
     if (!keyword) {
@@ -47,6 +47,8 @@ $('#search').on('propertychange change keyup paste input focusout focusin blur',
 
         // initialize group settings dropdown
         $('.dropdown-trigger').dropdown();
+
+        initDND(storageData);
     } else {
         const filteredData = filterWithKeyword(keyword,storageData);
 
@@ -67,6 +69,8 @@ $('#search').on('propertychange change keyup paste input focusout focusin blur',
 
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
+
+            initDND(filteredData);
         }
     }
 });

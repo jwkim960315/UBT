@@ -43,5 +43,12 @@ const initDND = data => {
             evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
             */
         },
+        onChoose: event => {
+            console.log('onChoose',event);
+            initDND(data);
+        },
+        onStart: event => {
+            console.log('onStart',event);
+        }
     });
 };
