@@ -67,9 +67,7 @@ body {
 .url-form-delete,
 .group-form-submit
 {
-    /*background-color: #616161;*/
     background-color: grey;
-    /*color: #eeeeee;*/
     color: #e0e0e0;
 }
 
@@ -108,7 +106,6 @@ body {
 
 .card {
     background-color: rgba(192,192,192,.1);
-    /*background-color: rgb(15,157,88);*/
 }
 
 .search-icon {
@@ -142,4 +139,20 @@ input[id="search"]:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.dropdown-content li > a {
+    color: rgb(15,157,88);
+}
+
+.delete-group {
+    color: rgb(219,68,55) !important;
+}
+
+.edit-group-name {
+    color: rgb(66,133,244) !important;
+}
+
+.change-color {
+    color: rgb(244,160,0) !important;
 }

@@ -22,5 +22,5 @@
     "notifications",
     "contextMenus"
   ],
-  "content_security_policy": "script-src 'self' https://code.jquery.com/jquery-3.2.1.slim.min.js https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js https://unpkg.com/axios/dist/axios.min.js https://cdn.jsdelivr.net/npm/jquery-sortablejs@latest/jquery-sortable.js https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js; object-src 'self'"
+  "content_security_policy": "script-src 'self' https://code.jquery.com/jquery-3.2.1.slim.min.js https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js https://unpkg.com/axios/dist/axios.min.js https://cdn.jsdelivr.net/npm/jquery-sortablejs@latest/jquery-sortable.js https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.js https://cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js; object-src 'self'"
 }

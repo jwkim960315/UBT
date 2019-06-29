@@ -51,7 +51,7 @@ body {
     justify-content: center;
 }
 
-.select-dropdown {
+.select-wrapper input.select-dropdown {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -62,15 +62,32 @@ body {
 }
 
 input {
-    /*color: grey;*/
     border-bottom: 1px solid grey;
 }
 
-li > span {
-    color: grey !important;
+.dropdown-content li > span {
+    color: rgb(15,157,88);
 }
-
 
 .select-wrapper .caret {
     fill: grey;
+}
+
+button[type="submit"] {
+    color: #e0e0e0;
+    background-color: grey;
+}
+
+#url-submit {
+    margin-bottom: 30px !important;
+}
+
+button[type="submit"]:hover {
+    color: white;
+    background-color: rgb(15,157,88);
+}
+
+.dropdown-content {
+    overflow: scroll;
+    max-height: 250px;
 }

@@ -11,10 +11,16 @@ $(document).ready(() => {
 
         groupIds = Object.keys(storageData);
 
-        let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>Temporary Group</option>`];
+        let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>New Temporary Group</option>`];
 
         optionsHTMLLst = optionsHTMLLst.concat(groupIds
             .map(groupId => {
+                if (storageData[groupId].groupName === 'Temporary Group') {
+                    return `
+                        <option value="${groupId}">${storageData[groupId].groupName} - ${storageData[groupId].createdAt}</option>
+                    `;
+                }
+
                 return `
                     <option value="${groupId}">${storageData[groupId].groupName}</option>
                 `;
@@ -230,9 +236,10 @@ $('form.save-url').submit(function(e) {
         const curDateNTime = curDateNTimeToString();
 
         storageData[groupId] = {
-            groupName: `Temporary Group - ${curDateNTime}`,
+            groupName: 'Temporary Group',
             data: [],
-            color: 'rgb(0,0,0)'
+            color: 'rgb(0,0,0)',
+            createdAt: curDateNTime
         };
     } else {
         groupId = $('select').children('option:selected').val();

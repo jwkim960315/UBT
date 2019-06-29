@@ -36,8 +36,9 @@ $(document).ready(() => {
 });
 
 // search input change
-$('#search').on('propertychange change keyup paste input focusout blur', function() {
+$('#search').on('propertychange change keyup paste input focusout focusin blur', function() {
     const keyword = $(this).val();
+
     if (!keyword) {
         $('.group-cont').html('<div class="groups-placeholder"></div>');
 
@@ -68,7 +69,6 @@ $('#search').on('propertychange change keyup paste input focusout blur', functio
             $('.card-title').mark(keyword);
         }
     }
-
 });
 
 // add new group
@@ -125,7 +125,8 @@ $(document).on('submit','.add-group-form',function(e) {
             storageData[groupId] = {
                 groupName: inputVal,
                 data: [],
-                color: 'rgb(0,0,0)'
+                color: 'rgb(0,0,0)',
+                createdAt: curDateNTimeToString()
             };
         } else {
             storageData[groupId].groupName = inputVal;
