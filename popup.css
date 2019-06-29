@@ -1,18 +1,22 @@
 body {
     width: 300px;
     height: 500px;
+    background-color: rgba(192,192,192,.1);
 }
 
 .header {
-    background-color: aquamarine;
+    background-color: rgba(192,192,192,.5);
     margin-bottom: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #cover-spin {
     position:fixed;
     width:100%;
     left:0;right:0;top:0;bottom:0;
-    background-color: rgba(255,255,255,0.7);
+    background-color: rgba(255,255,255,.7);
     z-index:9999;
     display:none;
 }
@@ -58,10 +62,15 @@ body {
 }
 
 input {
-    color: white;
-    border-bottom: 1px solid white !important;
+    /*color: grey;*/
+    border-bottom: 1px solid grey;
 }
 
+li > span {
+    color: grey !important;
+}
+
+
 .select-wrapper .caret {
-    fill: white;
+    fill: grey;
 }
