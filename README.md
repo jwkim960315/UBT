@@ -31,6 +31,26 @@ git clone https://github.com/jwkim960315/UTab
 5. Enable Developer Mode by clicking the toggle switch next to Developer mode.
 6. Click the LOAD UNPACKED button and select the extension directory.
 
+### How to Use It
+
+* Left-click icon to open up popup page.
+* Click *Save* button to save a current page's url address
+* Right-click icon and click *Open in new tab*
+* You can manage url addresses on this page
+* You can save all url addresses on current browser window by:
+    * Right-click icon
+    * Click *Save all tabs*
+* You can switch colors of groups on *index page* by:
+    * Click on settings icon (positioned on the right corner of each group)
+    * Click on *change color*
+    * Select any color you want
+    * Click disk icon to save the color
+* You can overwrite/copy storage data by:
+    * Right-click icon
+    * Click *options* (probably in your native language)
+    * Click *Copy* if you want to copy the storage data
+    * Paste the storage data and click *Save* if you want to overwrite storage data
+
 ### Testing
 
 I have yet to test all the functionalities, so please report any issues.
