@@ -84,9 +84,10 @@ chrome.contextMenus.create({
                 const curDateNTime = curDateNTimeToString();
 
                 let tempGroupData = {
-                    groupName: `Temporary Group - ${curDateNTime}`,
+                    groupName: 'Temporary Group',
                     color: 'rgb(0,0,0)',
-                    data: []
+                    data: [],
+                    createdAt: curDateNTime
                 };
 
                 tabs.forEach(tab => {
