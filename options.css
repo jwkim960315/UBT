@@ -23,8 +23,13 @@ body {
     background-color: grey;
 }
 
-.btn:hover {
+button[type="submit"]:hover {
     background-color: rgb(15,157,88) !important;
+    color: white;
+}
+
+#copy-data:hover {
+    background-color: rgb(66,133,244);
     color: white;
 }
 
@@ -35,4 +40,15 @@ label[for="textarea"].active
 
 #textarea:focus {
     border-bottom: 1px solid rgb(15,157,88) !important;
+}
+
+#toast-container {
+    top: auto !important;
+    right: auto !important;
+    bottom: 3%;
+    left: 1%;
+}
+
+.card {
+    color: grey;
 }
