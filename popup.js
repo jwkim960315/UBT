@@ -63,6 +63,11 @@ $(document).ready(() => {
     })
 });
 
+// open manage page
+$('#settings').click(() => {
+    chrome.tabs.create({ url: 'index.html' });
+});
+
 // selected from dropdown menu
 $('select').change(function() {
     if ($(this).children('option:selected').val() === 'create-new-group') {
@@ -182,6 +187,49 @@ $('#urlName').on('input',function() {
     const buttonTar = 'button[type="submit"]';
 
     renderValidationError(validatedValues,buttonTar);
+});
+
+// url validation
+$('#url').on('input',function() {
+    const url = $(this).val();
+    const urlName = $('input[name="urlName"]').val();
+    const groupId = $('select').children('option:selected').val();
+
+    // could be undefined
+    const groupName = $('input[name="groupName"]').val();
+
+    let formValues = [];
+
+    if (groupName !== undefined) {
+        formValues.push({
+            name: 'group name',
+            target: 'input[name="groupName"]',
+            type: 'text',
+            value: groupName
+        });
+    }
+
+    formValues = formValues.concat([{
+        name: 'url name',
+        target: 'input[name="urlName"]',
+        type: 'text',
+        value: urlName
+    }, {
+        name: 'url',
+        target: 'input[name="url"]',
+        type: 'url',
+        value: url
+    }]);
+
+    const validatedValues = validator(formValues,storageData,groupId,undefined);
+    const buttonTar = 'button[type="submit"]';
+
+    renderValidationError(validatedValues,buttonTar);
+});
+
+// enable edit url once double click input
+$(document).on('dblclick','#url',function() {
+    $(this).attr('disabled',false);
 });
 
 // url submitted

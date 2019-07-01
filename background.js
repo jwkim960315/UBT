@@ -1,3 +1,5 @@
+let storageBookmarkObj = {};
+
 // generates id by sorting current url ids
 const idGenerator = lst => {
     if (!lst.length) {
@@ -64,16 +66,19 @@ const curDateNTimeToString = () => {
     return `${curDate} ${curTime}`;
 };
 
+
+// management page route
 chrome.contextMenus.create({
-    title: 'Open in new tab',
+    title: 'open management page',
     contexts: ["browser_action"],
     onclick: clickedData => {
         chrome.tabs.create({ url: 'index.html' });
     }
 });
 
+// saving all tabs route
 chrome.contextMenus.create({
-    title: 'Save all tabs',
+    title: 'save all tabs',
     contexts: ["browser_action"],
     onclick: clickedData => {
         chrome.tabs.query({ currentWindow: true }, tabs => {
@@ -115,4 +120,47 @@ chrome.contextMenus.create({
 
         });
     }
+});
+
+// export to bookmarks route
+chrome.contextMenus.create({
+    title: 'export to bookmarks',
+    contexts: ["browser_action"],
+    onclick: clickedData => {
+        chrome.storage.sync.get(null,storageData => {
+            const groupIds = Object.keys(storageData);
+            groupIds.forEach((groupId,index) => {
+                chrome.bookmarks.create({
+                    index,
+                    parentId: '1',
+                    title: storageData[groupId].groupName
+                }, bookmarkTreeNode => {
+                    // save bookmark folder id to global var
+                    storageBookmarkObj[bookmarkTreeNode.id] = { groupId };
+
+                    storageData[groupId].data.forEach(urlData => {
+                        chrome.bookmarks.create({
+                            parentId: bookmarkTreeNode.id,
+                            title: urlData.linkName,
+                            url: urlData.url
+                        });
+                    });
+                });
+            });
+        });
+    }
+});
+
+// detect any changes on bookmark groups
+chrome.bookmarks.onChanged.addListener((id,changeInfo) => {
+    console.log(id);
+    console.log(changeInfo);
+
+
+});
+
+
+chrome.contextMenus.onClicked.addListener((info,tab) => {
+    console.log(info);
+    console.log(tab);
 });

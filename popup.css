@@ -6,7 +6,7 @@ body {
 
 .header {
     background-color: rgba(192,192,192,.5);
-    margin-bottom: 50px;
+    margin-bottom: 17px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -90,4 +90,35 @@ button[type="submit"]:hover {
 .dropdown-content {
     overflow: scroll;
     max-height: 250px;
+}
+
+#settings {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    background-color: grey;
+    color: #e0e0e0;
+}
+
+#settings:hover {
+    color: white;
+    background-color: rgb(244,160,0);
+}
+
+.settings-icon {
+    margin-right: 5px;
+}
+
+.row {
+    margin-bottom: 10px;
+}
+
+/*label[for="url"].active*/
+/*{*/
+    /*color: rgb(15,157,88) !important;*/
+/*}*/
+
+input[id="url"]:focus {
+    border-bottom: 1px solid rgb(15,157,88) !important;
 }

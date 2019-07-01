@@ -71,6 +71,13 @@ $('#search').on('input', function() {
             // initialize group settings dropdown
             $('.dropdown-trigger').dropdown();
 
+            // markJS options
+            // const options = {
+            //     caseSensitive: true
+            // };
+
+            console.log(keyword);
+
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
 

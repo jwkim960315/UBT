@@ -3,7 +3,7 @@ const filterWithKeyword = (keyword,data) => {
     let res = {};
 
     groupIdLst.forEach(groupId => {
-        if (data[groupId].groupName.includes(keyword)) {
+        if (data[groupId].groupName.includes(keyword.toLowerCase()) || data[groupId].groupName.includes(keyword.toUpperCase())) {
             res[groupId] = data[groupId];
         }
 
@@ -12,7 +12,7 @@ const filterWithKeyword = (keyword,data) => {
         if (groupData.length) {
             groupData.forEach(urlData => {
 
-                if (urlData.linkName.includes(keyword)) {
+                if (urlData.linkName.includes(keyword.toLowerCase()) || urlData.linkName.includes(keyword.toUpperCase())) {
                     if (!res[groupId]) {
                         res[groupId] = {
                             groupName: data[groupId].groupName,
