@@ -65,7 +65,9 @@ body {
 .add-link,
 .url-form-submit,
 .url-form-delete,
-.group-form-submit
+.group-form-submit,
+.export-urls,
+.export-cancel
 {
     background-color: grey;
     color: #e0e0e0;
@@ -78,7 +80,9 @@ body {
 .add-link:hover,
 .url-form-submit:hover,
 .url-form-delete:hover,
-.group-form-submit:hover
+.group-form-submit:hover,
+.export-urls:hover,
+.export-cancel:hover
 {
     color: white;
 }
@@ -155,4 +159,16 @@ input[id="search"]:focus {
 
 .change-color {
     color: rgb(244,160,0) !important;
+}
+
+.export-group {
+    color: grey !important;
+}
+
+.export-urls:hover {
+    background-color: rgb(15,157,88);
+}
+
+.export-cancel:hover {
+    background-color: rgb(219,68,55);
 }

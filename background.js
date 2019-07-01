@@ -1,4 +1,5 @@
-let storageBookmarkObj = {};
+let storageBookmarkLst = [];
+let urlIds = [];
 
 // generates id by sorting current url ids
 const idGenerator = lst => {
@@ -6,54 +7,36 @@ const idGenerator = lst => {
         return 0;
     }
 
-    lst.sort();
-
-    let res;
+    lst.sort((a, b) => a - b);
 
     for (let i=0;i < lst.length;i++) {
-        if (typeof lst[i] === 'string') {
-            // if (!lst[i].includes(i)) {
-            //     return i;
-            // }
-        } else {
-            if (lst[i] !== i) {
-                return i;
-            }
+        if (!isLstGroupIds(lst) && lst[i] !== i) {
+            return i;
         }
     }
+
     if (typeof lst[0] === 'string') {
         return parseInt(lst[lst.length-1].slice(5))+1;
     } else {
         return lst[lst.length-1]+1;
     }
-
 };
+
+// check whether the list is group or url
+const isLstGroupIds = lst => typeof lst[0] === 'string';
+
 
 // converts chrome storage data to a url list
 const urlIdsToLst = data => {
-    let lst = [];
     const dataKeys = Object.keys(data);
 
     if (!dataKeys.length) {
         return [];
     }
 
-    let urlDataLst;
-
-
-    for (let i=0; i < dataKeys.length; i++) {
-        urlDataLst = data[dataKeys[i]].data;
-
-        if (!urlDataLst.length) {
-            continue;
-        }
-
-        urlDataLst.forEach(urlData => {
-
-            lst.push(urlData.urlId);
-        });
-    }
-    return lst;
+    return dataKeys
+        .map(groupId => data[groupId].data.map(({ urlId }) => urlId))
+        .reduce((accumulator,currentVal) => accumulator.concat(currentVal),[]);
 };
 
 // morph current data and time to string
@@ -81,10 +64,13 @@ chrome.contextMenus.create({
     title: 'save all tabs',
     contexts: ["browser_action"],
     onclick: clickedData => {
+
         chrome.tabs.query({ currentWindow: true }, tabs => {
             chrome.storage.sync.get(null,res => {
                 const groupId = `group${idGenerator(Object.keys(res))}`;
-                let urlIds = urlIdsToLst(res);
+                urlIds = urlIdsToLst(res);
+
+                // console.log(urlIds);
 
                 const curDateNTime = curDateNTimeToString();
 
@@ -96,7 +82,7 @@ chrome.contextMenus.create({
                 };
 
                 tabs.forEach(tab => {
-                    // console.log(tab);
+
                     const { url, title, favIconUrl } = tab;
                     const urlId = idGenerator(urlIds);
 
@@ -108,7 +94,10 @@ chrome.contextMenus.create({
                     });
 
                     urlIds.push(urlId);
+                    console.log(urlIds);
                 });
+
+
 
                 chrome.storage.sync.set({[groupId]: tempGroupData },() => {
                     console.log('saved all tabs!');
@@ -136,13 +125,19 @@ chrome.contextMenus.create({
                     title: storageData[groupId].groupName
                 }, bookmarkTreeNode => {
                     // save bookmark folder id to global var
-                    storageBookmarkObj[bookmarkTreeNode.id] = { groupId };
+                    storageBookmarkLst.push({
+                        bookmarkId: bookmarkTreeNode.id,
+                        type: 'folder',
+                        storageId: groupId
+                    });
 
-                    storageData[groupId].data.forEach(urlData => {
+                    storageData[groupId].data.forEach(({ urlId, url }) => {
                         chrome.bookmarks.create({
                             parentId: bookmarkTreeNode.id,
-                            title: urlData.linkName,
-                            url: urlData.url
+                            title: linkName,
+                            url
+                        }, urlTreeNode => {
+                            console.log(urlTreeNode);
                         });
                     });
                 });
@@ -151,16 +146,42 @@ chrome.contextMenus.create({
     }
 });
 
+
+// create group bookmark
+chrome.runtime.onMessage.addListener(({ todo, groupId, groupName, urlDataLst},sender,sendResponse) => {
+    switch(todo) {
+        case 'createGroupBookmark':
+            console.log('here');
+            chrome.bookmarks.create({
+                index: 0,
+                title: groupName,
+                parentId: '1'
+            },folderTreeNode => {
+                urlDataLst.forEach(({ url, linkName }) => {
+                    chrome.bookmarks.create({
+                        parentId: folderTreeNode.id,
+                        title: linkName,
+                        url
+                    });
+                });
+            });
+            sendResponse({ status: 'success' });
+            return;
+        default:
+            return;
+    }
+});
+
 // detect any changes on bookmark groups
-chrome.bookmarks.onChanged.addListener((id,changeInfo) => {
-    console.log(id);
-    console.log(changeInfo);
-
-
-});
-
-
-chrome.contextMenus.onClicked.addListener((info,tab) => {
-    console.log(info);
-    console.log(tab);
-});
+// chrome.bookmarks.onChanged.addListener((id,changeInfo) => {
+//     console.log(id);
+//     console.log(changeInfo);
+//
+//
+// });
+//
+//
+// chrome.contextMenus.onClicked.addListener((info,tab) => {
+//     console.log(info);
+//     console.log(tab);
+// });

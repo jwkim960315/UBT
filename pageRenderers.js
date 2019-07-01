@@ -22,6 +22,8 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                             <div class="col s12 m1">
                                 <button class='dropdown-trigger btn ' data-target='group-settings${groupKey.slice(5)}'><i class="material-icons">settings</i></button>
                                 <ul id='group-settings${groupKey.slice(5)}' class='dropdown-content'>
+                                    <li><a id="export-${groupKey}" class="export-group">export to bookmark</a></li>
+                                    <li class="divider" tabindex="-1"></li>
                                     <li><a id="change-color-${groupKey}" class="change-color">change color</a></li>
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="edit-${groupKey}" class="edit-group-name">edit group name</a></li>
@@ -134,6 +136,59 @@ const renderGroupForm = (name,groupId,isDisabled) => {
             </form>
         </div>
     `;
+};
+
+const renderExportGroupForm = (target,groupId,data) => {
+    $(target).html(`
+            <div class="card" id="card-${groupId}">
+                <div class="card-content">
+                    <div class="row" id="card-header-${groupId}">
+                        <div class="col s12 m11">
+                            <span id="${groupId}" class="card-title">${data[groupId].groupName}</span>
+                            <div class="created-at-cont"><p class="created-at">${data[groupId].createdAt}</p></div>
+                        </div>
+                    </div>
+                    <form id="export-group-form-${groupId}" class="export-group-form">
+                        <div class="url-cont" id="url-cont-${groupId}">
+                            ${renderExportUrlForm(data[groupId].data)}
+                        </div>
+                        <div id="new-url-data-${groupId}" class="row new-url-data">
+                            <div class="col">
+                                <button id="export-links-${groupId}" type="submit" class="waves-effect waves-light btn export-urls">Export</button>
+                            </div>
+                            <div class="col">
+                                <a id="export-cancel-${groupId}" class="waves-effect waves-light btn export-cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    `);
+
+
+};
+
+const renderExportUrlForm = urlDataLst => {
+    return urlDataLst.map(({ urlId, linkName }) => {
+        return `
+            <div class="row">
+                <div class="col">
+                    <p>
+                        <label for="checkbox-${urlId}">
+                            <input 
+                                class="url-checkbox" 
+                                type="checkbox" 
+                                id="checkbox-${urlId}" 
+                                checked
+                                name="checkbox-${urlId}" 
+                            />
+                            <span>${linkName}</span>
+                        </label>
+                    </p>
+                </div>
+            </div>
+        `;
+    }).join('');
 };
 
 const renderColorPicker = (target,groupId,hexColor) => {

@@ -6,7 +6,7 @@ let groupIds;
 // chrome.storage.sync.clear();
 
 // reload page once all tabs are saved
-chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
+chrome.runtime.onMessage.addListener(req => {
     if (req.todo === 'reloadMainPage') {
         location.reload();
     }
@@ -33,10 +33,6 @@ $(document).ready(() => {
             });
         });
     });
-});
-
-$(document).on('mouseout',function() {
-
 });
 
 // search input change
@@ -70,13 +66,6 @@ $('#search').on('input', function() {
 
             // initialize group settings dropdown
             $('.dropdown-trigger').dropdown();
-
-            // markJS options
-            // const options = {
-            //     caseSensitive: true
-            // };
-
-            console.log(keyword);
 
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
@@ -265,6 +254,64 @@ $(document).on('click','.close-colorpicker',function() {
     $(`#card-${groupId}`).removeClass('col s12 m9');
 });
 
+// export group onClick
+$(document).on('click','.export-group',function() {
+    const groupId = $(this).attr('id').slice(7);
+    const target = `#card-${groupId}`;
+
+    renderExportGroupForm(target,groupId,storageData);
+});
+
+// checked urls form submit
+$(document).on('submit','.export-group-form',function(e) {
+    e.preventDefault();
+
+    const groupId = $(this).attr('id').slice(18);
+
+    let formValues = $(this).serializeArray();
+
+
+    formValues = formValues.map(({ name }) => {
+        const curUrlId = parseInt(name.slice(9));
+
+        return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
+    });
+
+    chrome.runtime.sendMessage({
+        todo: 'createGroupBookmark',
+        groupId,
+        groupName: storageData[groupId].groupName,
+        urlDataLst: formValues
+    },response => {
+        if (response.status === 'success') {
+            console.log('success!');
+            const target = `#card-${groupId}`;
+
+            renderGroups(storageData,target,0,groupId);
+
+            // initialize group settings dropdown
+            $('.dropdown-trigger').dropdown();
+
+            // for editing group name
+            initDND(storageData);
+        }
+    });
+});
+
+// cancel export group
+$(document).on('click','.export-cancel',function() {
+    const groupId = $(this).attr('id').slice(14);
+    const target = `#card-${groupId}`;
+
+    renderGroups(storageData,target,0,groupId);
+
+    // initialize group settings dropdown
+    $('.dropdown-trigger').dropdown();
+
+    // for editing group name
+    initDND(storageData);
+});
+
 // open all links
 $(document).on('click','.open-all-links',function(e) {
     e.preventDefault();
@@ -281,7 +328,7 @@ $(document).on('click','.open-all-links',function(e) {
 $(document).on('click','.url-text',function(e) {
     e.preventDefault();
     const url = $(this).attr('href');
-    chrome.tabs.create({ url },() => {
+    chrome.tabs.create({ url, active: false },() => {
         console.log('tab has been created');
     });
 });

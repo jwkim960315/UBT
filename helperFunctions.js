@@ -4,9 +4,7 @@ const idGenerator = lst => {
         return 0;
     }
 
-    lst.sort();
-
-    let res;
+    lst.sort((a, b) => a - b);
 
     for (let i=0;i < lst.length;i++) {
         if (!isLstGroupIds(lst) && lst[i] !== i) {
@@ -50,29 +48,15 @@ const isLstGroupIds = lst => typeof lst[0] === 'string';
 
 // converts chrome storage data to a url list
 const urlIdsToLst = data => {
-    let lst = [];
     const dataKeys = Object.keys(data);
 
     if (!dataKeys.length) {
         return [];
     }
 
-    let urlDataLst;
-
-
-    for (let i=0; i < dataKeys.length; i++) {
-        urlDataLst = data[dataKeys[i]].data;
-
-        if (!urlDataLst.length) {
-            continue;
-        }
-        console.log(urlDataLst);
-        urlDataLst.forEach(urlData => {
-
-            lst.push(urlData.urlId);
-        });
-    }
-    return lst;
+    return dataKeys
+        .map(groupId => data[groupId].data.map(({ urlId }) => urlId))
+        .reduce((accumulator,currentVal) => accumulator.concat(currentVal),[]);
 };
 
 const curDateNTimeToString = () => {
