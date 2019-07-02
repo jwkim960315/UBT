@@ -67,7 +67,8 @@ body {
 .url-form-delete,
 .group-form-submit,
 .export-urls,
-.export-cancel
+.export-cancel,
+.open-all
 {
     background-color: grey;
     color: #e0e0e0;
@@ -82,7 +83,8 @@ body {
 .url-form-delete:hover,
 .group-form-submit:hover,
 .export-urls:hover,
-.export-cancel:hover
+.export-cancel:hover,
+.open-all:hover
 {
     color: white;
 }
@@ -171,4 +173,8 @@ input[id="search"]:focus {
 
 .export-cancel:hover {
     background-color: rgb(219,68,55);
+}
+
+.open-all:hover {
+    background-color: rgb(15,157,88);
 }

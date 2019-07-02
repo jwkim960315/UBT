@@ -157,6 +157,23 @@ $(document).on('submit','.add-group-form',function(e) {
     }
 });
 
+// group name onDblclick
+$(document).on('dblclick','.card-title',function() {
+    const groupId = $(this).attr('id');
+    const name = storageData[groupId].groupName;
+    $(`#card-header-${groupId}`).replaceWith(
+        renderGroupForm(name,groupId,false)
+    );
+});
+
+// open all links
+$(document).on('click','.open-all',function() {
+    const groupId = $(this).attr('id').slice(9);
+    const urlIdLst = storageData[groupId].data.map(({ url }) => url);
+
+    chrome.windows.create({ url: urlIdLst });
+});
+
 // delete group
 $(document).on('click','.delete-group',function() {
 

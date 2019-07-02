@@ -15,12 +15,29 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                 <div class="card" id="card-${groupKey}">
                     <div class="card-content">
                         <div class="row" id="card-header-${groupKey}">
-                            <div class="col s12 m11">
+                            <div class="col s12 m10">
                                 <span id="${groupKey}" class="card-title">${iterableObj[groupKey].groupName}</span>
                                 <div class="created-at-cont"><p class="created-at">${iterableObj[groupKey].createdAt}</p></div>
                             </div>
+                            <div class="col s12 m1 open-all-cont">
+                                <button 
+                                    id="open-all-${groupKey}" 
+                                    class="btn waves-effect waves-light btn open-all tooltipped"
+                                    data-position="top" 
+                                    data-tooltip="Open all urls"
+                                >
+                                    <i class="material-icons">tab</i>
+                                </button>
+                            </div>
                             <div class="col s12 m1">
-                                <button class='dropdown-trigger btn ' data-target='group-settings${groupKey.slice(5)}'><i class="material-icons">settings</i></button>
+                                <button 
+                                    class='dropdown-trigger btn tooltipped' 
+                                    data-target='group-settings${groupKey.slice(5)}'
+                                    data-position="right" 
+                                    data-tooltip="Settings"
+                                >
+                                    <i class="material-icons">settings</i>
+                                </button>
                                 <ul id='group-settings${groupKey.slice(5)}' class='dropdown-content'>
                                     <li><a id="export-${groupKey}" class="export-group">export to bookmark</a></li>
                                     <li class="divider" tabindex="-1"></li>
@@ -28,7 +45,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="edit-${groupKey}" class="edit-group-name">edit group name</a></li>
                                     <li class="divider" tabindex="-1"></li>
-                                    <li><a id="open-all-links-${groupKey}" class="open-all-links">open links</a></li>
+                                    <li><a id="open-all-links-${groupKey}" class="open-all-links">open urls</a></li>
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="delete-${groupKey}" class="delete-group">delete group</a></li>
                                 </ul>
@@ -56,6 +73,9 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
     Object.keys(iterableObj).forEach(groupKey => {
         applyColor(iterableObj,groupKey);
     });
+
+    // initialize tooltips
+    $('.tooltipped').tooltip();
 };
 
 const renderLinks = (groupData,index) => {
@@ -94,10 +114,26 @@ const renderUrl = (url,urlName,iconUrl,urlId) => {
                 </a>
             </div>
             <div class="col s12 m1">
-                <button id="url-edit-${urlId}" class="waves-effect waves-light btn url-edit" type="button"><i class="material-icons">edit</i></button>
+                <button 
+                    id="url-edit-${urlId}" 
+                    class="waves-effect waves-light btn url-edit tooltipped" 
+                    type="button"
+                    data-position="top" 
+                    data-tooltip="Edit"
+                >
+                    <i class="material-icons">edit</i>
+                </button>
             </div>
             <div class="col s12 m1">
-                <button id="url-delete-${urlId}" class="waves-effect waves-light btn url-delete" type="button"><i class="material-icons">delete</i></button>
+                <button 
+                    id="url-delete-${urlId}" 
+                    class="waves-effect waves-light btn url-delete tooltipped" 
+                    type="button"
+                    data-position="right" 
+                    data-tooltip="Delete"
+                >
+                    <i class="material-icons">delete</i>
+                </button>
             </div>
         </div>
     `;
