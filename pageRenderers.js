@@ -28,7 +28,7 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="edit-${groupKey}" class="edit-group-name">edit group name</a></li>
                                     <li class="divider" tabindex="-1"></li>
-                                    <li><a id="open-all-links-${groupKey}" class="open-all-links">open all links</a></li>
+                                    <li><a id="open-all-links-${groupKey}" class="open-all-links">open links</a></li>
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="delete-${groupKey}" class="delete-group">delete group</a></li>
                                 </ul>
