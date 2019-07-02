@@ -25,11 +25,6 @@ $(document).ready(() => {
 
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
-
-                // initialize group settings dropdown
-                $('.dropdown-trigger').dropdown();
-
-                initDND(storageData);
             });
         });
     });
@@ -44,11 +39,6 @@ $('#search').on('input', function() {
 
         // rendering all the storage data
         renderGroups(storageData,'.groups-placeholder',urlIds);
-
-        // initialize group settings dropdown
-        $('.dropdown-trigger').dropdown();
-
-        initDND(storageData);
     } else {
         const filteredData = filterWithKeyword(keyword,storageData);
 
@@ -64,13 +54,8 @@ $('#search').on('input', function() {
             // rendering filtered storageData
             renderGroups(filteredData,'.groups-placeholder',urlIds);
 
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
-
-            initDND(filteredData);
         }
     }
 });
@@ -147,12 +132,6 @@ $(document).on('submit','.add-group-form',function(e) {
 
             // render group w/ submitted group name
             renderGroups(storageData,`#card-${groupId}`,urlIds,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
         });
     }
 });
@@ -304,12 +283,6 @@ $(document).on('submit','.export-group-form',function(e) {
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
         }
     });
 });
@@ -320,12 +293,6 @@ $(document).on('click','.export-cancel',function() {
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
-
-    // initialize group settings dropdown
-    $('.dropdown-trigger').dropdown();
-
-    // for editing group name
-    initDND(storageData);
 });
 
 // open links onClick
@@ -363,12 +330,6 @@ $(document).on('submit','.open-group-form',function(e) {
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
         }
     });
 });
@@ -379,12 +340,6 @@ $(document).on('click','.open-cancel',function() {
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
-
-    // initialize group settings dropdown
-    $('.dropdown-trigger').dropdown();
-
-    // for editing group name
-    initDND(storageData);
 });
 
 // Url onClick
@@ -527,6 +482,10 @@ $(document).on('submit','.add-url-form',function(e) {
                 renderUrl(url,linkName,iconLink,urlId)
             );
 
+            // init tooltips
+            $('.tooltipped').tooltip();
+
+            // init DND
             initDND(storageData);
 
             applyColor(storageData,groupId);

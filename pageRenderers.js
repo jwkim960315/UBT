@@ -74,6 +74,12 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
         applyColor(iterableObj,groupKey);
     });
 
+    // initialize group settings dropdown
+    $('.dropdown-trigger').dropdown();
+
+    // initialize DND
+    initDND(iterableObj);
+
     // initialize tooltips
     $('.tooltipped').tooltip();
 };
