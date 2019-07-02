@@ -131,7 +131,7 @@ chrome.contextMenus.create({
                         storageId: groupId
                     });
 
-                    storageData[groupId].data.forEach(({ urlId, url }) => {
+                    storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
                         chrome.bookmarks.create({
                             parentId: bookmarkTreeNode.id,
                             title: linkName,

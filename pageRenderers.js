@@ -15,9 +15,19 @@ const renderGroups = (iterableObj,target,urlFormIds,groupId=false) => {
                 <div class="card" id="card-${groupKey}">
                     <div class="card-content">
                         <div class="row" id="card-header-${groupKey}">
-                            <div class="col s12 m10">
+                            <div class="col s12 m9">
                                 <span id="${groupKey}" class="card-title">${iterableObj[groupKey].groupName}</span>
                                 <div class="created-at-cont"><p class="created-at">${iterableObj[groupKey].createdAt}</p></div>
+                            </div>
+                            <div class="col s12 m1 export-whole-cont">
+                                <button 
+                                    id="export-whole-${groupKey}" 
+                                    class="btn waves-effect waves-light btn export-whole tooltipped"
+                                    data-position="left" 
+                                    data-tooltip="Export entire group to bookmark"
+                                >
+                                    <i class="material-icons">import_export</i>
+                                </button>
                             </div>
                             <div class="col s12 m1 open-all-cont">
                                 <button 

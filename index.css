@@ -68,7 +68,10 @@ body {
 .group-form-submit,
 .export-urls,
 .export-cancel,
-.open-all
+.open-urls,
+.open-cancel,
+.open-all,
+.export-whole
 {
     background-color: grey;
     color: #e0e0e0;
@@ -84,7 +87,10 @@ body {
 .group-form-submit:hover,
 .export-urls:hover,
 .export-cancel:hover,
-.open-all:hover
+.open-urls:hover,
+.open-cancel:hover,
+.open-all:hover,
+.export-whole:hover
 {
     color: white;
 }
@@ -175,6 +181,22 @@ input[id="search"]:focus {
     background-color: rgb(219,68,55);
 }
 
-.open-all:hover {
+.open-urls:hover {
     background-color: rgb(15,157,88);
+}
+
+.open-cancel:hover {
+    background-color: rgb(219,68,55);
+}
+
+
+.open-all:hover,
+.export-whole:hover
+{
+    background-color: rgb(15,157,88);
+}
+
+.card-title {
+    word-wrap: break-word;
+    /*overflow: auto;*/
 }

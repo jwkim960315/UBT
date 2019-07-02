@@ -60,12 +60,31 @@ $(document).ready(() => {
             $('#url').val(url);
             $('label[for="url"]').addClass('active');
         });
-    })
+    });
 });
 
 // open manage page
 $('#settings').click(() => {
     chrome.tabs.create({ url: 'index.html' });
+});
+
+// export all groups to bookmarks
+$('#export-to-bookmarks').click(() => {
+    groupIds.forEach((groupId,index) => {
+        chrome.bookmarks.create({
+            index,
+            parentId: '1',
+            title: storageData[groupId].groupName
+        }, bookmarkTreeNode => {
+            storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
+                chrome.bookmarks.create({
+                    parentId: bookmarkTreeNode.id,
+                    title: linkName,
+                    url
+                });
+            });
+        });
+    });
 });
 
 // selected from dropdown menu

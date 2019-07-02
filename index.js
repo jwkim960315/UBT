@@ -301,11 +301,9 @@ $(document).on('click','.open-all-links',function() {
     const target = `#card-${groupId}`;
 
     renderCheckboxGroupForm(target,groupId,storageData,'open');
-
-    // chrome.windows.create({ url: urlLst });
 });
 
-// checked urls open
+// checked urls open on tabs
 $(document).on('submit','.open-group-form',function(e) {
     e.preventDefault();
 
@@ -318,8 +316,6 @@ $(document).on('submit','.open-group-form',function(e) {
 
         return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
     }).map(urlData => urlData.url);
-
-    console.log(formValues);
 
     chrome.runtime.sendMessage({
         todo: 'openSelectedUrls',
@@ -334,12 +330,28 @@ $(document).on('submit','.open-group-form',function(e) {
     });
 });
 
-// Cancel open links
+// cancel open links
 $(document).on('click','.open-cancel',function() {
-    const groupId = $(this).attr('id').slice(14);
+    const groupId = $(this).attr('id').slice(12);
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
+});
+
+// export entire group to bookmark
+$(document).on('click','.export-whole',function() {
+    const groupId = $(this).attr('id').slice(13);
+
+    chrome.runtime.sendMessage({
+        todo: 'createGroupBookmark',
+        groupId,
+        groupName: storageData[groupId].groupName,
+        urlDataLst: storageData[groupId].data
+    },response => {
+        if (response.status === 'success') {
+            console.log('success!');
+        }
+    });
 });
 
 // Url onClick
