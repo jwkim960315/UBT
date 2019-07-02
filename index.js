@@ -358,7 +358,8 @@ $(document).on('submit','.open-group-form',function(e) {
 
 // Cancel open links
 $(document).on('click','.open-cancel',function() {
-    const groupId = $(this).attr('id').slice(14);
+    const groupId = $(this).attr('id').slice(12);
+    console.log(groupId);
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
