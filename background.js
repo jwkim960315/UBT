@@ -148,10 +148,9 @@ chrome.contextMenus.create({
 
 
 // create group bookmark
-chrome.runtime.onMessage.addListener(({ todo, groupId, groupName, urlDataLst},sender,sendResponse) => {
+chrome.runtime.onMessage.addListener(({ todo, groupId, groupName, urlDataLst, urlLst },sender,sendResponse) => {
     switch(todo) {
         case 'createGroupBookmark':
-            console.log('here');
             chrome.bookmarks.create({
                 index: 0,
                 title: groupName,
@@ -164,13 +163,20 @@ chrome.runtime.onMessage.addListener(({ todo, groupId, groupName, urlDataLst},se
                         url
                     });
                 });
+
             });
+            sendResponse({ status: 'success' });
+            return;
+        case 'openSelectedUrls':
+            chrome.windows.create({ url: urlLst });
             sendResponse({ status: 'success' });
             return;
         default:
             return;
     }
 });
+
+// create selected url tabs
 
 // detect any changes on bookmark groups
 // chrome.bookmarks.onChanged.addListener((id,changeInfo) => {

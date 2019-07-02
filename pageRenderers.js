@@ -138,7 +138,7 @@ const renderGroupForm = (name,groupId,isDisabled) => {
     `;
 };
 
-const renderExportGroupForm = (target,groupId,data) => {
+const renderCheckboxGroupForm = (target,groupId,data,type) => {
     $(target).html(`
             <div class="card" id="card-${groupId}">
                 <div class="card-content">
@@ -148,27 +148,25 @@ const renderExportGroupForm = (target,groupId,data) => {
                             <div class="created-at-cont"><p class="created-at">${data[groupId].createdAt}</p></div>
                         </div>
                     </div>
-                    <form id="export-group-form-${groupId}" class="export-group-form">
+                    <form id="${type}-group-form-${groupId}" class="${type}-group-form">
                         <div class="url-cont" id="url-cont-${groupId}">
-                            ${renderExportUrlForm(data[groupId].data)}
+                            ${renderCheckboxUrlForm(data[groupId].data)}
                         </div>
                         <div id="new-url-data-${groupId}" class="row new-url-data">
                             <div class="col">
-                                <button id="export-links-${groupId}" type="submit" class="waves-effect waves-light btn export-urls">Export</button>
+                                <button id="${type}-links-${groupId}" type="submit" class="waves-effect waves-light btn ${type}-urls">${type}</button>
                             </div>
                             <div class="col">
-                                <a id="export-cancel-${groupId}" class="waves-effect waves-light btn export-cancel">Cancel</a>
+                                <a id="${type}-cancel-${groupId}" class="waves-effect waves-light btn ${type}-cancel">Cancel</a>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
     `);
-
-
 };
 
-const renderExportUrlForm = urlDataLst => {
+const renderCheckboxUrlForm = urlDataLst => {
     return urlDataLst.map(({ urlId, linkName }) => {
         return `
             <div class="row">

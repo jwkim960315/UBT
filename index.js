@@ -259,7 +259,7 @@ $(document).on('click','.export-group',function() {
     const groupId = $(this).attr('id').slice(7);
     const target = `#card-${groupId}`;
 
-    renderExportGroupForm(target,groupId,storageData);
+    renderCheckboxGroupForm(target,groupId,storageData,'export');
 });
 
 // checked urls form submit
@@ -284,7 +284,6 @@ $(document).on('submit','.export-group-form',function(e) {
         urlDataLst: formValues
     },response => {
         if (response.status === 'success') {
-            console.log('success!');
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
@@ -312,16 +311,63 @@ $(document).on('click','.export-cancel',function() {
     initDND(storageData);
 });
 
-// open all links
-$(document).on('click','.open-all-links',function(e) {
+// open links onClick
+$(document).on('click','.open-all-links',function() {
+    const groupId = $(this).attr('id').slice(15);
+    const target = `#card-${groupId}`;
+
+    renderCheckboxGroupForm(target,groupId,storageData,'open');
+
+    // chrome.windows.create({ url: urlLst });
+});
+
+// checked urls open
+$(document).on('submit','.open-group-form',function(e) {
     e.preventDefault();
 
-    const groupId = $(this).attr('id').slice(15);
-    const urlLst = storageData[groupId].data.map(urlData => {
-        return urlData.url;
-    });
+    const groupId = $(this).attr('id').slice(16);
 
-    chrome.windows.create({ url: urlLst });
+    let formValues = $(this).serializeArray();
+
+    formValues = formValues.map(({ name }) => {
+        const curUrlId = parseInt(name.slice(9));
+
+        return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
+    }).map(urlData => urlData.url);
+
+    console.log(formValues);
+
+    chrome.runtime.sendMessage({
+        todo: 'openSelectedUrls',
+        groupId,
+        urlLst: formValues
+    },response => {
+        if (response.status === 'success') {
+            const target = `#card-${groupId}`;
+
+            renderGroups(storageData,target,0,groupId);
+
+            // initialize group settings dropdown
+            $('.dropdown-trigger').dropdown();
+
+            // for editing group name
+            initDND(storageData);
+        }
+    });
+});
+
+// Cancel open links
+$(document).on('click','.open-cancel',function() {
+    const groupId = $(this).attr('id').slice(14);
+    const target = `#card-${groupId}`;
+
+    renderGroups(storageData,target,0,groupId);
+
+    // initialize group settings dropdown
+    $('.dropdown-trigger').dropdown();
+
+    // for editing group name
+    initDND(storageData);
 });
 
 // Url onClick
