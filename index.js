@@ -5,7 +5,6 @@ let groupIds;
 
 // chrome.storage.local.clear();
 
-
 chrome.runtime.onMessage.addListener(req => {
     switch(req.todo) {
         // reload page once all tabs are saved
@@ -69,6 +68,13 @@ $('#search').on('input', function() {
             $('.card-title').mark(keyword);
         }
     }
+});
+
+// sync to account's sync storage
+$('.sync-to-account').click(async () => {
+    let localStorageData = await storageGet();
+    await syncStorageSet(localStorageData);
+    M.toast({html: 'Successfully synchronized with the account!'});
 });
 
 // add new group

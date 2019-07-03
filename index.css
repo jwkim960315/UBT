@@ -2,7 +2,11 @@
     height: 64px;
 }
 
-.add-group, .add-link, .url {
+.add-group,
+.add-link,
+.url,
+.sync-to-account
+{
     display: flex;
     align-items: center;
 }
@@ -71,7 +75,8 @@ body {
 .open-urls,
 .open-cancel,
 .open-all,
-.export-whole
+.export-whole,
+.sync-to-account
 {
     background-color: grey;
     color: #e0e0e0;
@@ -90,7 +95,8 @@ body {
 .open-urls:hover,
 .open-cancel:hover,
 .open-all:hover,
-.export-whole:hover
+.export-whole:hover,
+.sync-to-account:hover
 {
     color: white;
 }
@@ -199,4 +205,17 @@ input[id="search"]:focus {
 .card-title {
     word-wrap: break-word;
     /*overflow: auto;*/
+}
+
+.top-buttons-cont {
+    display: flex;
+    flex-direction: row;
+}
+
+.sync-to-account {
+    margin-right: 10px;
+}
+
+.sync-to-account:hover {
+    background-color: rgb(66,133,244);
 }
