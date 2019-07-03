@@ -33,6 +33,7 @@ $(document).ready(() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = tempGroupReorder(storageData,Object.keys(storageData));
                 console.log(storageData);
+                console.log(groupIds);
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
             });
@@ -115,8 +116,10 @@ $(document).on('submit','.add-group-form',function(e) {
         value: inputVal
     }];
 
-    const validatedValues = validator(formValues,storageData,'none','none');
+    console.log(formValues);
 
+    const validatedValues = validator(formValues,storageData,'none','none');
+    console.log(validatedValues);
     // check if submitted form passes all validations
     if (validatedValues.submit) {
 
@@ -127,8 +130,10 @@ $(document).on('submit','.add-group-form',function(e) {
                 color: 'rgb(0,0,0)',
                 createdAt: curDateNTimeToString()
             };
+            console.log(storageData);
         } else {
             storageData[groupId].groupName = inputVal;
+            console.log(storageData);
         }
 
         $(`#add-link-placeholder-${groupId}`).replaceWith(`
@@ -139,7 +144,7 @@ $(document).on('submit','.add-group-form',function(e) {
 
         chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
             console.log('group name successfully saved!');
-
+            console.log(storageData);
             // render group w/ submitted group name
             renderGroups(storageData,`#card-${groupId}`,urlIds,groupId);
         });
