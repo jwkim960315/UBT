@@ -367,40 +367,4 @@ chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
         });
     }
 
-
-    // chrome.storage.sync.get(null,res => {
-    //     let storageData = res;
-    //     const groupIds = Object.keys(storageData);
-    //
-    //     if (removeInfo.parentId === "1") {
-    //         // folder has been removed
-    //
-    //         const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === id)[0];
-    //
-    //         delete storageData[folderGroupId].bookmarkId;
-    //
-    //         chrome.storage.sync.set({[folderGroupId]: storageData[folderGroupId]},() => {
-    //             chrome.runtime.sendMessage({
-    //                 todo: 'updateStorageData',
-    //                 storageData
-    //             });
-    //         });
-    //
-    //     } else if (removeInfo.node.children === undefined) {
-    //         // url has been removed
-    //
-    //         const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === removeInfo.parentId)[0];
-    //
-    //         storageData[folderGroupId].data = storageData[folderGroupId].data.filter(({ bookmarkId }) => bookmarkId === id);
-    //
-    //         chrome.storage.sync.set({[folderGroupId]: storageData[folderGroupId]},() => {
-    //             chrome.runtime.sendMessage({
-    //                 todo: 'updateStorageData',
-    //                 storageData
-    //             });
-    //         });
-    //     }
-    // });
-
-
 });

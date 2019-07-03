@@ -287,7 +287,8 @@ $(document).on('submit','.export-group-form',function(e) {
         todo: 'createGroupBookmark',
         groupId,
         groupName: storageData[groupId].groupName,
-        urlDataLst: formValues
+        urlDataLst: formValues,
+        bookmarkId: storageData[groupId].bookmarkId
     }/*,response => {
         if (response.status === 'success') {
             const target = `#card-${groupId}`;
