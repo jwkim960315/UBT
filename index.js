@@ -5,10 +5,20 @@ let groupIds;
 
 // chrome.storage.sync.clear();
 
-// reload page once all tabs are saved
+
 chrome.runtime.onMessage.addListener(req => {
-    if (req.todo === 'reloadMainPage') {
-        location.reload();
+    switch(req.todo) {
+        // reload page once all tabs are saved
+        case 'reloadMainPage':
+            location.reload();
+            return;
+        case 'updateStorageData':
+            storageData = req.storageData;
+            groupIds = Object.keys(storageData);
+            urlIds = urlIdsToLst(storageData);
+            return;
+        default:
+            return;
     }
 });
 
@@ -546,3 +556,4 @@ $(document).on('click','.url-delete',function() {
 
     $(`#url-data-${urlId}`).remove();
 });
+

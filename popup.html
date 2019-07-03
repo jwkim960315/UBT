@@ -25,14 +25,39 @@
     </div>
     <div class="container">
         <div class="row">
-            <div class="col s12">
-                <button class="btn waves-effect waves-light" id="settings">Open Management Page</button>
+            <div class="col s4">
+                <button
+                        class="btn waves-effect waves-light tooltipped"
+                        id="export-to-bookmarks"
+                        data-position="top"
+                        data-tooltip="Export as bookmarks"
+                >
+                    <i class="material-icons">import_export</i>
+                </button>
+            </div>
+            <div class="col s4">
+                <button
+                        class="btn waves-effect waves-light tooltipped"
+                        id="save-all-tabs"
+                        data-position="top"
+                        data-tooltip="Save tabs"
+                >
+                    <i class="material-icons">save</i>
+                </button>
+            </div>
+            <div class="col s4">
+                <button
+                        class="btn waves-effect waves-light tooltipped"
+                        id="settings"
+                        data-position="top"
+                        data-tooltip="Open management"
+                >
+                    <i class="material-icons">settings</i>
+                </button>
             </div>
         </div>
         <div class="row">
-            <div class="col s12">
-                <button class="btn waves-effect waves-light" id="export-to-bookmarks">Export to Bookmarks</button>
-            </div>
+
         </div>
         <form class="save-url">
             <div class="row" id="group-select">
@@ -78,6 +103,7 @@
     <script type="text/javascript" src="helperFunctions.js"></script>
     <script type="text/javascript" src="validationHelper.js"></script>
     <script type="text/javascript" src="popupRenderers.js"></script>
+    <script type="text/javascript" src="togglePopupButtons.js"></script>
     <script type="text/javascript" src="popup.js"></script>
 
 </body>

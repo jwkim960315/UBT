@@ -1,5 +1,6 @@
 let storageData;
 let groupIds;
+let storageBookmarkLst;
 
 $(document).ready(() => {
 
@@ -60,6 +61,54 @@ $(document).ready(() => {
             $('#url').val(url);
             $('label[for="url"]').addClass('active');
         });
+
+        // init tooltips
+        $('.tooltipped').tooltip();
+    });
+});
+
+// save all tabs
+$('#save-all-tabs').click(function() {
+    disableButtons();
+
+    chrome.tabs.query({ currentWindow: true }, tabs => {
+        const groupId = `group${idGenerator(groupIds)}`;
+        urlIds = urlIdsToLst(storageData);
+
+        const curDateNTime = curDateNTimeToString();
+
+        let tempGroupData = {
+            groupName: 'Temporary Group',
+            color: 'rgb(0,0,0)',
+            data: [],
+            createdAt: curDateNTime
+        };
+
+        tabs.forEach(tab => {
+
+            const { url, title, favIconUrl } = tab;
+            const urlId = idGenerator(urlIds);
+
+            tempGroupData.data.push({
+                urlId,
+                linkName: title,
+                iconLink: favIconUrl,
+                url
+            });
+
+            urlIds.push(urlId);
+        });
+
+        chrome.storage.sync.set({[groupId]: tempGroupData },() => {
+            chrome.storage.sync.get(null, res => {
+                storageData = res;
+                groupIds = Object.keys(storageData);
+                $.notify("saved all tabs",'success');
+                enableButtons();
+                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+            });
+
+        });
     });
 });
 
@@ -70,21 +119,31 @@ $('#settings').click(() => {
 
 // export all groups to bookmarks
 $('#export-to-bookmarks').click(() => {
+    const bookmarkDataNum = Object.keys(storageData).length + urlIdsToLst(storageData).length;
+    let counter = 0;
+
     groupIds.forEach((groupId,index) => {
         chrome.bookmarks.create({
             index,
             parentId: '1',
             title: storageData[groupId].groupName
         }, bookmarkTreeNode => {
+            counter++;
             storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
                 chrome.bookmarks.create({
                     parentId: bookmarkTreeNode.id,
                     title: linkName,
                     url
+                }, urlBookmarkTreeNode => {
+                    counter++;
+                    if (counter === bookmarkDataNum) {
+                        $.notify("Export all groups as bookmarks",'success');
+                    }
                 });
             });
         });
     });
+
 });
 
 // selected from dropdown menu
@@ -364,3 +423,8 @@ $('form.save-url').submit(function(e) {
         $('#cover-spin').hide(0);
     }
 });
+
+// chrome.storage.onChanged.addListener((change,areaName) => {
+//     console.log(change);
+//     console.log(areaName);
+// });
