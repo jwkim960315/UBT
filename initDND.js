@@ -1,4 +1,5 @@
 const initDND = data => {
+    $('.url-cont').sortable('destroy');
     $('.url-cont').sortable({
         // SortableJS options go here
         // See: (https://github.com/SortableJS/Sortable#options)

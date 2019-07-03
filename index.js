@@ -16,6 +16,7 @@ chrome.runtime.onMessage.addListener(req => {
             storageData = req.storageData;
             groupIds = Object.keys(storageData);
             urlIds = urlIdsToLst(storageData);
+            initDND(storageData);
             return;
         default:
             return;
@@ -27,12 +28,11 @@ $(document).ready(() => {
     chrome.storage.sync.get(null,res => {
         // setting storageData to global var
         storageData = storageDataGroupIdModifier(res); // Re-assign group ids
-        console.log(storageData);
         chrome.storage.sync.clear(() => {
             chrome.storage.sync.set(storageData,() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = tempGroupReorder(storageData,Object.keys(storageData));
-
+                console.log(storageData);
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
             });
@@ -288,13 +288,17 @@ $(document).on('submit','.export-group-form',function(e) {
         groupId,
         groupName: storageData[groupId].groupName,
         urlDataLst: formValues
-    },response => {
+    }/*,response => {
         if (response.status === 'success') {
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
         }
-    });
+    }*/);
+
+    const target = `#card-${groupId}`;
+
+    renderGroups(storageData,target,0,groupId);
 });
 
 // cancel export group
@@ -331,13 +335,17 @@ $(document).on('submit','.open-group-form',function(e) {
         todo: 'openSelectedUrls',
         groupId,
         urlLst: formValues
-    },response => {
+    }/*,response => {
         if (response.status === 'success') {
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
         }
-    });
+    }*/);
+
+    const target = `#card-${groupId}`;
+
+    renderGroups(storageData,target,0,groupId);
 });
 
 // cancel open links
@@ -352,16 +360,19 @@ $(document).on('click','.open-cancel',function() {
 $(document).on('click','.export-whole',function() {
     const groupId = $(this).attr('id').slice(13);
 
+    console.log(storageData[groupId].bookmarkId);
+
     chrome.runtime.sendMessage({
         todo: 'createGroupBookmark',
         groupId,
         groupName: storageData[groupId].groupName,
-        urlDataLst: storageData[groupId].data
-    },response => {
+        urlDataLst: storageData[groupId].data,
+        bookmarkId: storageData[groupId].bookmarkId
+    }/*,response => {
         if (response.status === 'success') {
             console.log('success!');
         }
-    });
+    }*/);
 });
 
 // Url onClick

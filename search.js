@@ -18,7 +18,8 @@ const filterWithKeyword = (keyword,data) => {
                             groupName: data[groupId].groupName,
                             data     : [],
                             color: data[groupId].color,
-                            createdAt: data[groupId].createdAt
+                            createdAt: data[groupId].createdAt,
+                            bookmarkId: data[groupId].bookmarkId
                         };
 
                         res[groupId].data.push(urlData);

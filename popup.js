@@ -1,6 +1,5 @@
 let storageData;
 let groupIds;
-let storageBookmarkLst;
 
 $(document).ready(() => {
 
@@ -118,31 +117,73 @@ $('#settings').click(() => {
 });
 
 // export all groups to bookmarks
-$('#export-to-bookmarks').click(() => {
-    const bookmarkDataNum = Object.keys(storageData).length + urlIdsToLst(storageData).length;
-    let counter = 0;
+$('#export-to-bookmarks').click(async () => {
+    let storageData = await storageGet();
+    const groupIds = Object.keys(storageData);
+    const treeNodes = await treesGet();
+    await asyncForEach(groupIds,async (groupId,index) => {
+        const groupBookmarkId = storageData[groupId].bookmarkId;
 
-    groupIds.forEach((groupId,index) => {
-        chrome.bookmarks.create({
+        if (groupBookmarkId && treeNodes[0].children[0].children.some(({ id }) => groupBookmarkId === id)) {
+            await bookmarksRemove(groupBookmarkId);
+        }
+
+        const bookmarkTreeNode = await bookmarkCreate({
             index,
-            parentId: '1',
+            parentId: "1",
             title: storageData[groupId].groupName
-        }, bookmarkTreeNode => {
-            counter++;
-            storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
-                chrome.bookmarks.create({
+        });
+
+        // saving group bookmark id
+        storageData[groupId].bookmarkId = bookmarkTreeNode.id;
+
+        if (!storageData[groupId].data.length) {
+            await storageSet({ [groupId]: storageData[groupId] });
+        } else {
+            await asyncForEach(storageData[groupId].data,async ({ urlId, url, linkName },urlIndex) => {
+                const urlTreeNode = await bookmarkCreate({
                     parentId: bookmarkTreeNode.id,
                     title: linkName,
                     url
-                }, urlBookmarkTreeNode => {
-                    counter++;
-                    if (counter === bookmarkDataNum) {
-                        $.notify("Export all groups as bookmarks",'success');
-                    }
                 });
+
+                // saving url bookmark id
+                storageData[groupId].data[urlIndex].bookmarkId = urlTreeNode.id;
+                storageData[groupId].data[urlIndex].parentBookmarkId = urlTreeNode.parentId;
+
             });
-        });
+
+            await storageSet({ [groupId]: storageData[groupId] });
+        }
     });
+
+
+
+
+    // const bookmarkDataNum = Object.keys(storageData).length + urlIdsToLst(storageData).length;
+    // let counter = 0;
+    //
+    // groupIds.forEach((groupId,index) => {
+    //     chrome.bookmarks.create({
+    //         index,
+    //         parentId: '1',
+    //         title: storageData[groupId].groupName
+    //     }, bookmarkTreeNode => {
+    //         counter++;
+    //         storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
+    //             chrome.bookmarks.create({
+    //                 parentId: bookmarkTreeNode.id,
+    //                 title: linkName,
+    //                 url
+    //             }, urlBookmarkTreeNode => {
+    //                 counter++;
+    //                 if (counter === bookmarkDataNum) {
+    //                     $.notify("Export all groups as bookmarks",'success');
+    //                 }
+    //             });
+    //         });
+    //     });
+    // });
 
 });
 
@@ -354,7 +395,8 @@ $('form.save-url').submit(function(e) {
         storageData[groupId] = {
             groupName: formValues[0].value,
             data: [],
-            color: 'rgb(0,0,0)'
+            color: 'rgb(0,0,0)',
+            createdAt: curDateNTimeToString()
         };
     } else if (formValues[0].value === 'temporary') {
         groupId = `group${idGenerator(groupIds)}`;
@@ -424,7 +466,14 @@ $('form.save-url').submit(function(e) {
     }
 });
 
-// chrome.storage.onChanged.addListener((change,areaName) => {
-//     console.log(change);
-//     console.log(areaName);
-// });
+chrome.runtime.onMessage.addListener(req => {
+    switch(req.todo) {
+        case 'updateStorageData':
+            storageData = req.storageData;
+            groupIds = Object.keys(storageData);
+            console.log(storageData);
+            return;
+        default:
+            return;
+    }
+});
