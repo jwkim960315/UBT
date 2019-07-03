@@ -1,5 +1,5 @@
 $(document).ready(() => {
-    chrome.storage.sync.get(null, res => {
+    chrome.storage.local.get(null, res => {
         $('#data-display-area').html(`<pre>${JSON.stringify(res,undefined,4)}</pre>`);
     });
 });
@@ -14,8 +14,8 @@ $('#submit-data-form').on('submit',function(e) {
     e.preventDefault();
 
     const data = JSON.parse($('#textarea').val());
-    chrome.storage.sync.clear(() => {
-        chrome.storage.sync.set(data,() => {
+    chrome.storage.local.clear(() => {
+        chrome.storage.local.set(data,() => {
             M.toast({html: 'Successfully overwritten data!'});
             chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
         });

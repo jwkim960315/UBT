@@ -52,7 +52,7 @@ const curDateNTimeToString = () => {
 };
 
 // init background page
-chrome.storage.sync.get(null, res => {
+chrome.storage.local.get(null, res => {
     // storageData = res;
     const groupIds = Object.keys(res);
 
@@ -121,7 +121,7 @@ const bookmarkGetSubTree = async bookmarkId => {
 // chrome storage set
 const storageSet = async (modifiedData) => {
     return new Promise(resolve => {
-        chrome.storage.sync.set(modifiedData,() => {
+        chrome.storage.local.set(modifiedData,() => {
             return resolve('successfully updated storage');
         });
     });
@@ -130,7 +130,7 @@ const storageSet = async (modifiedData) => {
 // chrome storage get
 const storageGet = async () => {
     return new Promise(resolve => {
-        chrome.storage.sync.get(null,res => {
+        chrome.storage.local.get(null,res => {
             return resolve(res);
         });
     });
@@ -317,7 +317,7 @@ chrome.runtime.onMessage.addListener( async ({ todo, groupId, groupName, urlData
 
                     await storageSet({[groupId]: storageData[groupId]});
 
-                    chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+                    chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
                         chrome.runtime.sendMessage({
                             todo: 'updateStorageData',
                             storageData

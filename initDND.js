@@ -25,9 +25,9 @@ const initDND = data => {
             }
 
 
-            chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
+            chrome.storage.local.set({[oldGroupId]: data[oldGroupId]},() => {
                 console.log('Old group has been updated!');
-                chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
+                chrome.storage.local.set({[newGroupId]: data[newGroupId]}, () => {
                     console.log('New group has been updated!');
                 });
             });

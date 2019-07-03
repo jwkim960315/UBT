@@ -56,7 +56,7 @@ const bookmarkGetSubTree = async bookmarkId => {
 // chrome storage set
 const storageSet = async (modifiedData) => {
     return new Promise(resolve => {
-        chrome.storage.sync.set(modifiedData,() => {
+        chrome.storage.local.set(modifiedData,() => {
             return resolve('successfully updated storage');
         });
     });
@@ -65,7 +65,7 @@ const storageSet = async (modifiedData) => {
 // chrome storage get
 const storageGet = async () => {
     return new Promise(resolve => {
-        chrome.storage.sync.get(null,res => {
+        chrome.storage.local.get(null,res => {
             return resolve(res);
         });
     });

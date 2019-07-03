@@ -3,7 +3,7 @@ let groupIds;
 
 $(document).ready(() => {
 
-    chrome.storage.sync.get(null, res => {
+    chrome.storage.local.get(null, res => {
         // render preloader until url validation finishes
         const target = '#url-input';
 
@@ -98,8 +98,8 @@ $('#save-all-tabs').click(function() {
             urlIds.push(urlId);
         });
 
-        chrome.storage.sync.set({[groupId]: tempGroupData },() => {
-            chrome.storage.sync.get(null, res => {
+        chrome.storage.local.set({[groupId]: tempGroupData },() => {
+            chrome.storage.local.get(null, res => {
                 storageData = res;
                 groupIds = Object.keys(storageData);
                 $.notify("saved all tabs",'success');
@@ -452,7 +452,7 @@ $('form.save-url').submit(function(e) {
                 iconLink
             });
 
-            chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+            chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
                 console.log('New Group & new url has been successfully saved!');
                 $('#cover-spin').hide(0);
                 $.notify("url has been successfully saved!",'success');

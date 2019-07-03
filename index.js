@@ -3,7 +3,7 @@ let storageData;
 let urlIds;
 let groupIds;
 
-// chrome.storage.sync.clear();
+// chrome.storage.local.clear();
 
 
 chrome.runtime.onMessage.addListener(req => {
@@ -25,11 +25,11 @@ chrome.runtime.onMessage.addListener(req => {
 
 // initialization
 $(document).ready(() => {
-    chrome.storage.sync.get(null,res => {
+    chrome.storage.local.get(null,res => {
         // setting storageData to global var
         storageData = storageDataGroupIdModifier(res); // Re-assign group ids
-        chrome.storage.sync.clear(() => {
-            chrome.storage.sync.set(storageData,() => {
+        chrome.storage.local.clear(() => {
+            chrome.storage.local.set(storageData,() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = tempGroupReorder(storageData,Object.keys(storageData));
                 console.log(storageData);
@@ -137,7 +137,7 @@ $(document).on('submit','.add-group-form',function(e) {
             </div>
         `);
 
-        chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+        chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
             console.log('group name successfully saved!');
 
             // render group w/ submitted group name
@@ -172,7 +172,7 @@ $(document).on('click','.delete-group',function() {
 
     groupIds = groupIds.filter(groupId => groupId !== deletingGroupId);
 
-    chrome.storage.sync.remove(deletingGroupId,() => {
+    chrome.storage.local.remove(deletingGroupId,() => {
         console.log('successfully deleted group!');
     });
 
@@ -236,7 +236,7 @@ $(document).on('click','.save-color',function() {
 
     storageData[groupId].color = color;
 
-    chrome.storage.sync.set({[groupId]: storageData[groupId]}, () => {
+    chrome.storage.local.set({[groupId]: storageData[groupId]}, () => {
         console.log('color has been saved successfully!');
 
         $(`#close-colorpicker-${groupId}`).trigger('click');
@@ -252,7 +252,7 @@ $(document).on('click','.close-colorpicker',function() {
     `);
 
     // apply previous color
-    chrome.storage.sync.get([groupId], groupData => {
+    chrome.storage.local.get([groupId], groupData => {
         applyColor(groupData, groupId);
         storageData[groupId].color = groupData[groupId].color;
     });
@@ -507,7 +507,7 @@ $(document).on('submit','.add-url-form',function(e) {
             });
         }
 
-        chrome.storage.sync.set({
+        chrome.storage.local.set({
             [groupId]: storageData[groupId]
         },() => {
             console.log('stored successfully!');
@@ -564,7 +564,7 @@ $(document).on('click','.url-delete',function() {
         }
     });
 
-    chrome.storage.sync.set({[groupId]: storageData[groupId]});
+    chrome.storage.local.set({[groupId]: storageData[groupId]});
 
     $(`#url-data-${urlId}`).remove();
 });
