@@ -300,16 +300,10 @@ $(document).on('submit','.export-group-form',function(e) {
         groupName: storageData[groupId].groupName,
         urlDataLst: formValues,
         bookmarkId: storageData[groupId].bookmarkId
-    }/*,response => {
-        if (response.status === 'success') {
-            const target = `#card-${groupId}`;
-
-            renderGroups(storageData,target,0,groupId);
-        }
-    }*/);
+    });
 
     const target = `#card-${groupId}`;
-
+    M.toast({html: 'Successfully synchronized with bookmarks!'});
     renderGroups(storageData,target,0,groupId);
 });
 
@@ -372,19 +366,15 @@ $(document).on('click','.open-cancel',function() {
 $(document).on('click','.export-whole',function() {
     const groupId = $(this).attr('id').slice(13);
 
-    console.log(storageData[groupId].bookmarkId);
-
     chrome.runtime.sendMessage({
         todo: 'createGroupBookmark',
         groupId,
         groupName: storageData[groupId].groupName,
         urlDataLst: storageData[groupId].data,
         bookmarkId: storageData[groupId].bookmarkId
-    }/*,response => {
-        if (response.status === 'success') {
-            console.log('success!');
-        }
-    }*/);
+    });
+
+    M.toast({html: 'Successfully synchronized with bookmarks!'});
 });
 
 // Url onClick

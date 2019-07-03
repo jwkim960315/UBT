@@ -219,3 +219,10 @@ input[id="search"]:focus {
 .sync-to-account:hover {
     background-color: rgb(66,133,244);
 }
+
+#toast-container {
+    top: auto !important;
+    right: auto !important;
+    bottom: 3%;
+    left: 1%;
+}
