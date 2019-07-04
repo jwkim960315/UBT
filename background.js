@@ -166,11 +166,22 @@ const treesGet = async () => {
 
 /*----------------------------------------------------------------------------------------------*/
 
+// execute once loaded
+chrome.windows.onCreated.addListener(window => {
+    chrome.tabs.query({ windowId: window.id }, tabs => {
+        chrome.tabs.update(tabs[0].id,{
+            active: true, url: 'index.html'
+        });
+    });
+});
+
+
+
 // management page route
 chrome.contextMenus.create({
     title: 'open management page',
     contexts: ["browser_action"],
-    onclick: async clickedData => {
+    onclick: async () => {
         await tabsCreate({ url: 'index.html' });
     }
 });

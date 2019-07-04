@@ -23,7 +23,11 @@ chrome.runtime.onMessage.addListener(req => {
 });
 
 // initialization
-$(document).ready(() => {
+$(document).ready(async () => {
+    let storageData = storageDataGroupIdModifier(await storageGet());
+    await storageClear();
+
+
     chrome.storage.local.get(null,res => {
         // setting storageData to global var
         storageData = storageDataGroupIdModifier(res); // Re-assign group ids

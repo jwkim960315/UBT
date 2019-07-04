@@ -71,6 +71,15 @@ const storageGet = async () => {
     });
 };
 
+// chrome storage clear
+const storageClear = async () => {
+    return new Promise(resolve => {
+        chrome.storage.local.clear(() => {
+            return resolve('cleared!');
+        });
+    });
+};
+
 // chrome sync storage get
 const syncStorageGet = async () => {
     return new Promise(resolve => {
