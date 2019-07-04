@@ -73,14 +73,10 @@ body {
 .export-urls,
 .export-cancel,
 .open-urls,
-<<<<<<< HEAD
-.open-cancel
-=======
 .open-cancel,
 .open-all,
 .export-whole,
 .sync-to-account
->>>>>>> 41aae5727d109e8e9dcd0cc14fbbc7ab1aa7d4e2
 {
     background-color: grey;
     color: #e0e0e0;
@@ -97,14 +93,10 @@ body {
 .export-urls:hover,
 .export-cancel:hover,
 .open-urls:hover,
-<<<<<<< HEAD
-.open-cancel:hover
-=======
 .open-cancel:hover,
 .open-all:hover,
 .export-whole:hover,
 .sync-to-account:hover
->>>>>>> 41aae5727d109e8e9dcd0cc14fbbc7ab1aa7d4e2
 {
     color: white;
 }
