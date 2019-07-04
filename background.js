@@ -1,7 +1,4 @@
 let storageBookmarkLst = [];
-let storageData;
-// let groupIds;
-// let urlIds = [];
 
 // generates id by sorting current url ids
 const idGenerator = lst => {
@@ -216,9 +213,9 @@ chrome.contextMenus.create({
     }
 });
 
-// export to bookmarks route
+// sync with bookmarks route
 chrome.contextMenus.create({
-    title: 'export to bookmarks',
+    title: 'sync with bookmarks',
     contexts: ["browser_action"],
     onclick: async () => {
         let storageData = await storageGet();
@@ -259,7 +256,7 @@ chrome.contextMenus.create({
                 await storageSet({ [groupId]: storageData[groupId] });
             }
         });
-
+        console.log(storageData);
         chrome.runtime.sendMessage({
             todo: 'updateStorageData',
             storageData
@@ -346,29 +343,56 @@ chrome.runtime.onMessage.addListener( async ({ todo, groupId, groupName, urlData
 });
 
 chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
+    console.log('bookmark has been removed');
+    console.log(removeInfo);
 
     let storageData = await storageGet();
+
     const groupIds = Object.keys(storageData);
 
     if (removeInfo.parentId === '1') {
         const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === id)[0];
 
-        delete storageData[folderGroupId].bookmarkId;
+        if (folderGroupId && storageData[folderGroupId].bookmarkId) {
+            delete storageData[folderGroupId].bookmarkId;
 
-        await storageSet({[folderGroupId]: storageData[folderGroupId]});
-        chrome.runtime.sendMessage({
-            todo: 'updateStorageData',
-            storageData
-        });
+            await storageSet({[folderGroupId]: storageData[folderGroupId]});
+            chrome.runtime.sendMessage({
+                todo: 'updateStorageData',
+                storageData
+            });
+        }
+
+
     } else if (removeInfo.node.children === undefined) {
-        const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === removeInfo.parentId)[0];
 
-        storageData[folderGroupId].data = storageData[folderGroupId].data.filter(({ bookmarkId }) => bookmarkId === id);
-        await storageSet({[folderGroupId]: storageData[folderGroupId]});
-        chrome.runtime.sendMessage({
-            todo: 'updateStorageData',
-            storageData
-        });
+        const folderGroupId = groupIds.filter(groupId => {
+            return storageData[groupId].data.some(({ bookmarkId }) => bookmarkId === id);
+        })[0];
+
+        if (folderGroupId) {
+            let index;
+
+            storageData[folderGroupId].data.forEach(({ bookmarkId },i) => {
+                if (bookmarkId === id) {
+                    index = i;
+                }
+            });
+
+            if (index && storageData[folderGroupId].data[index].bookmarkId) {
+                delete storageData[folderGroupId].data[index].bookmarkId;
+            }
+
+
+
+            await storageSet({[folderGroupId]: storageData[folderGroupId]});
+            chrome.runtime.sendMessage({
+                todo: 'updateStorageData',
+                storageData
+            });
+        }
+
+
     }
 
 });

@@ -7,6 +7,7 @@ const initDND = data => {
         animation: 150,
         draggable: '.url-buttons',
         onEnd: event => {
+            console.log(data);
             const oldGroupId = $(event.from).prop('id').slice(9);
             const newGroupId = $(event.to).prop('id').slice(9);
             const { oldDraggableIndex, newDraggableIndex } = event;
