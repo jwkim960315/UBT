@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tab Tab</title>
+    <title>UTab</title>
 
     <link rel="shortcut icon" href="favicon.ico" />
 
-    <head>
-        <!-- materialize icons -->
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-              rel="stylesheet">
+    <!-- materialize icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
 
-        <!-- materialize CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
-        <!-- farbtastic CSS -->
-        <link rel="stylesheet" href="modules/farbtastic/farbtastic.css" type="text/css" />
+    <!-- farbtastic CSS -->
+    <link rel="stylesheet" href="modules/farbtastic/farbtastic.css" type="text/css" />
 
-        <!-- custom CSS -->
-        <link rel="stylesheet" href="index.css">
-    </head>
+    <!-- custom CSS -->
+    <link rel="stylesheet" href="index.css">
+
 </head>
 <body>
 
@@ -31,14 +30,15 @@
     <div class="container">
         <div class="row">
             <div class="header">
-                <div class="col">
+                <div class="col ">
                     <div class="input-field">
                         <i class="material-icons prefix search-icon">search</i>
                         <input id="search" type="text" name="search">
                         <label for="search">Search</label>
                     </div>
                 </div>
-                <div class="col right">
+                <div class="col top-buttons-cont">
+                    <a class="waves-effect waves-light btn sync-to-account"><i class="material-icons">sync</i>Sync to Account</a>
                     <a class="waves-effect waves-light btn add-group"><i class="material-icons">add</i>New Group</a>
                 </div>
             </div>
@@ -76,6 +76,7 @@
     <script type="text/javascript" src="search.js"></script>
     <script type="text/javascript" src="helperFunctions.js"></script>
     <script type="text/javascript" src="validationHelper.js"></script>
+    <script type="text/javascript" src="asyncFunctions.js"></script>
     <script type="text/javascript" src="index.js"></script>
 
 

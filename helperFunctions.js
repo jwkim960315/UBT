@@ -4,7 +4,11 @@ const idGenerator = lst => {
         return 0;
     }
 
-    lst.sort((a, b) => a - b);
+    if (typeof lst[0] === 'string') {
+        lst.sort((a, b) => parseInt(a.slice(5)) - parseInt(b.slice(5)));
+    } else {
+        lst.sort((a, b) => a - b);
+    }
 
     for (let i=0;i < lst.length;i++) {
         if (!isLstGroupIds(lst) && lst[i] !== i) {

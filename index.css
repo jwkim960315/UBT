@@ -2,7 +2,11 @@
     height: 64px;
 }
 
-.add-group, .add-link, .url {
+.add-group,
+.add-link,
+.url,
+.sync-to-account
+{
     display: flex;
     align-items: center;
 }
@@ -69,7 +73,14 @@ body {
 .export-urls,
 .export-cancel,
 .open-urls,
+<<<<<<< HEAD
 .open-cancel
+=======
+.open-cancel,
+.open-all,
+.export-whole,
+.sync-to-account
+>>>>>>> 41aae5727d109e8e9dcd0cc14fbbc7ab1aa7d4e2
 {
     background-color: grey;
     color: #e0e0e0;
@@ -86,7 +97,14 @@ body {
 .export-urls:hover,
 .export-cancel:hover,
 .open-urls:hover,
+<<<<<<< HEAD
 .open-cancel:hover
+=======
+.open-cancel:hover,
+.open-all:hover,
+.export-whole:hover,
+.sync-to-account:hover
+>>>>>>> 41aae5727d109e8e9dcd0cc14fbbc7ab1aa7d4e2
 {
     color: white;
 }
@@ -179,4 +197,44 @@ input[id="search"]:focus {
 .export-cancel:hover
 {
     background-color: rgb(219,68,55);
+}
+
+.open-urls:hover {
+    background-color: rgb(15,157,88);
+}
+
+.open-cancel:hover {
+    background-color: rgb(219,68,55);
+}
+
+
+.open-all:hover,
+.export-whole:hover
+{
+    background-color: rgb(15,157,88);
+}
+
+.card-title {
+    word-wrap: break-word;
+    /*overflow: auto;*/
+}
+
+.top-buttons-cont {
+    display: flex;
+    flex-direction: row;
+}
+
+.sync-to-account {
+    margin-right: 10px;
+}
+
+.sync-to-account:hover {
+    background-color: rgb(15,157,88);
+}
+
+#toast-container {
+    top: auto !important;
+    right: auto !important;
+    bottom: 3%;
+    left: 1%;
 }

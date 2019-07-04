@@ -1,4 +1,5 @@
 const initDND = data => {
+    $('.url-cont').sortable('destroy');
     $('.url-cont').sortable({
         // SortableJS options go here
         // See: (https://github.com/SortableJS/Sortable#options)
@@ -6,6 +7,7 @@ const initDND = data => {
         animation: 150,
         draggable: '.url-buttons',
         onEnd: event => {
+            console.log(data);
             const oldGroupId = $(event.from).prop('id').slice(9);
             const newGroupId = $(event.to).prop('id').slice(9);
             const { oldDraggableIndex, newDraggableIndex } = event;
@@ -24,9 +26,9 @@ const initDND = data => {
             }
 
 
-            chrome.storage.sync.set({[oldGroupId]: data[oldGroupId]},() => {
+            chrome.storage.local.set({[oldGroupId]: data[oldGroupId]},() => {
                 console.log('Old group has been updated!');
-                chrome.storage.sync.set({[newGroupId]: data[newGroupId]}, () => {
+                chrome.storage.local.set({[newGroupId]: data[newGroupId]}, () => {
                     console.log('New group has been updated!');
                 });
             });

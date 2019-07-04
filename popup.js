@@ -3,7 +3,7 @@ let groupIds;
 
 $(document).ready(() => {
 
-    chrome.storage.sync.get(null, res => {
+    chrome.storage.local.get(null, res => {
         // render preloader until url validation finishes
         const target = '#url-input';
 
@@ -60,12 +60,131 @@ $(document).ready(() => {
             $('#url').val(url);
             $('label[for="url"]').addClass('active');
         });
-    })
+
+        // init tooltips
+        $('.tooltipped').tooltip();
+    });
+});
+
+// save all tabs
+$('#save-all-tabs').click(function() {
+    disableButtons();
+
+    chrome.tabs.query({ currentWindow: true }, tabs => {
+        const groupId = `group${idGenerator(groupIds)}`;
+        urlIds = urlIdsToLst(storageData);
+
+        const curDateNTime = curDateNTimeToString();
+
+        let tempGroupData = {
+            groupName: 'Temporary Group',
+            color: 'rgb(0,0,0)',
+            data: [],
+            createdAt: curDateNTime
+        };
+
+        tabs.forEach(tab => {
+
+            const { url, title, favIconUrl } = tab;
+            const urlId = idGenerator(urlIds);
+
+            tempGroupData.data.push({
+                urlId,
+                linkName: title,
+                iconLink: favIconUrl,
+                url
+            });
+
+            urlIds.push(urlId);
+        });
+
+        chrome.storage.local.set({[groupId]: tempGroupData },() => {
+            chrome.storage.local.get(null, res => {
+                storageData = res;
+                groupIds = Object.keys(storageData);
+                $.notify("saved all tabs",'success');
+                enableButtons();
+                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+            });
+
+        });
+    });
 });
 
 // open manage page
 $('#settings').click(() => {
     chrome.tabs.create({ url: 'index.html' });
+});
+
+// export all groups to bookmarks
+$('#export-to-bookmarks').click(async () => {
+    let storageData = await storageGet();
+    const groupIds = Object.keys(storageData);
+    const treeNodes = await treesGet();
+    await asyncForEach(groupIds,async (groupId,index) => {
+        const groupBookmarkId = storageData[groupId].bookmarkId;
+
+        if (groupBookmarkId && treeNodes[0].children[0].children.some(({ id }) => groupBookmarkId === id)) {
+            await bookmarksRemove(groupBookmarkId);
+        }
+
+        const bookmarkTreeNode = await bookmarkCreate({
+            index,
+            parentId: "1",
+            title: storageData[groupId].groupName
+        });
+
+        // saving group bookmark id
+        storageData[groupId].bookmarkId = bookmarkTreeNode.id;
+
+        if (!storageData[groupId].data.length) {
+            await storageSet({ [groupId]: storageData[groupId] });
+        } else {
+            await asyncForEach(storageData[groupId].data,async ({ urlId, url, linkName },urlIndex) => {
+                const urlTreeNode = await bookmarkCreate({
+                    parentId: bookmarkTreeNode.id,
+                    title: linkName,
+                    url
+                });
+
+                // saving url bookmark id
+                storageData[groupId].data[urlIndex].bookmarkId = urlTreeNode.id;
+                storageData[groupId].data[urlIndex].parentBookmarkId = urlTreeNode.parentId;
+
+            });
+
+            await storageSet({ [groupId]: storageData[groupId] });
+        }
+    });
+
+
+
+
+    // const bookmarkDataNum = Object.keys(storageData).length + urlIdsToLst(storageData).length;
+    // let counter = 0;
+    //
+    // groupIds.forEach((groupId,index) => {
+    //     chrome.bookmarks.create({
+    //         index,
+    //         parentId: '1',
+    //         title: storageData[groupId].groupName
+    //     }, bookmarkTreeNode => {
+    //         counter++;
+    //         storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
+    //             chrome.bookmarks.create({
+    //                 parentId: bookmarkTreeNode.id,
+    //                 title: linkName,
+    //                 url
+    //             }, urlBookmarkTreeNode => {
+    //                 counter++;
+    //                 if (counter === bookmarkDataNum) {
+    //                     $.notify("Export all groups as bookmarks",'success');
+    //                 }
+    //             });
+    //         });
+    //     });
+    // });
+
 });
 
 // selected from dropdown menu
@@ -276,7 +395,8 @@ $('form.save-url').submit(function(e) {
         storageData[groupId] = {
             groupName: formValues[0].value,
             data: [],
-            color: 'rgb(0,0,0)'
+            color: 'rgb(0,0,0)',
+            createdAt: curDateNTimeToString()
         };
     } else if (formValues[0].value === 'temporary') {
         groupId = `group${idGenerator(groupIds)}`;
@@ -332,7 +452,7 @@ $('form.save-url').submit(function(e) {
                 iconLink
             });
 
-            chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+            chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
                 console.log('New Group & new url has been successfully saved!');
                 $('#cover-spin').hide(0);
                 $.notify("url has been successfully saved!",'success');
@@ -343,5 +463,17 @@ $('form.save-url').submit(function(e) {
         });
     } else {
         $('#cover-spin').hide(0);
+    }
+});
+
+chrome.runtime.onMessage.addListener(req => {
+    switch(req.todo) {
+        case 'updateStorageData':
+            storageData = req.storageData;
+            groupIds = Object.keys(storageData);
+            console.log(storageData);
+            return;
+        default:
+            return;
     }
 });

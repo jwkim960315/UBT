@@ -3,33 +3,38 @@ let storageData;
 let urlIds;
 let groupIds;
 
-// chrome.storage.sync.clear();
+// chrome.storage.local.clear();
 
-// reload page once all tabs are saved
 chrome.runtime.onMessage.addListener(req => {
-    if (req.todo === 'reloadMainPage') {
-        location.reload();
+    switch(req.todo) {
+        // reload page once all tabs are saved
+        case 'reloadMainPage':
+            location.reload();
+            return;
+        case 'updateStorageData':
+            storageData = req.storageData;
+            groupIds = Object.keys(storageData);
+            urlIds = urlIdsToLst(storageData);
+            initDND(storageData);
+            return;
+        default:
+            return;
     }
 });
 
 // initialization
 $(document).ready(() => {
-    chrome.storage.sync.get(null,res => {
+    chrome.storage.local.get(null,res => {
         // setting storageData to global var
         storageData = storageDataGroupIdModifier(res); // Re-assign group ids
-        console.log(storageData);
-        chrome.storage.sync.clear(() => {
-            chrome.storage.sync.set(storageData,() => {
+        chrome.storage.local.clear(() => {
+            chrome.storage.local.set(storageData,() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = tempGroupReorder(storageData,Object.keys(storageData));
-
+                console.log(storageData);
+                console.log(groupIds);
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
-
-                // initialize group settings dropdown
-                $('.dropdown-trigger').dropdown();
-
-                initDND(storageData);
             });
         });
     });
@@ -44,11 +49,6 @@ $('#search').on('input', function() {
 
         // rendering all the storage data
         renderGroups(storageData,'.groups-placeholder',urlIds);
-
-        // initialize group settings dropdown
-        $('.dropdown-trigger').dropdown();
-
-        initDND(storageData);
     } else {
         const filteredData = filterWithKeyword(keyword,storageData);
 
@@ -64,15 +64,17 @@ $('#search').on('input', function() {
             // rendering filtered storageData
             renderGroups(filteredData,'.groups-placeholder',urlIds);
 
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
             $(".url-text").mark(keyword);
             $('.card-title').mark(keyword);
-
-            initDND(filteredData);
         }
     }
+});
+
+// sync to account's sync storage
+$('.sync-to-account').click(async () => {
+    let localStorageData = await storageGet();
+    await syncStorageSet(localStorageData);
+    M.toast({html: 'Successfully synchronized with the account!'});
 });
 
 // add new group
@@ -120,8 +122,10 @@ $(document).on('submit','.add-group-form',function(e) {
         value: inputVal
     }];
 
-    const validatedValues = validator(formValues,storageData,'none','none');
+    console.log(formValues);
 
+    const validatedValues = validator(formValues,storageData,'none','none');
+    console.log(validatedValues);
     // check if submitted form passes all validations
     if (validatedValues.submit) {
 
@@ -132,8 +136,10 @@ $(document).on('submit','.add-group-form',function(e) {
                 color: 'rgb(0,0,0)',
                 createdAt: curDateNTimeToString()
             };
+            console.log(storageData);
         } else {
             storageData[groupId].groupName = inputVal;
+            console.log(storageData);
         }
 
         $(`#add-link-placeholder-${groupId}`).replaceWith(`
@@ -142,19 +148,30 @@ $(document).on('submit','.add-group-form',function(e) {
             </div>
         `);
 
-        chrome.storage.sync.set({[groupId]: storageData[groupId]},() => {
+        chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
             console.log('group name successfully saved!');
-
+            console.log(storageData);
             // render group w/ submitted group name
             renderGroups(storageData,`#card-${groupId}`,urlIds,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
         });
     }
+});
+
+// group name onDblclick
+$(document).on('dblclick','.card-title',function() {
+    const groupId = $(this).attr('id');
+    const name = storageData[groupId].groupName;
+    $(`#card-header-${groupId}`).replaceWith(
+        renderGroupForm(name,groupId,false)
+    );
+});
+
+// open all links
+$(document).on('click','.open-all',function() {
+    const groupId = $(this).attr('id').slice(9);
+    const urlIdLst = storageData[groupId].data.map(({ url }) => url);
+
+    chrome.windows.create({ url: urlIdLst });
 });
 
 // delete group
@@ -166,7 +183,7 @@ $(document).on('click','.delete-group',function() {
 
     groupIds = groupIds.filter(groupId => groupId !== deletingGroupId);
 
-    chrome.storage.sync.remove(deletingGroupId,() => {
+    chrome.storage.local.remove(deletingGroupId,() => {
         console.log('successfully deleted group!');
     });
 
@@ -230,7 +247,7 @@ $(document).on('click','.save-color',function() {
 
     storageData[groupId].color = color;
 
-    chrome.storage.sync.set({[groupId]: storageData[groupId]}, () => {
+    chrome.storage.local.set({[groupId]: storageData[groupId]}, () => {
         console.log('color has been saved successfully!');
 
         $(`#close-colorpicker-${groupId}`).trigger('click');
@@ -246,7 +263,7 @@ $(document).on('click','.close-colorpicker',function() {
     `);
 
     // apply previous color
-    chrome.storage.sync.get([groupId], groupData => {
+    chrome.storage.local.get([groupId], groupData => {
         applyColor(groupData, groupId);
         storageData[groupId].color = groupData[groupId].color;
     });
@@ -281,20 +298,13 @@ $(document).on('submit','.export-group-form',function(e) {
         todo: 'createGroupBookmark',
         groupId,
         groupName: storageData[groupId].groupName,
-        urlDataLst: formValues
-    },response => {
-        if (response.status === 'success') {
-            const target = `#card-${groupId}`;
-
-            renderGroups(storageData,target,0,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
-        }
+        urlDataLst: formValues,
+        bookmarkId: storageData[groupId].bookmarkId
     });
+
+    const target = `#card-${groupId}`;
+    M.toast({html: 'Successfully synchronized with bookmarks!'});
+    renderGroups(storageData,target,0,groupId);
 });
 
 // cancel export group
@@ -303,12 +313,6 @@ $(document).on('click','.export-cancel',function() {
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
-
-    // initialize group settings dropdown
-    $('.dropdown-trigger').dropdown();
-
-    // for editing group name
-    initDND(storageData);
 });
 
 // open links onClick
@@ -317,11 +321,9 @@ $(document).on('click','.open-all-links',function() {
     const target = `#card-${groupId}`;
 
     renderCheckboxGroupForm(target,groupId,storageData,'open');
-
-    // chrome.windows.create({ url: urlLst });
 });
 
-// checked urls open
+// checked urls open on tabs
 $(document).on('submit','.open-group-form',function(e) {
     e.preventDefault();
 
@@ -335,40 +337,48 @@ $(document).on('submit','.open-group-form',function(e) {
         return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
     }).map(urlData => urlData.url);
 
-    console.log(formValues);
-
     chrome.runtime.sendMessage({
         todo: 'openSelectedUrls',
         groupId,
         urlLst: formValues
-    },response => {
+    }/*,response => {
         if (response.status === 'success') {
             const target = `#card-${groupId}`;
 
             renderGroups(storageData,target,0,groupId);
-
-            // initialize group settings dropdown
-            $('.dropdown-trigger').dropdown();
-
-            // for editing group name
-            initDND(storageData);
         }
-    });
-});
+    }*/);
 
-// Cancel open links
-$(document).on('click','.open-cancel',function() {
-    const groupId = $(this).attr('id').slice(12);
-    console.log(groupId);
     const target = `#card-${groupId}`;
 
     renderGroups(storageData,target,0,groupId);
+});
 
-    // initialize group settings dropdown
-    $('.dropdown-trigger').dropdown();
+// cancel open links
+$(document).on('click','.open-cancel',function() {
+    const groupId = $(this).attr('id').slice(12);
+<<<<<<< HEAD
+    console.log(groupId);
+=======
+>>>>>>> 41aae5727d109e8e9dcd0cc14fbbc7ab1aa7d4e2
+    const target = `#card-${groupId}`;
 
-    // for editing group name
-    initDND(storageData);
+    renderGroups(storageData,target,0,groupId);
+});
+
+// export entire group to bookmark
+$(document).on('click','.export-whole',function() {
+    const groupId = $(this).attr('id').slice(13);
+
+    chrome.runtime.sendMessage({
+        todo: 'createGroupBookmark',
+        groupId,
+        groupName: storageData[groupId].groupName,
+        urlDataLst: storageData[groupId].data,
+        bookmarkId: storageData[groupId].bookmarkId
+    });
+
+    M.toast({html: 'Successfully synchronized with bookmarks!'});
 });
 
 // Url onClick
@@ -502,7 +512,7 @@ $(document).on('submit','.add-url-form',function(e) {
             });
         }
 
-        chrome.storage.sync.set({
+        chrome.storage.local.set({
             [groupId]: storageData[groupId]
         },() => {
             console.log('stored successfully!');
@@ -511,6 +521,10 @@ $(document).on('submit','.add-url-form',function(e) {
                 renderUrl(url,linkName,iconLink,urlId)
             );
 
+            // init tooltips
+            $('.tooltipped').tooltip();
+
+            // init DND
             initDND(storageData);
 
             applyColor(storageData,groupId);
@@ -555,7 +569,8 @@ $(document).on('click','.url-delete',function() {
         }
     });
 
-    chrome.storage.sync.set({[groupId]: storageData[groupId]});
+    chrome.storage.local.set({[groupId]: storageData[groupId]});
 
     $(`#url-data-${urlId}`).remove();
 });
+

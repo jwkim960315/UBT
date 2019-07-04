@@ -6,16 +6,12 @@ body {
     margin: 25px 0 30px 25px;
 }
 
-#textarea {
-    /*width: 550px;*/
-}
-
 .card {
     background-color: rgba(192,192,192,.1);
 }
 
 .card-content {
-    overflow: scroll;
+    overflow: auto;
 }
 
 .btn {

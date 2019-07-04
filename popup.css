@@ -92,7 +92,10 @@ button[type="submit"]:hover {
     max-height: 250px;
 }
 
-#settings {
+#settings,
+#export-to-bookmarks,
+#save-all-tabs
+{
     display: flex;
     align-items: center;
     width: 100%;
@@ -101,8 +104,14 @@ button[type="submit"]:hover {
     color: #e0e0e0;
 }
 
-#settings:hover {
+#settings:hover,
+#export-to-bookmarks:hover,
+#save-all-tabs:hover
+{
     color: white;
+}
+
+#settings:hover {
     background-color: rgb(244,160,0);
 }
 
@@ -114,11 +123,14 @@ button[type="submit"]:hover {
     margin-bottom: 10px;
 }
 
-/*label[for="url"].active*/
-/*{*/
-    /*color: rgb(15,157,88) !important;*/
-/*}*/
-
 input[id="url"]:focus {
     border-bottom: 1px solid rgb(15,157,88) !important;
+}
+
+#export-to-bookmarks:hover {
+    background-color: rgb(15,157,88);
+}
+
+#save-all-tabs:hover {
+    background-color: rgb(66,133,244);
 }
