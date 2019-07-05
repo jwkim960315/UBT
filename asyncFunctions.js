@@ -30,6 +30,10 @@ const bookmarksRemove = async bookmarkId => {
 const bookmarkCreate = async options => {
     return new Promise(resolve => {
         chrome.bookmarks.create(options,bookmarkTreeNode => {
+            if (chrome.runtime.lastError) {
+                return resolve(null);
+            }
+
             return resolve(bookmarkTreeNode);
         });
     });
