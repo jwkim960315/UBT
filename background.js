@@ -328,10 +328,6 @@ chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
             delete storageData[folderGroupId].bookmarkId;
 
             await storageSet({[folderGroupId]: storageData[folderGroupId]});
-            chrome.runtime.sendMessage({
-                todo: 'updateStorageData',
-                storageData
-            });
         }
     }
 });
