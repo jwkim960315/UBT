@@ -62,7 +62,7 @@ const morphFormValues = formValues => {
     });
 };
 
-const validator = (formValues,data,groupId,urlId) => {
+const validator = formValues => {
 
     let submit = true;
     let result = {
@@ -80,32 +80,14 @@ const validator = (formValues,data,groupId,urlId) => {
                         message: 'url is required'
                     });
                     submit = false;
-                } /*else if (!isUrlValid(formValue.value)) {
-                    result.values.push({
-                        name: formValue.name,
-                        target: formValue.target,
-                        error: true,
-                        message: 'invalid url: ex) https://www.google.com'
-                    });
-                    submit = false;
-                } else if (urlExists(formValue.value,data,groupId,urlId)) {
-                    result.values.push({
-                        name: formValue.name,
-                        target: formValue.target,
-                        error: true,
-                        message: `url exists in ${data[groupId].groupName}`
-                    });
-                    submit = false;
-                }*/ else {
+                } else {
                     result.values.push({
                         name: formValue.name,
                         target: formValue.target,
                         error: false,
                         message: 'valid url'
                     });
-
                 }
-
                 return;
             case 'text':
                 if (formValue.value === '') {
@@ -123,9 +105,7 @@ const validator = (formValues,data,groupId,urlId) => {
                         error: false,
                         message: `valid ${formValue.name}`
                     });
-
                 }
-
                 return;
             default:
                 return;

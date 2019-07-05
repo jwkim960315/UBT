@@ -1,7 +1,7 @@
 // Global Vars
 let storageData;
 let urlIds;
-let groupIds;
+let tempGroupIds;
 
 // chrome.storage.local.clear();
 
@@ -23,177 +23,172 @@ chrome.runtime.onMessage.addListener(req => {
 });
 
 // initialization
-$(document).ready(async () => {
-    console.log('here');
-    let storageData = storageDataGroupIdModifier(await storageGet());
-    await storageClear();
-    await storageSet(storageData);
-    let urlIds = urlIdsToLst(storageData);
-    renderGroups(storageData,'.groups-placeholder',urlIds);
-
-    chrome.storage.local.get(null,res => {
-        // setting storageData to global var
-        storageData = storageDataGroupIdModifier(res); // Re-assign group ids
-        chrome.storage.local.clear(() => {
-            chrome.storage.local.set(storageData,() => {
-                urlIds = urlIdsToLst(storageData);
-                groupIds = tempGroupReorder(storageData,Object.keys(storageData));
-                // rendering all the storage data
-                renderGroups(storageData,'.groups-placeholder',urlIds);
-            });
-        });
-    });
+$(document).ready(() => {
+    (async () => {
+        let storageData = filterOnCreatingGroupOrUrl(storageDataGroupIdModifier(await storageGet()));
+        await storageClear();
+        await storageSet(storageData);
+        console.log(storageData);
+        renderGroups(storageData,'.groups-placeholder');
+    })();
 });
 
 // search input change
 $('#search').on('input', function() {
-    const keyword = $(this).val();
+    (async () => {
+        let storageData = await storageGet();
+        const keyword = $(this).val();
 
-    if (!keyword) {
-        $('.group-cont').html('<div class="groups-placeholder"></div>');
-
-        // rendering all the storage data
-        renderGroups(storageData,'.groups-placeholder',urlIds);
-    } else {
-        const filteredData = filterWithKeyword(keyword,storageData);
-
-        if (!Object.keys(filteredData).length) {
-            $('.group-cont').html(`
-                <div class="row no-data">
-                    <p>No data matching with "${keyword}"</p>
-                </div>
-            `);
-        } else {
+        if (!keyword) {
             $('.group-cont').html('<div class="groups-placeholder"></div>');
 
-            // rendering filtered storageData
-            renderGroups(filteredData,'.groups-placeholder',urlIds);
+            // rendering all the storage data
+            renderGroups(storageData,'.groups-placeholder');
+        } else {
+            const filteredData = filterWithKeyword(keyword,storageData);
 
-            $(".url-text").mark(keyword);
-            $('.card-title').mark(keyword);
+            if (!Object.keys(filteredData).length) {
+                $('.group-cont').html(`
+                    <div class="row no-data">
+                        <p>No data matching with "${keyword}"</p>
+                    </div>
+                `);
+            } else {
+                $('.group-cont').html('<div class="groups-placeholder"></div>');
+
+                // rendering filtered storageData
+                renderGroups(filteredData,'.groups-placeholder');
+
+                $(".url-text").mark(keyword);
+                $('.card-title').mark(keyword);
+            }
         }
-    }
+    })();
 });
 
 // sync to account's sync storage
-$('.sync-to-account').click(async () => {
-    let localStorageData = await storageGet();
-    await syncStorageSet(localStorageData);
-    M.toast({html: 'Successfully synchronized with the account!'});
+$('.sync-to-account').click(() => {
+    (async () => {
+        let localStorageData = await storageGet();
+        await syncStorageSet(localStorageData);
+        M.toast({html: 'Successfully synchronized with the account!'});
+    })();
 });
 
 // add new group
 $('.add-group').click(() => {
+    (async () => {
+        let groupIds = Object.keys(await storageGet());
+        let groupId = `group${idGenerator(groupIds)}`;
 
-    let groupId = `group${idGenerator(groupIds)}`;
+        const target = '.group-cont';
 
-    const target = '.group-cont';
+        await storageSet({ [groupId]: {} });
 
-    // update groupIds
-    groupIds.push(groupId);
-
-    renderNewGroupForm(target,groupId);
+        renderNewGroupForm(target,groupId);
+    })();
 });
 
 // new group name on change
 $(document).on('input', '.group-name-input',function() {
-    const newGroupName = $(this).val();
-    const groupId = $(this).attr('id');
-    const formValues = [{
-        name: 'group name',
-        type: 'text',
-        value: newGroupName,
-        target: `input[id="${groupId}"]`
-    }];
+    (async () => {
+        let storageData = await storageGet();
+        const newGroupName = $(this).val();
+        const groupId = $(this).attr('id');
+        const formValues = [{
+            name: 'group name',
+            type: 'text',
+            value: newGroupName,
+            target: `input[id="${groupId}"]`
+        }];
 
-    const buttonTar = `#submit-new-${groupId}`;
+        const buttonTar = `#submit-new-${groupId}`;
 
-    const validatedValues = validator(formValues,storageData,'none','none');
+        const validatedValues = validator(formValues);
 
-    renderValidationError(validatedValues,buttonTar);
+        renderValidationError(validatedValues,buttonTar);
+    })();
 });
 
 // onSubmit add-group-form
 $(document).on('submit','.add-group-form',function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    const groupId = $(this).attr('id').slice(15);
-    const inputElem = $(`input[id="${groupId}"]`);
-    const inputVal = inputElem.val();
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(15);
+        const inputElem = $(`input[id="${groupId}"]`);
+        const inputVal = inputElem.val();
 
-    const formValues = [{
-        name: 'group name',
-        type: 'text',
-        value: inputVal
-    }];
+        const formValues = [{
+            name: 'group name',
+            type: 'text',
+            value: inputVal
+        }];
 
-    console.log(formValues);
+        const validatedValues = validator(formValues);
 
-    const validatedValues = validator(formValues,storageData,'none','none');
-    console.log(validatedValues);
-    // check if submitted form passes all validations
-    if (validatedValues.submit) {
+        if (validatedValues.submit) {
+            if (!Object.keys(storageData[groupId]).length) {
+                storageData[groupId] = {
+                    groupName: inputVal,
+                    data     : [],
+                    color    : 'rgb(0,0,0)',
+                    createdAt: curDateNTimeToString()
+                };
+            } else {
+                storageData[groupId].groupName = inputVal;
+            }
 
-        if (!storageData[groupId]) {
-            storageData[groupId] = {
-                groupName: inputVal,
-                data: [],
-                color: 'rgb(0,0,0)',
-                createdAt: curDateNTimeToString()
-            };
-            console.log(storageData);
-        } else {
-            storageData[groupId].groupName = inputVal;
-            console.log(storageData);
+            $(`#add-link-placeholder-${groupId}`).replaceWith(`
+                <div class="row">
+                    <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
+                </div>
+            `);
+
+            await storageSet({[groupId]: storageData[groupId]});
+            M.toast({ html: `${inputVal} successfully saved` });
+            renderGroups(storageData,`#card-colorpicker-cont-${groupId}`,groupId);
         }
-
-        $(`#add-link-placeholder-${groupId}`).replaceWith(`
-            <div class="row">
-                <a class="waves-effect waves-light btn add-link"><i class="material-icons">add</i>New Link</a>
-            </div>
-        `);
-
-        chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
-            console.log('group name successfully saved!');
-            console.log(storageData);
-            // render group w/ submitted group name
-            renderGroups(storageData,`#card-${groupId}`,urlIds,groupId);
-        });
-    }
+    })();
 });
 
 // group name onDblclick
 $(document).on('dblclick','.card-title',function() {
-    const groupId = $(this).attr('id');
-    const name = storageData[groupId].groupName;
-    $(`#card-header-${groupId}`).replaceWith(
-        renderGroupForm(name,groupId,false)
-    );
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id');
+        const name = storageData[groupId].groupName;
+        $(`#card-header-${groupId}`).replaceWith(
+            renderGroupForm(name,groupId,false)
+        );
+    })();
 });
 
 // open all links
 $(document).on('click','.open-all',function() {
-    const groupId = $(this).attr('id').slice(9);
-    const urlIdLst = storageData[groupId].data.map(({ url }) => url);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(9);
+        const urls = storageData[groupId].data.map(({ url }) => url);
 
-    chrome.windows.create({ url: urlIdLst });
+        await windowOpenNTabsCreate(urls);
+    })();
 });
 
 // delete group
 $(document).on('click','.delete-group',function() {
+    (async () => {
+        let storageData = await storageGet();
+        const deletingGroupId = $(this).prop('id').slice(7);
+        const deletingGroupName = storageData[deletingGroupId].groupName;
+        delete storageData[deletingGroupId];
 
-    const deletingGroupId = $(this).prop('id').slice(7);
-
-    delete storageData[deletingGroupId];
-
-    groupIds = groupIds.filter(groupId => groupId !== deletingGroupId);
-
-    chrome.storage.local.remove(deletingGroupId,() => {
-        console.log('successfully deleted group!');
-    });
-
-    $(`#card-${deletingGroupId}`).remove();
-    $(`#colorpicker-cont-${deletingGroupId}`).remove();
+        await storageRemove(deletingGroupId);
+        M.toast({ html: `${deletingGroupName} has been removed` });
+        $(`#card-${deletingGroupId}`).remove();
+        $(`#colorpicker-cont-${deletingGroupId}`).remove();
+    })();
 });
 
 // edit group name
@@ -210,27 +205,32 @@ $(document).on('click','.edit-group-name',function() {
 
 // change group color w/ wheel
 $(document).on('click','.change-color',function() {
-    const groupId = $(this).attr('id').slice(13);
-    const target = `#colorpicker-placeholder-${groupId}`;
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(13);
+        const target = `#colorpicker-placeholder-${groupId}`;
 
-    const hexColor = tinycolor(storageData[groupId].color).toHexString();
+        const hexColor = tinycolor(storageData[groupId].color).toHexString();
 
-    renderColorPicker(target,groupId,hexColor);
+        renderColorPicker(target,groupId,hexColor);
 
-    // initialize && control color picker
-    $.farbtastic(`#colorpicker-${groupId}`).setColor(hexColor);
-    $.farbtastic(`#colorpicker-${groupId}`).linkTo(color => {
-        storageData[groupId].color = color;
-        const obj = {
-            [groupId]: storageData[groupId]
-        };
+        // initialize && control color picker
+        $.farbtastic(`#colorpicker-${groupId}`).setColor(hexColor);
+        $.farbtastic(`#colorpicker-${groupId}`).linkTo(color => {
 
-        $(`#color-${groupId}`).val(color);
+            storageData[groupId].color = color;
 
-        applyColor(obj,groupId);
-    });
+            const obj = {
+                [groupId]: storageData[groupId]
+            };
 
-    $(`#card-${groupId}`).addClass('col s12 m9');
+            $(`#color-${groupId}`).val(color);
+
+            applyColor(obj,groupId);
+        });
+
+        $(`#card-${groupId}`).addClass('col s12 m9');
+    })();
 });
 
 // change group color w/ input
@@ -243,173 +243,185 @@ $(document).on('input','.colorpicker-input',function() {
 
 // save color from color picker
 $(document).on('click','.save-color',function() {
-    const groupId = $(this).attr('id').slice(11);
-    let color = tinycolor($.farbtastic(`#colorpicker-${groupId}`).color).toRgbString();
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(11);
+        let color = tinycolor($.farbtastic(`#colorpicker-${groupId}`).color).toRgbString();
 
-    if (!color) {
-        color = 'rgb(0,0,0)';
-    }
+        if (!color) {
+            color = 'rgb(0,0,0)';
+        }
 
-    storageData[groupId].color = color;
+        storageData[groupId].color = color;
 
-    chrome.storage.local.set({[groupId]: storageData[groupId]}, () => {
-        console.log('color has been saved successfully!');
-
+        await storageSet({[groupId]: storageData[groupId]});
+        M.toast({ html: `color has been saved` });
         $(`#close-colorpicker-${groupId}`).trigger('click');
-    });
+    })();
 });
 
 // close color picker
 $(document).on('click','.close-colorpicker',function() {
-    const groupId = $(this).prop('id').slice(18);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).prop('id').slice(18);
 
-    $(`#colorpicker-cont-${groupId}`).replaceWith(`
-        <div id="colorpicker-placeholder-${groupId}" class="colorpicker-placeholder"></div>
-    `);
+        $(`#colorpicker-cont-${groupId}`).replaceWith(`
+            <div id="colorpicker-placeholder-${groupId}" class="colorpicker-placeholder"></div>
+        `);
 
-    // apply previous color
-    chrome.storage.local.get([groupId], groupData => {
-        applyColor(groupData, groupId);
-        storageData[groupId].color = groupData[groupId].color;
-    });
+        applyColor(storageData, groupId);
 
-    $(`#card-${groupId}`).removeClass('col s12 m9');
+        $(`#card-${groupId}`).removeClass('col s12 m9');
+    })();
 });
 
-// export group onClick
+// sync group onClick
 $(document).on('click','.export-group',function() {
-    const groupId = $(this).attr('id').slice(7);
-    const target = `#card-${groupId}`;
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(7);
+        const target = `#card-${groupId}`;
 
-    renderCheckboxGroupForm(target,groupId,storageData,'export');
+        renderCheckboxGroupForm(target,groupId,storageData,'export');
+    })();
 });
 
-// checked urls form submit
+// checked urls sync form submit
 $(document).on('submit','.export-group-form',function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    const groupId = $(this).attr('id').slice(18);
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(18);
 
-    let formValues = $(this).serializeArray();
+        let formValues = $(this).serializeArray();
 
+        formValues = formValues.map(({ name }) => {
+            const curUrlId = parseInt(name.slice(9));
 
-    formValues = formValues.map(({ name }) => {
-        const curUrlId = parseInt(name.slice(9));
+            return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
+        });
 
-        return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
-    });
+        await syncGroupToBookmark(storageData,groupId,formValues);
 
-    chrome.runtime.sendMessage({
-        todo: 'createGroupBookmark',
-        groupId,
-        groupName: storageData[groupId].groupName,
-        urlDataLst: formValues,
-        bookmarkId: storageData[groupId].bookmarkId
-    });
-
-    const target = `#card-${groupId}`;
-    M.toast({html: 'Successfully synchronized with bookmarks!'});
-    renderGroups(storageData,target,0,groupId);
+        const target = `#card-colorpicker-cont-${groupId}`;
+        M.toast({html: `Successfully synchronized ${storageData[groupId].groupName}`});
+        renderGroups(storageData,target,groupId);
+    })();
 });
 
 // cancel export group
 $(document).on('click','.export-cancel',function() {
-    const groupId = $(this).attr('id').slice(14);
-    const target = `#card-${groupId}`;
-
-    renderGroups(storageData,target,0,groupId);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(14);
+        const target = `#card-colorpicker-cont-${groupId}`;
+        renderGroups(storageData,target,groupId);
+    })();
 });
 
 // open links onClick
 $(document).on('click','.open-all-links',function() {
-    const groupId = $(this).attr('id').slice(15);
-    const target = `#card-${groupId}`;
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(15);
+        const target = `#card-${groupId}`;
 
-    renderCheckboxGroupForm(target,groupId,storageData,'open');
+        renderCheckboxGroupForm(target,groupId,storageData,'open');
+    })();
 });
 
 // checked urls open on tabs
 $(document).on('submit','.open-group-form',function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    const groupId = $(this).attr('id').slice(16);
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(16);
 
-    let formValues = $(this).serializeArray();
+        let formValues = $(this).serializeArray();
 
-    formValues = formValues.map(({ name }) => {
-        const curUrlId = parseInt(name.slice(9));
+        const urls = formValues.map(({ name }) => {
+            const curUrlId = parseInt(name.slice(9));
 
-        return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
-    }).map(urlData => urlData.url);
+            return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
+        }).map(urlData => urlData.url);
 
-    chrome.runtime.sendMessage({
-        todo: 'openSelectedUrls',
-        groupId,
-        urlLst: formValues
-    }/*,response => {
-        if (response.status === 'success') {
-            const target = `#card-${groupId}`;
+        await windowOpenNTabsCreate(urls);
 
-            renderGroups(storageData,target,0,groupId);
-        }
-    }*/);
+        const target = `#card-colorpicker-cont-${groupId}`;
 
-    const target = `#card-${groupId}`;
-
-    renderGroups(storageData,target,0,groupId);
+        renderGroups(storageData,target,groupId);
+    })();
 });
 
 // cancel open links
 $(document).on('click','.open-cancel',function() {
-    const groupId = $(this).attr('id').slice(12);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(12);
 
-    console.log(groupId);
+        const target = `#card-colorpicker-cont-${groupId}`;
 
-    const target = `#card-${groupId}`;
-
-    renderGroups(storageData,target,0,groupId);
+        renderGroups(storageData,target,groupId);
+    })();
 });
 
 // export entire group to bookmark
 $(document).on('click','.export-whole',function() {
-    const groupId = $(this).attr('id').slice(13);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(13);
+        const urlDataLst = storageData[groupId].data;
 
-    chrome.runtime.sendMessage({
-        todo: 'createGroupBookmark',
-        groupId,
-        groupName: storageData[groupId].groupName,
-        urlDataLst: storageData[groupId].data,
-        bookmarkId: storageData[groupId].bookmarkId
-    });
+        await syncGroupToBookmark(storageData,groupId,urlDataLst);
 
-    M.toast({html: 'Successfully synchronized with bookmarks!'});
+        M.toast({html: `Successfully synchronized ${storageData[groupId].groupName}`});
+    })();
 });
 
 // Url onClick
 $(document).on('click','.url-text',function(e) {
-    e.preventDefault();
-    const url = $(this).attr('href');
-    chrome.tabs.create({ url, active: false },() => {
-        console.log('tab has been created');
-    });
+    (async () => {
+        e.preventDefault();
+        const url = $(this).attr('href');
+
+        await tabsCreate({
+            active: false,
+            url
+        });
+
+        M.toast({ html: 'tab has been created' });
+    })();
 });
 
 
 // Add new url form
 $(document).on('click','.add-link',function() {
+    (async () => {
+        let storageData = await storageGet();
+        let urlIds = urlIdsToLst(storageData);
 
-    const groupId = $(this).prop('id').slice(9);
+        const groupId = $(this).prop('id').slice(9);
+        const urlId = idGenerator(urlIds);
 
-    const urlId = idGenerator(urlIds);
+        storageData[groupId].data.push({
+            linkName: '',
+            url: '',
+            urlId,
+            iconLink: '',
+            isPermanent: false
+        });
 
-    // update urlIds
-    urlIds.push(urlId);
+        await storageSet({[groupId]: storageData[groupId]});
 
-    $(`#new-url-data-${groupId}`).prev().append(
-        renderNewUrlForm('','',urlId,false,false,true,true)
-    );
+        $(`#new-url-data-${groupId}`).prev().append(
+            renderNewUrlForm('','',urlId,false,false,true,true)
+        );
 
-    $(`input[id="urlName${urlId}"]`).focus();
+        $(`input[id="urlName${urlId}"]`).focus();
+    })();
 });
 
 // url name input validation
@@ -431,10 +443,9 @@ $(document).on('input','.url-name-input',function() {
         value: url
     }];
 
-    const groupId = $(this).parents('.card').attr('id').slice(5);
     const buttonTar = `#submit-new-url-${urlId}`;
 
-    let validatedValues = validator(formValues,storageData,groupId,urlId);
+    let validatedValues = validator(formValues);
 
     renderValidationError(validatedValues,buttonTar);
 });
@@ -458,68 +469,68 @@ $(document).on('input','.url-input',function() {
         value: url
     }];
 
-    const groupId = $(this).parents('.card').attr('id').slice(5);
     const buttonTar = `#submit-new-url-${urlId}`;
 
-    const validatedValues = validator(formValues,storageData,groupId,urlId);
+    const validatedValues = validator(formValues);
 
     renderValidationError(validatedValues,buttonTar);
 });
 
 // onSubmit add-url-form
 $(document).on('submit','.add-url-form',function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    const urlId = parseInt($(this).attr('id').slice(13));
-    let url = $(`#url${urlId}`).val();
+        let storageData = await storageGet();
+        const urlId = parseInt($(this).attr('id').slice(13));
+        let url = $(`#url${urlId}`).val();
 
-    if (url.slice(-1) !== '/' && url.length) {
-        url += '/';
-    }
-
-    const linkName = $(`#urlName${urlId}`).val();
-
-    const groupId = $(this).parents('.card').attr('id').slice(5);
-    const { groupName } = storageData[groupId];
-
-    const formValues = [{
-        name: 'url name',
-        type: 'text',
-        value: linkName
-    },{
-        name: 'url',
-        type: 'url',
-        value: url
-    }];
-
-    const validatedValues = validator(formValues,storageData,groupId,urlId);
-
-    if (validatedValues.submit) {
-
-        // preloader
-        const preloaderTar = `#add-url-form-cont-${urlId}`;
-        renderPreloader(preloaderTar,urlId);
-
-        let iconLink = '';
-
-        if (isUrlValid(url)) {
-            iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+        if (url.slice(-1) !== '/' && url.length) {
+            url += '/';
         }
 
-        if (urlIdsToLst(storageData).indexOf(urlId) === -1) {
-            storageData[groupId].data.push({ urlId, url, iconLink, linkName });
-        } else {
+        const linkName = $(`#urlName${urlId}`).val();
+
+        const groupId = $(this).parents('.card').attr('id').slice(5);
+
+        const formValues = [{
+            name: 'url name',
+            type: 'text',
+            value: linkName
+        },{
+            name: 'url',
+            type: 'url',
+            value: url
+        }];
+
+        const validatedValues = validator(formValues);
+
+        if (validatedValues.submit) {
+            // preloader
+            const preloaderTar = `#add-url-form-cont-${urlId}`;
+            renderPreloader(preloaderTar,urlId);
+
+            let iconLink = '';
+
+            if (isUrlValid(url)) {
+                iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+            }
+
             storageData[groupId].data.forEach((urlData,index) => {
                 if (urlData.urlId === urlId) {
-                    storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
+                    storageData[groupId].data[index] = {
+                        urlId,
+                        url,
+                        iconLink,
+                        linkName,
+                        isPermanent: true
+                    };
                 }
             });
-        }
 
-        chrome.storage.local.set({
-            [groupId]: storageData[groupId]
-        },() => {
-            console.log('stored successfully!');
+            await storageSet({[groupId]: storageData[groupId]});
+
+            M.toast({ html: `stored url successfully`});
 
             $(`#preloader-${urlId}`).replaceWith(
                 renderUrl(url,linkName,iconLink,urlId)
@@ -532,18 +543,77 @@ $(document).on('submit','.add-url-form',function(e) {
             initDND(storageData);
 
             applyColor(storageData,groupId);
-        });
-    }
+        }
+    })();
+
+
+
+
+
+    // const { groupName } = storageData[groupId];
+
+
+
+    // if (validatedValues.submit) {
+    //
+    //     // preloader
+    //     const preloaderTar = `#add-url-form-cont-${urlId}`;
+    //     renderPreloader(preloaderTar,urlId);
+    //
+    //     let iconLink = '';
+    //
+    //     if (isUrlValid(url)) {
+    //         iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+    //     }
+    //
+    //     if (urlIdsToLst(storageData).indexOf(urlId) === -1) {
+    //         storageData[groupId].data.push({ urlId, url, iconLink, linkName });
+    //     } else {
+    //         storageData[groupId].data.forEach((urlData,index) => {
+    //             if (urlData.urlId === urlId) {
+    //                 storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
+    //             }
+    //         });
+    //     }
+    //
+    //     chrome.storage.local.set({
+    //         [groupId]: storageData[groupId]
+    //     },() => {
+    //         console.log('stored successfully!');
+    //
+    //         $(`#preloader-${urlId}`).replaceWith(
+    //             renderUrl(url,linkName,iconLink,urlId)
+    //         );
+    //
+    //         // init tooltips
+    //         $('.tooltipped').tooltip();
+    //
+    //         // init DND
+    //         initDND(storageData);
+    //
+    //         applyColor(storageData,groupId);
+    //     });
+    // }
 });
 
 // Delete url input
 $(document).on('click','.url-form-delete',function() {
-    const urlId = parseInt($(this).attr('id').slice(16));
-    $(`#add-url-form-cont-${urlId}`).remove();
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).parenst('.card').attr('id').slice(5);
+        const urlId = parseInt($(this).attr('id').slice(16));
+        $(`#add-url-form-cont-${urlId}`).remove();
 
-    // delete url id since it has yet to be saved
-    const urlIdIndex = urlIds.indexOf(urlId);
-    urlIds.splice(urlIdIndex,1);
+        storageData[groupId].data = storageData[groupId].data.filter(urlData => urlData.isPermanent);
+
+        await storageSet({[groupId]: storageData[groupId]});
+    })();
+    // const urlId = parseInt($(this).attr('id').slice(16));
+    // $(`#add-url-form-cont-${urlId}`).remove();
+    //
+    // // delete url id since it has yet to be saved
+    // const urlIdIndex = urlIds.indexOf(urlId);
+    // urlIds.splice(urlIdIndex,1);
 
 });
 

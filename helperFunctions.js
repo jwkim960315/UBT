@@ -25,6 +25,7 @@ const idGenerator = lst => {
 
 // re-assign group ids
 const storageDataGroupIdModifier = storageData => {
+    storageData = filterOnCreatingGroup(storageData);
     const groupIds = Object.keys(storageData);
 
     groupIds.forEach((groupId,index) => {
@@ -51,15 +52,15 @@ const tempGroupReorder = (iterableObj,groupIds) => {
 const isLstGroupIds = lst => typeof lst[0] === 'string';
 
 // converts chrome storage data to a url list
-const urlIdsToLst = data => {
-    const dataKeys = Object.keys(data);
+const urlIdsToLst = storageData => {
+    const dataKeys = Object.keys(storageData);
 
     if (!dataKeys.length) {
         return [];
     }
 
     return dataKeys
-        .map(groupId => data[groupId].data.map(({ urlId }) => urlId))
+        .map(groupId => storageData[groupId].data.map(({ urlId }) => urlId))
         .reduce((accumulator,currentVal) => accumulator.concat(currentVal),[]);
 };
 
@@ -78,4 +79,23 @@ const isUrlValid = url => {
     const pattern = new RegExp(/(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/); // fragment locater
 
     return pattern.test(url);
+};
+
+// filter on-creating group
+const filterOnCreatingGroupOrUrl = storageData => {
+    const groupIds = Object.keys(storageData);
+
+    groupIds.forEach(groupId => {
+        if (!Object.keys(storageData[groupId]).length) {
+            delete storageData[groupId];
+        } else {
+            storageData[groupId].data = filterOnCreatingUrl(storageData[groupId].data);
+        }
+    });
+
+    return storageData;
+};
+
+const filterOnCreatingUrl = urlDataLst => {
+    return urlDataLst.filter(urlData => urlData.isPermanent);
 };

@@ -71,6 +71,15 @@ const storageGet = async () => {
     });
 };
 
+// chrome storage remove
+const storageRemove = async groupId => {
+    return new Promise(resolve => {
+        chrome.storage.local.remove(groupId,() => {
+            return resolve(null);
+        });
+    });
+};
+
 // chrome storage clear
 const storageClear = async () => {
     return new Promise(resolve => {
@@ -121,6 +130,15 @@ const treesGet = async () => {
     return new Promise(resolve => {
         chrome.bookmarks.getTree(bookmarkTreeNodes => {
             return resolve(bookmarkTreeNodes);
+        });
+    });
+};
+
+// chrome open new window && create list of tabs
+const windowOpenNTabsCreate = async urls => {
+    return new Promise(resolve => {
+        chrome.windows.create({ url: urls },() => {
+            return resolve(null);
         });
     });
 };

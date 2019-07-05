@@ -375,7 +375,7 @@ chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
         }
 
 
-    } else if (removeInfo.node.children === undefined) {
+    }/* else if (removeInfo.node.children === undefined) {
 
         const folderGroupId = groupIds.filter(groupId => {
             return storageData[groupId].data.some(({ bookmarkId }) => bookmarkId === id);
@@ -404,6 +404,6 @@ chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
         }
 
 
-    }
+    }*/
 
 });
