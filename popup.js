@@ -2,14 +2,12 @@ let storageData;
 let groupIds;
 
 $(document).ready(() => {
+    (async () => {
+        let storageData = await storageGet();
 
-    chrome.storage.local.get(null, res => {
-        // render preloader until url validation finishes
         const target = '#url-input';
 
-        storageData = res;
-
-        groupIds = Object.keys(storageData);
+        const groupIds = Object.keys(storageData);
 
         let optionsHTMLLst = [`<option id="create-temporary-group" value="temporary" selected>New Temporary Group</option>`];
 
@@ -36,44 +34,44 @@ $(document).ready(() => {
         $('select').formSelect();
 
         // automatically inserts current page url to input
-        chrome.tabs.query({ 'active': true }, tabs => {
-            let { url, title } = tabs[0];
 
-            $('#urlName').val(title);
-            $('label[for="urlName"]').addClass('active');
+        let { title, url } = (await tabsQuery({ active: true }))[0];
+        $('#urlName').val(title);
+        $('label[for="urlName"]').addClass('active');
 
-            // Check whether url name exists
-            if (title === '' || undefined) {
-                $('#urlName').addClass('invalid');
-                $('#urlName').removeClass('valid');
-                $('#urlName').next('span').attr('data-error','url name is required');
-            } else {
-                $('#urlName').addClass('valid');
-                $('#urlName').removeClass('invalid');
-                $('#urlName').next('span').attr('data-success','valid url name');
-            }
+        // Check whether url name exists
+        if (title === '' || undefined) {
+            $('#urlName').addClass('invalid');
+            $('#urlName').removeClass('valid');
+            $('#urlName').next('span').attr('data-error','url name is required');
+        } else {
+            $('#urlName').addClass('valid');
+            $('#urlName').removeClass('invalid');
+            $('#urlName').next('span').attr('data-success','valid url name');
+        }
 
-            if (url.slice(-1) !== '/') {
-                url += '/';
-            }
+        if (url.slice(-1) !== '/') {
+            url += '/';
+        }
 
-            $('#url').val(url);
-            $('label[for="url"]').addClass('active');
-        });
+        $('#url').val(url);
+        $('label[for="url"]').addClass('active');
 
         // init tooltips
         $('.tooltipped').tooltip();
-    });
+    })();
 });
 
 // save all tabs
 $('#save-all-tabs').click(function() {
-    disableButtons();
+    (async () => {
 
-    chrome.tabs.query({ currentWindow: true }, tabs => {
+        disableButtons();
+        let storageData = await storageGet();
+        const groupIds = Object.keys(storageData);
+        const tabs = await tabsQuery({ currentWindow: true });
         const groupId = `group${idGenerator(groupIds)}`;
-        urlIds = urlIdsToLst(storageData);
-
+        let urlIds = urlIdsToLst(storageData);
         const curDateNTime = curDateNTimeToString();
 
         let tempGroupData = {
@@ -83,9 +81,7 @@ $('#save-all-tabs').click(function() {
             createdAt: curDateNTime
         };
 
-        tabs.forEach(tab => {
-
-            const { url, title, favIconUrl } = tab;
+        tabs.forEach(({ url, title, favIconUrl }) => {
             const urlId = idGenerator(urlIds);
 
             tempGroupData.data.push({
@@ -98,93 +94,27 @@ $('#save-all-tabs').click(function() {
             urlIds.push(urlId);
         });
 
-        chrome.storage.local.set({[groupId]: tempGroupData },() => {
-            chrome.storage.local.get(null, res => {
-                storageData = res;
-                groupIds = Object.keys(storageData);
-                $.notify("saved all tabs",'success');
-                enableButtons();
-                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
-            });
-
-        });
-    });
+        await storageSet({[groupId]: tempGroupData });
+        $.notify("saved all tabs",'success');
+        enableButtons();
+        chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+    })();
 });
 
 // open manage page
 $('#settings').click(() => {
-    chrome.tabs.create({ url: 'index.html' });
+    (async () => {
+        await tabsCreate({ url: 'index.html'});
+    })();
 });
 
 // export all groups to bookmarks
-$('#export-to-bookmarks').click(async () => {
-    let storageData = await storageGet();
-    const groupIds = Object.keys(storageData);
-    const treeNodes = await treesGet();
-    await asyncForEach(groupIds,async (groupId,index) => {
-        const groupBookmarkId = storageData[groupId].bookmarkId;
+$('#export-to-bookmarks').click(() => {
+    (async () => {
+        let storageData = await storageGet();
 
-        if (groupBookmarkId && treeNodes[0].children[0].children.some(({ id }) => groupBookmarkId === id)) {
-            await bookmarksRemove(groupBookmarkId);
-        }
-
-        const bookmarkTreeNode = await bookmarkCreate({
-            index,
-            parentId: "1",
-            title: storageData[groupId].groupName
-        });
-
-        // saving group bookmark id
-        storageData[groupId].bookmarkId = bookmarkTreeNode.id;
-
-        if (!storageData[groupId].data.length) {
-            await storageSet({ [groupId]: storageData[groupId] });
-        } else {
-            await asyncForEach(storageData[groupId].data,async ({ urlId, url, linkName },urlIndex) => {
-                const urlTreeNode = await bookmarkCreate({
-                    parentId: bookmarkTreeNode.id,
-                    title: linkName,
-                    url
-                });
-
-                // saving url bookmark id
-                storageData[groupId].data[urlIndex].bookmarkId = urlTreeNode.id;
-                storageData[groupId].data[urlIndex].parentBookmarkId = urlTreeNode.parentId;
-
-            });
-
-            await storageSet({ [groupId]: storageData[groupId] });
-        }
-    });
-
-
-
-
-    // const bookmarkDataNum = Object.keys(storageData).length + urlIdsToLst(storageData).length;
-    // let counter = 0;
-    //
-    // groupIds.forEach((groupId,index) => {
-    //     chrome.bookmarks.create({
-    //         index,
-    //         parentId: '1',
-    //         title: storageData[groupId].groupName
-    //     }, bookmarkTreeNode => {
-    //         counter++;
-    //         storageData[groupId].data.forEach(({ urlId, url, linkName }) => {
-    //             chrome.bookmarks.create({
-    //                 parentId: bookmarkTreeNode.id,
-    //                 title: linkName,
-    //                 url
-    //             }, urlBookmarkTreeNode => {
-    //                 counter++;
-    //                 if (counter === bookmarkDataNum) {
-    //                     $.notify("Export all groups as bookmarks",'success');
-    //                 }
-    //             });
-    //         });
-    //     });
-    // });
-
+        await syncGroupsToBookmark(storageData);
+    })();
 });
 
 // selected from dropdown menu
@@ -195,7 +125,6 @@ $('select').change(function() {
     } else {
         $('.new-group-input').remove();
 
-        const groupId = $(this).children('option:selected').val();
         const url = $('#url').val();
         const urlName = $('input[name="urlName"]').val();
 
@@ -225,19 +154,16 @@ $('select').change(function() {
             value: url
         }]);
 
-        const validatedValues = validator(formValues,storageData,groupId,undefined);
+        const validatedValues = validator(formValues);
         const buttonTar = 'button[type="submit"]';
 
         renderValidationError(validatedValues,buttonTar);
     }
-
-
 });
 
 // group name validation
 $(document).on('input','#new-group',function() {
     const urlName = $('input[name="urlName"]').val();
-    const groupId = $('select').children('option:selected').val();
     const url = $('input[name="url"]').val();
 
     // could be undefined
@@ -264,16 +190,16 @@ $(document).on('input','#new-group',function() {
         value: url
     }]);
 
-    const validatedValues = validator(formValues,storageData,'none','none');
+    const validatedValues = validator(formValues);
     const buttonTar = 'button[type="submit"]';
 
     renderValidationError(validatedValues,buttonTar);
+
 });
 
 // url name validation
 $('#urlName').on('input',function() {
     const urlName = $(this).val();
-    const groupId = $('select').children('option:selected').val();
     const url = $('input[name="url"]').val();
 
     // could be undefined
@@ -302,7 +228,7 @@ $('#urlName').on('input',function() {
         value: url
     }]);
 
-    const validatedValues = validator(formValues,storageData,groupId,undefined);
+    const validatedValues = validator(formValues);
     const buttonTar = 'button[type="submit"]';
 
     renderValidationError(validatedValues,buttonTar);
@@ -312,7 +238,6 @@ $('#urlName').on('input',function() {
 $('#url').on('input',function() {
     const url = $(this).val();
     const urlName = $('input[name="urlName"]').val();
-    const groupId = $('select').children('option:selected').val();
 
     // could be undefined
     const groupName = $('input[name="groupName"]').val();
@@ -340,7 +265,7 @@ $('#url').on('input',function() {
         value: url
     }]);
 
-    const validatedValues = validator(formValues,storageData,groupId,undefined);
+    const validatedValues = validator(formValues);
     const buttonTar = 'button[type="submit"]';
 
     renderValidationError(validatedValues,buttonTar);
@@ -353,86 +278,81 @@ $(document).on('dblclick','#url',function() {
 
 // url submitted
 $('form.save-url').submit(function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    $('#cover-spin').show(0);
+        let storageData = await storageGet();
+        const groupIds = Object.keys(storageData);
 
-    let formValues = $(this).serializeArray();
+        $('#cover-spin').show(0);
 
-    formValues = formValues.map(formValue => {
-        switch(formValue.name) {
-            case 'groupName':
-                formValue.target = 'input[name="groupName"]';
-                return formValue;
-            case 'urlName':
-                formValue.target = 'input[name="urlName"]';
-                return formValue;
-            case 'url':
-                formValue.target = 'input[name="url"]';
-                return formValue;
-            default:
-                return formValue;
-        }
-    });
+        let formValues = $(this).serializeArray();
 
-    // since url input is disabled, it has to be manually inserted to formValues
-    formValues.push({
-        name: 'url',
-        target: 'input[name="url"]',
-        value: $('#url').val()
-    });
+        formValues = formValues.map(formValue => {
+            switch(formValue.name) {
+                case 'groupName':
+                    formValue.target = 'input[name="groupName"]';
+                    return formValue;
+                case 'urlName':
+                    formValue.target = 'input[name="urlName"]';
+                    return formValue;
+                case 'url':
+                    formValue.target = 'input[name="url"]';
+                    return formValue;
+                default:
+                    return formValue;
+            }
+        });
 
+        // since url input is disabled, it has to be manually inserted to formValues
+        formValues.push({
+            name: 'url',
+            target: 'input[name="url"]',
+            value: $('#url').val()
+        });
 
-    formValues = morphFormValues(formValues);
+        formValues = morphFormValues(formValues);
 
-    let groupId;
+        let groupId;
 
-    if (formValues[0].value === 'create-new-group') {
-        groupId = `group${idGenerator(groupIds)}`;
+        if (formValues[0].value === 'create-new-group') {
+            groupId = `group${idGenerator(groupIds)}`;
 
-        formValues.splice(0,1);
+            formValues.splice(0,1);
 
-        storageData[groupId] = {
-            groupName: formValues[0].value,
-            data: [],
-            color: 'rgb(0,0,0)',
-            createdAt: curDateNTimeToString()
-        };
-    } else if (formValues[0].value === 'temporary') {
-        groupId = `group${idGenerator(groupIds)}`;
+            storageData[groupId] = {
+                groupName: formValues[0].value,
+                data: [],
+                color: 'rgb(0,0,0)',
+                createdAt: curDateNTimeToString()
+            };
+        } else if (formValues[0].value === 'temporary') {
+            groupId = `group${idGenerator(groupIds)}`;
 
-        const curDateNTime = curDateNTimeToString();
+            const curDateNTime = curDateNTimeToString();
 
-        storageData[groupId] = {
-            groupName: 'Temporary Group',
-            data: [],
-            color: 'rgb(0,0,0)',
-            createdAt: curDateNTime
-        };
-    } else {
-        groupId = $('select').children('option:selected').val();
-    }
-
-    const validatedValues = validator(formValues,storageData,groupId,undefined);
-
-    if (validatedValues.submit) {
-        let urlId;
-        let linkName;
-        let url;
-
-        urlId = idGenerator(urlIdsToLst(storageData));
-
-        linkName = formValues[1].value;
-
-        url = formValues[2].value;
-
-        if (url.slice(-1) !== '/') {
-            url += '/';
+            storageData[groupId] = {
+                groupName: 'Temporary Group',
+                data: [],
+                color: 'rgb(0,0,0)',
+                createdAt: curDateNTime
+            };
+        } else {
+            groupId = $('select').children('option:selected').val();
         }
 
-        chrome.tabs.query({ active: true }, tabs => {
-            const { favIconUrl } = tabs[0];
+        const validatedValues = validator(formValues);
 
+        if (validatedValues.submit) {
+            let urlId = idGenerator(urlIdsToLst(storageData));
+            let linkName = formValues[1].value;
+            let url = formValues[2].value;
+
+            if (url.slice(-1) !== '/') {
+                url += '/';
+            }
+
+            const { favIconUrl } = (await tabsQuery({active: true}))[0];
             let iconLink;
 
             if (!favIconUrl || !favIconUrl.length) {
@@ -452,28 +372,13 @@ $('form.save-url').submit(function(e) {
                 iconLink
             });
 
-            chrome.storage.local.set({[groupId]: storageData[groupId]},() => {
-                console.log('New Group & new url has been successfully saved!');
-                $('#cover-spin').hide(0);
-                $.notify("url has been successfully saved!",'success');
-                $('button[type="submit"]').addClass('disabled');
-
-                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
-            });
-        });
-    } else {
-        $('#cover-spin').hide(0);
-    }
-});
-
-chrome.runtime.onMessage.addListener(req => {
-    switch(req.todo) {
-        case 'updateStorageData':
-            storageData = req.storageData;
-            groupIds = Object.keys(storageData);
-            console.log(storageData);
-            return;
-        default:
-            return;
-    }
+            await storageSet({[groupId]: storageData[groupId]});
+            $('#cover-spin').hide(0);
+            $.notify("url has been successfully saved!",'success');
+            $('button[type="submit"]').addClass('disabled');
+            chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+        } else {
+            $('#cover-spin').hide(0);
+        }
+    })();
 });

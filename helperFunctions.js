@@ -25,7 +25,6 @@ const idGenerator = lst => {
 
 // re-assign group ids
 const storageDataGroupIdModifier = storageData => {
-    storageData = filterOnCreatingGroup(storageData);
     const groupIds = Object.keys(storageData);
 
     groupIds.forEach((groupId,index) => {

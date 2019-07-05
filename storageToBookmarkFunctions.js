@@ -58,3 +58,12 @@ const syncGroupToBookmark = async (storageData,groupId,urlDataLst) => {
         await createGroupBookmark(storageData,groupId,urlDataLst);
     }
 };
+
+const syncGroupsToBookmark = async storageData => {
+    const groupIds = Object.keys(storageData);
+
+    await asyncForEach(groupIds,async groupId => {
+        const urlDataLst = storageData[groupId].data;
+        await syncGroupToBookmark(storageData,groupId,urlDataLst);
+    });
+};

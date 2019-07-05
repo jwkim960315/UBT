@@ -1,21 +1,11 @@
-// Global Vars
-let storageData;
-let urlIds;
-let tempGroupIds;
-
 // chrome.storage.local.clear();
 
+// chrome runtime listener
 chrome.runtime.onMessage.addListener(req => {
     switch(req.todo) {
         // reload page once all tabs are saved
         case 'reloadMainPage':
             location.reload();
-            return;
-        case 'updateStorageData':
-            storageData = req.storageData;
-            groupIds = Object.keys(storageData);
-            urlIds = urlIdsToLst(storageData);
-            initDND(storageData);
             return;
         default:
             return;
@@ -25,10 +15,10 @@ chrome.runtime.onMessage.addListener(req => {
 // initialization
 $(document).ready(() => {
     (async () => {
-        let storageData = filterOnCreatingGroupOrUrl(storageDataGroupIdModifier(await storageGet()));
+        let storageData = storageDataGroupIdModifier(await storageGet());
+        console.log(storageData);
         await storageClear();
         await storageSet(storageData);
-        console.log(storageData);
         renderGroups(storageData,'.groups-placeholder');
     })();
 });
@@ -79,11 +69,18 @@ $('.sync-to-account').click(() => {
 $('.add-group').click(() => {
     (async () => {
         let groupIds = Object.keys(await storageGet());
+
+        // for onCreating groups
+        $('.group-name-input').each(function() {
+            const groupId = $(this).attr('id');
+            if (groupId) {
+                groupIds.push(groupId);
+            }
+        });
+
         let groupId = `group${idGenerator(groupIds)}`;
 
         const target = '.group-cont';
-
-        await storageSet({ [groupId]: {} });
 
         renderNewGroupForm(target,groupId);
     })();
@@ -129,7 +126,7 @@ $(document).on('submit','.add-group-form',function(e) {
         const validatedValues = validator(formValues);
 
         if (validatedValues.submit) {
-            if (!Object.keys(storageData[groupId]).length) {
+            if (!storageData[groupId]) {
                 storageData[groupId] = {
                     groupName: inputVal,
                     data     : [],
@@ -193,7 +190,6 @@ $(document).on('click','.delete-group',function() {
 
 // edit group name
 $(document).on('click','.edit-group-name',function() {
-
     const groupId = $(this).attr('id').slice(5);
 
     const name = storageData[groupId].groupName;
@@ -404,17 +400,23 @@ $(document).on('click','.add-link',function() {
         let urlIds = urlIdsToLst(storageData);
 
         const groupId = $(this).prop('id').slice(9);
+
+        // for onCreating urls
+        $('.url-name-input').each(function() {
+            const urlId = parseInt($(this).attr('id').slice(7));
+            if (urlId) {
+                urlIds.push(urlId);
+            }
+        });
+
         const urlId = idGenerator(urlIds);
 
         storageData[groupId].data.push({
             linkName: '',
             url: '',
             urlId,
-            iconLink: '',
-            isPermanent: false
+            iconLink: ''
         });
-
-        await storageSet({[groupId]: storageData[groupId]});
 
         $(`#new-url-data-${groupId}`).prev().append(
             renderNewUrlForm('','',urlId,false,false,true,true)
@@ -516,21 +518,31 @@ $(document).on('submit','.add-url-form',function(e) {
                 iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
             }
 
+            // new url submission
+            if (!storageData[groupId].data.some(urlData => urlData.urlId === urlId)) {
+                storageData[groupId].data.push({
+                    urlId,
+                    url,
+                    iconLink,
+                    linkName
+                });
+            }
+
+            // edit url submission
             storageData[groupId].data.forEach((urlData,index) => {
                 if (urlData.urlId === urlId) {
                     storageData[groupId].data[index] = {
                         urlId,
                         url,
                         iconLink,
-                        linkName,
-                        isPermanent: true
+                        linkName
                     };
                 }
             });
 
             await storageSet({[groupId]: storageData[groupId]});
 
-            M.toast({ html: `stored url successfully`});
+            M.toast({ html: `stored url successfully` });
 
             $(`#preloader-${urlId}`).replaceWith(
                 renderUrl(url,linkName,iconLink,urlId)
@@ -545,55 +557,6 @@ $(document).on('submit','.add-url-form',function(e) {
             applyColor(storageData,groupId);
         }
     })();
-
-
-
-
-
-    // const { groupName } = storageData[groupId];
-
-
-
-    // if (validatedValues.submit) {
-    //
-    //     // preloader
-    //     const preloaderTar = `#add-url-form-cont-${urlId}`;
-    //     renderPreloader(preloaderTar,urlId);
-    //
-    //     let iconLink = '';
-    //
-    //     if (isUrlValid(url)) {
-    //         iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
-    //     }
-    //
-    //     if (urlIdsToLst(storageData).indexOf(urlId) === -1) {
-    //         storageData[groupId].data.push({ urlId, url, iconLink, linkName });
-    //     } else {
-    //         storageData[groupId].data.forEach((urlData,index) => {
-    //             if (urlData.urlId === urlId) {
-    //                 storageData[groupId].data[index] = { urlId, url, iconLink, linkName };
-    //             }
-    //         });
-    //     }
-    //
-    //     chrome.storage.local.set({
-    //         [groupId]: storageData[groupId]
-    //     },() => {
-    //         console.log('stored successfully!');
-    //
-    //         $(`#preloader-${urlId}`).replaceWith(
-    //             renderUrl(url,linkName,iconLink,urlId)
-    //         );
-    //
-    //         // init tooltips
-    //         $('.tooltipped').tooltip();
-    //
-    //         // init DND
-    //         initDND(storageData);
-    //
-    //         applyColor(storageData,groupId);
-    //     });
-    // }
 });
 
 // Delete url input
@@ -604,17 +567,10 @@ $(document).on('click','.url-form-delete',function() {
         const urlId = parseInt($(this).attr('id').slice(16));
         $(`#add-url-form-cont-${urlId}`).remove();
 
-        storageData[groupId].data = storageData[groupId].data.filter(urlData => urlData.isPermanent);
+        storageData[groupId].data = storageData[groupId].data.filter(urlData => urlData.urlId === urlId);
 
         await storageSet({[groupId]: storageData[groupId]});
     })();
-    // const urlId = parseInt($(this).attr('id').slice(16));
-    // $(`#add-url-form-cont-${urlId}`).remove();
-    //
-    // // delete url id since it has yet to be saved
-    // const urlIdIndex = urlIds.indexOf(urlId);
-    // urlIds.splice(urlIdIndex,1);
-
 });
 
 // Edit url
@@ -634,17 +590,19 @@ $(document).on('click','.url-edit',function() {
 
 // delete url data
 $(document).on('click','.url-delete',function() {
-    const groupId = $(this).parents('.url-cont').prop('id').slice(9);
-    const urlId = parseInt($(this).prop('id').slice(11));
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).parents('.url-cont').prop('id').slice(9);
+        const urlId = parseInt($(this).prop('id').slice(11));
 
-    storageData[groupId].data.forEach((urlData,index) => {
-        if (urlData.urlId === urlId) {
-            storageData[groupId].data.splice(index,1);
-        }
-    });
+        storageData[groupId].data.forEach((urlData,index) => {
+            if (urlData.urlId === urlId) {
+                storageData[groupId].data.splice(index,1);
+            }
+        });
 
-    chrome.storage.local.set({[groupId]: storageData[groupId]});
-
-    $(`#url-data-${urlId}`).remove();
+        await storageSet({[groupId]: storageData[groupId]});
+        $(`#url-data-${urlId}`).remove();
+    })();
 });
 

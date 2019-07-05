@@ -105,9 +105,7 @@ const renderLinks = (groupData,index) => {
     }
 
     const urlDataHTML = urlData
-        .map((urlDatum,i) => {
-            const { url, linkName, iconLink, urlId } = urlDatum;
-
+        .map(({ url, linkName, iconLink, urlId }) => {
             return renderUrl(url,linkName,iconLink,urlId);
         });
 
@@ -162,10 +160,12 @@ const renderNewGroupForm = (target,groupId) => {
     const isDisabled = true;
 
     $(target).append(`
-        <div class="card" id="card-${groupId}">
-            <div class="card-content">
-                ${renderGroupForm(name,groupId,isDisabled)}
-                <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>
+        <div class="row" id="card-colorpicker-cont-${groupId}">
+            <div class="card" id="card-${groupId}">
+                <div class="card-content">
+                    ${renderGroupForm(name,groupId,isDisabled)}
+                    <div class="add-link-placeholder" id="add-link-placeholder-${groupId}"></div>
+                </div>
             </div>
         </div>
     `);
