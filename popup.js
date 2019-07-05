@@ -65,7 +65,6 @@ $(document).ready(() => {
 // save all tabs
 $('#save-all-tabs').click(function() {
     (async () => {
-
         disableButtons();
         let storageData = await storageGet();
         const groupIds = Object.keys(storageData);
@@ -88,7 +87,8 @@ $('#save-all-tabs').click(function() {
                 urlId,
                 linkName: title,
                 iconLink: favIconUrl,
-                url
+                url,
+                bookmarkable: true
             });
 
             urlIds.push(urlId);
@@ -113,27 +113,112 @@ $('#export-to-bookmarks').click(() => {
     (async () => {
         let storageData = await storageGet();
 
-        await syncGroupsToBookmark(storageData);
+        let errorMsg = await syncGroupsToBookmark(storageData);
+
+        if (errorMsg === 'invalid url') {
+            $.notify("There are some urls un-bookmarked",'error');
+        } else {
+            $.notify("Groups have been successfully synchronized",'success');
+        }
+
     })();
 });
 
 // selected from dropdown menu
 $('select').change(function() {
-    if ($(this).children('option:selected').val() === 'create-new-group') {
-        const target = '#group-select';
-        renderNewGroupInput(target);
-    } else {
-        $('.new-group-input').remove();
+    (async () => {
+        if ($(this).children('option:selected').val() === 'create-new-group') {
+            const target = '#group-select';
+            renderNewGroupInput(target);
+        } else {
+            $('.new-group-input').remove();
 
-        const url = $('#url').val();
+            const url = $('#url').val();
+            const urlName = $('input[name="urlName"]').val();
+
+            // could be undefined
+            const groupName = $(this).val();
+
+            let formValues = [];
+
+            if (groupName) {
+                formValues.push({
+                    name: 'group name',
+                    target: 'input[name="groupName"]',
+                    type: 'text',
+                    value: groupName
+                });
+            }
+
+            formValues = formValues.concat([{
+                name: 'url name',
+                target: 'input[name="urlName"]',
+                type: 'text',
+                value: urlName
+            }, {
+                name: 'url',
+                target: 'input[name="url"]',
+                type: 'url',
+                value: url
+            }]);
+
+            const validatedValues = validator(formValues);
+            const buttonTar = 'button[type="submit"]';
+
+            renderValidationError(validatedValues,buttonTar);
+        }
+    })();
+});
+
+// group name validation
+$(document).on('input','#new-group',function() {
+    (async () => {
         const urlName = $('input[name="urlName"]').val();
+        const url = $('input[name="url"]').val();
 
         // could be undefined
         const groupName = $(this).val();
 
         let formValues = [];
 
-        if (groupName) {
+        formValues.push({
+            name: 'group name',
+            target: 'input[name="groupName"]',
+            type: 'text',
+            value: groupName
+        });
+
+        formValues = formValues.concat([{
+            name: 'url name',
+            target: 'input[name="urlName"]',
+            type: 'text',
+            value: urlName
+        }, {
+            name: 'url',
+            target: 'input[name="url"]',
+            type: 'url',
+            value: url
+        }]);
+
+        const validatedValues = validator(formValues);
+        const buttonTar = 'button[type="submit"]';
+
+        renderValidationError(validatedValues,buttonTar);
+    })();
+});
+
+// url name validation
+$('#urlName').on('input',function() {
+    (async () => {
+        const urlName = $(this).val();
+        const url = $('input[name="url"]').val();
+
+        // could be undefined
+        const groupName = $('input[name="groupName"]').val();
+
+        let formValues = [];
+
+        if (groupName !== undefined) {
             formValues.push({
                 name: 'group name',
                 target: 'input[name="groupName"]',
@@ -158,117 +243,46 @@ $('select').change(function() {
         const buttonTar = 'button[type="submit"]';
 
         renderValidationError(validatedValues,buttonTar);
-    }
-});
-
-// group name validation
-$(document).on('input','#new-group',function() {
-    const urlName = $('input[name="urlName"]').val();
-    const url = $('input[name="url"]').val();
-
-    // could be undefined
-    const groupName = $(this).val();
-
-    let formValues = [];
-
-    formValues.push({
-        name: 'group name',
-        target: 'input[name="groupName"]',
-        type: 'text',
-        value: groupName
-    });
-
-    formValues = formValues.concat([{
-        name: 'url name',
-        target: 'input[name="urlName"]',
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: 'input[name="url"]',
-        type: 'url',
-        value: url
-    }]);
-
-    const validatedValues = validator(formValues);
-    const buttonTar = 'button[type="submit"]';
-
-    renderValidationError(validatedValues,buttonTar);
-
-});
-
-// url name validation
-$('#urlName').on('input',function() {
-    const urlName = $(this).val();
-    const url = $('input[name="url"]').val();
-
-    // could be undefined
-    const groupName = $('input[name="groupName"]').val();
-
-    let formValues = [];
-
-    if (groupName !== undefined) {
-        formValues.push({
-            name: 'group name',
-            target: 'input[name="groupName"]',
-            type: 'text',
-            value: groupName
-        });
-    }
-
-    formValues = formValues.concat([{
-        name: 'url name',
-        target: 'input[name="urlName"]',
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: 'input[name="url"]',
-        type: 'url',
-        value: url
-    }]);
-
-    const validatedValues = validator(formValues);
-    const buttonTar = 'button[type="submit"]';
-
-    renderValidationError(validatedValues,buttonTar);
+    })();
 });
 
 // url validation
 $('#url').on('input',function() {
-    const url = $(this).val();
-    const urlName = $('input[name="urlName"]').val();
+    (async () => {
+        const url = $(this).val();
+        const urlName = $('input[name="urlName"]').val();
 
-    // could be undefined
-    const groupName = $('input[name="groupName"]').val();
+        // could be undefined
+        const groupName = $('input[name="groupName"]').val();
 
-    let formValues = [];
+        let formValues = [];
 
-    if (groupName !== undefined) {
-        formValues.push({
-            name: 'group name',
-            target: 'input[name="groupName"]',
+        if (groupName !== undefined) {
+            formValues.push({
+                name: 'group name',
+                target: 'input[name="groupName"]',
+                type: 'text',
+                value: groupName
+            });
+        }
+
+        formValues = formValues.concat([{
+            name: 'url name',
+            target: 'input[name="urlName"]',
             type: 'text',
-            value: groupName
-        });
-    }
+            value: urlName
+        }, {
+            name: 'url',
+            target: 'input[name="url"]',
+            type: 'url',
+            value: url
+        }]);
 
-    formValues = formValues.concat([{
-        name: 'url name',
-        target: 'input[name="urlName"]',
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: 'input[name="url"]',
-        type: 'url',
-        value: url
-    }]);
+        const validatedValues = validator(formValues);
+        const buttonTar = 'button[type="submit"]';
 
-    const validatedValues = validator(formValues);
-    const buttonTar = 'button[type="submit"]';
-
-    renderValidationError(validatedValues,buttonTar);
+        renderValidationError(validatedValues,buttonTar);
+    })();
 });
 
 // enable edit url once double click input
@@ -354,14 +368,19 @@ $('form.save-url').submit(function(e) {
 
             const { favIconUrl } = (await tabsQuery({active: true}))[0];
             let iconLink;
+            let bookmarkable = false;
 
             if (!favIconUrl || !favIconUrl.length) {
-                if (isUrlValid(url)) {
+                if (await isUrlValid(url)) {
                     iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+                    bookmarkable = true;
                 } else {
                     iconLink = '';
                 }
             } else {
+                if (await isUrlValid(url)) {
+                    bookmarkable = true;
+                }
                 iconLink = favIconUrl;
             }
 
@@ -369,7 +388,8 @@ $('form.save-url').submit(function(e) {
                 urlId,
                 linkName,
                 url,
-                iconLink
+                iconLink,
+                bookmarkable
             });
 
             await storageSet({[groupId]: storageData[groupId]});

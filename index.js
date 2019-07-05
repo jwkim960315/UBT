@@ -16,7 +16,6 @@ chrome.runtime.onMessage.addListener(req => {
 $(document).ready(() => {
     (async () => {
         let storageData = storageDataGroupIdModifier(await storageGet());
-        console.log(storageData);
         await storageClear();
         await storageSet(storageData);
         renderGroups(storageData,'.groups-placeholder');
@@ -183,8 +182,8 @@ $(document).on('click','.delete-group',function() {
 
         await storageRemove(deletingGroupId);
         M.toast({ html: `${deletingGroupName} has been removed` });
-        $(`#card-${deletingGroupId}`).remove();
-        $(`#colorpicker-cont-${deletingGroupId}`).remove();
+        $(`#card-colorpicker-cont-${deletingGroupId}`).remove();
+        // $(`#colorpicker-cont-${deletingGroupId}`).remove();
     })();
 });
 
@@ -299,10 +298,15 @@ $(document).on('submit','.export-group-form',function(e) {
             return storageData[groupId].data.filter(({ urlId }) => urlId === curUrlId)[0];
         });
 
-        await syncGroupToBookmark(storageData,groupId,formValues);
+        let errorMsg = await syncGroupToBookmark(storageData,groupId,formValues);
+
+        const successHTML = `Successfully synchronized ${storageData[groupId].groupName}`;
+        const errorHTML = `Urls in red cannot be bookmarked`;
+
+        renderBookmarkableValidation(errorMsg,successHTML,errorHTML);
 
         const target = `#card-colorpicker-cont-${groupId}`;
-        M.toast({html: `Successfully synchronized ${storageData[groupId].groupName}`});
+
         renderGroups(storageData,target,groupId);
     })();
 });
@@ -364,16 +368,21 @@ $(document).on('click','.open-cancel',function() {
     })();
 });
 
-// export entire group to bookmark
+// sync entire group to bookmark
 $(document).on('click','.export-whole',function() {
     (async () => {
         let storageData = await storageGet();
         const groupId = $(this).attr('id').slice(13);
         const urlDataLst = storageData[groupId].data;
 
-        await syncGroupToBookmark(storageData,groupId,urlDataLst);
+        let errorMsg = await syncGroupToBookmark(storageData,groupId,urlDataLst);
 
-        M.toast({html: `Successfully synchronized ${storageData[groupId].groupName}`});
+        const successHTML = `Successfully synchronized ${storageData[groupId].groupName}`;
+        const errorHTML = `Urls in red cannot be bookmarked`;
+
+        console.log(storageData);
+
+        renderBookmarkableValidation(errorMsg,successHTML,errorHTML);
     })();
 });
 
@@ -429,53 +438,57 @@ $(document).on('click','.add-link',function() {
 // url name input validation
 // propertychange change keyup paste input focusout blur click
 $(document).on('input','.url-name-input',function() {
-    const urlName = $(this).val();
-    const urlId = parseInt($(this).attr('id').slice(7));
-    const url = $(`#url${urlId}`).val();
+    (async () => {
+        const urlName = $(this).val();
+        const urlId = parseInt($(this).attr('id').slice(7));
+        const url = $(`#url${urlId}`).val();
 
-    const formValues = [{
-        name: 'url name',
-        target: `input[id="urlName${urlId}"]`,
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: `input[id="url${urlId}"]`,
-        type: 'url',
-        value: url
-    }];
+        const formValues = [{
+            name: 'url name',
+            target: `input[id="urlName${urlId}"]`,
+            type: 'text',
+            value: urlName
+        }, {
+            name: 'url',
+            target: `input[id="url${urlId}"]`,
+            type: 'url',
+            value: url
+        }];
 
-    const buttonTar = `#submit-new-url-${urlId}`;
+        const buttonTar = `#submit-new-url-${urlId}`;
 
-    let validatedValues = validator(formValues);
+        let validatedValues = validator(formValues);
 
-    renderValidationError(validatedValues,buttonTar);
+        renderValidationError(validatedValues,buttonTar);
+    })();
 });
 
 // url input validation
 $(document).on('input','.url-input',function() {
-    const url = $(this).val();
-    const urlId = parseInt($(this).attr('id').slice(3));
-    const urlName = $(`#urlName${urlId}`).val();
+    (async () => {
+        const url = $(this).val();
+        const urlId = parseInt($(this).attr('id').slice(3));
+        const urlName = $(`#urlName${urlId}`).val();
 
 
-    const formValues = [{
-        name: 'url name',
-        target: `input[id="urlName${urlId}"]`,
-        type: 'text',
-        value: urlName
-    }, {
-        name: 'url',
-        target: `input[id="url${urlId}"]`,
-        type: 'url',
-        value: url
-    }];
+        const formValues = [{
+            name: 'url name',
+            target: `input[id="urlName${urlId}"]`,
+            type: 'text',
+            value: urlName
+        }, {
+            name: 'url',
+            target: `input[id="url${urlId}"]`,
+            type: 'url',
+            value: url
+        }];
 
-    const buttonTar = `#submit-new-url-${urlId}`;
+        const buttonTar = `#submit-new-url-${urlId}`;
 
-    const validatedValues = validator(formValues);
+        const validatedValues = validator(formValues);
 
-    renderValidationError(validatedValues,buttonTar);
+        renderValidationError(validatedValues,buttonTar);
+    })();
 });
 
 // onSubmit add-url-form
@@ -510,12 +523,15 @@ $(document).on('submit','.add-url-form',function(e) {
         if (validatedValues.submit) {
             // preloader
             const preloaderTar = `#add-url-form-cont-${urlId}`;
+
             renderPreloader(preloaderTar,urlId);
 
             let iconLink = '';
+            let bookmarkable = false;
 
-            if (isUrlValid(url)) {
+            if (await isUrlValid(url)) {
                 iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+                bookmarkable = true;
             }
 
             // new url submission
@@ -524,28 +540,64 @@ $(document).on('submit','.add-url-form',function(e) {
                     urlId,
                     url,
                     iconLink,
-                    linkName
+                    linkName,
+                    bookmarkable
+                });
+
+                const parentId = storageData[groupId].bookmarkId;
+
+                let result = await createUrlBookmarkProcess({
+                    url,
+                    title: linkName,
+                    parentId,
+                    groupId,
+                    index: storageData[groupId].data.length-1,
+                    storageData,
+                    errorMsg: false
+                });
+
+                storageData = result.storageData;
+
+                const successHTML = `Successfully bookmarked ${linkName}`;
+                const errorHTML = `${linkName} cannot be bookmarked`;
+
+                renderBookmarkableValidation(result.errorMsg,successHTML,errorHTML);
+            } else {
+                // edit url submission
+                await asyncForEach(storageData[groupId].data,async (urlData,index) => {
+                    if (urlData.urlId === urlId) {
+                        const { bookmarkId } = storageData[groupId].data[index];
+
+                        storageData[groupId].data[index] = {
+                            urlId,
+                            url,
+                            iconLink,
+                            linkName,
+                            bookmarkable,
+                            bookmarkId
+                        };
+
+                        console.log(storageData[groupId].data[index]);
+                        console.log(bookmarkId);
+
+                        const treeNode = await updateUrlBookmark(url,linkName,bookmarkId);
+
+                        storageData[groupId].data[index].bookmarkId = treeNode.id;
+
+                        const successHTML = `Successfully bookmarked ${linkName}`;
+                        const errorHTML = `${linkName} cannot be bookmarked`;
+
+                        renderBookmarkableValidation(false,successHTML,errorHTML);
+                    }
                 });
             }
 
-            // edit url submission
-            storageData[groupId].data.forEach((urlData,index) => {
-                if (urlData.urlId === urlId) {
-                    storageData[groupId].data[index] = {
-                        urlId,
-                        url,
-                        iconLink,
-                        linkName
-                    };
-                }
-            });
-
             await storageSet({[groupId]: storageData[groupId]});
 
-            M.toast({ html: `stored url successfully` });
+            M.toast({ html: `Successfully saved url` });
 
             $(`#preloader-${urlId}`).replaceWith(
-                renderUrl(url,linkName,iconLink,urlId)
+                renderUrl(url,linkName,iconLink,urlId,bookmarkable)
             );
 
             // init tooltips
@@ -563,7 +615,7 @@ $(document).on('submit','.add-url-form',function(e) {
 $(document).on('click','.url-form-delete',function() {
     (async () => {
         let storageData = await storageGet();
-        const groupId = $(this).parenst('.card').attr('id').slice(5);
+        const groupId = $(this).parents('.card').attr('id').slice(5);
         const urlId = parseInt($(this).attr('id').slice(16));
         $(`#add-url-form-cont-${urlId}`).remove();
 
@@ -575,17 +627,21 @@ $(document).on('click','.url-form-delete',function() {
 
 // Edit url
 $(document).on('click','.url-edit',function() {
-    const urlId = parseInt($(this).prop('id').slice(9));
+    (async () => {
+        let storageData = await storageGet();
+        let groupId = $(this).parents('.card').attr('id').slice(5);
 
-    const name = $(`#name-${urlId}`).text().trim();
+        const urlId = parseInt($(this).prop('id').slice(9));
+        const name = $(`#name-${urlId}`).text().trim();
+        let { url } = storageData[groupId].data.filter(urlData => urlData.urlId === urlId)[0];
+        url = (url.slice(-1) === '/') ? url.slice(0,url.length-1) : url;
 
-    const url = $(`#url-${urlId}`).prop('href');
+        $(this).parents('.url-buttons').replaceWith(
+            renderNewUrlForm(url,name,urlId,true,true,false,false)
+        );
 
-    $(this).parents('.url-buttons').replaceWith(
-        renderNewUrlForm(url,name,urlId,true,true,false,false)
-    );
-
-    $(`input[id="urlName${urlId}"]`).focus();
+        $(`input[id="urlName${urlId}"]`).focus();
+    })();
 });
 
 // delete url data
@@ -594,9 +650,17 @@ $(document).on('click','.url-delete',function() {
         let storageData = await storageGet();
         const groupId = $(this).parents('.url-cont').prop('id').slice(9);
         const urlId = parseInt($(this).prop('id').slice(11));
+        const { bookmarkId } = storageData[groupId].data.filter(urlData => urlData.urlId === urlId)[0];
 
-        storageData[groupId].data.forEach((urlData,index) => {
+        await asyncForEach(storageData[groupId].data,async (urlData,index) => {
             if (urlData.urlId === urlId) {
+                const treeNodeOrErr = await bookmarkRemove(bookmarkId);
+
+                const successHTML = `Successfully removed ${urlData.linkName} from bookmark`;
+                const errorHTML = `bookmark does not exist`;
+
+                renderBookmarkableValidation(treeNodeOrErr,successHTML,errorHTML);
+
                 storageData[groupId].data.splice(index,1);
             }
         });

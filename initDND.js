@@ -7,31 +7,54 @@ const initDND = data => {
         animation: 150,
         draggable: '.url-buttons',
         onEnd: event => {
-            console.log(data);
-            const oldGroupId = $(event.from).prop('id').slice(9);
-            const newGroupId = $(event.to).prop('id').slice(9);
-            const { oldDraggableIndex, newDraggableIndex } = event;
-            const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+            (async () => {
+                let data = await storageGet();
+                const oldGroupId = $(event.from).prop('id').slice(9);
+                const newGroupId = $(event.to).prop('id').slice(9);
+                const { oldDraggableIndex, newDraggableIndex } = event;
+                const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
 
-            if (oldGroupId === newGroupId) {
-                data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-                data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
-            } else {
-                data[oldGroupId].data.splice(oldDraggableIndex,1);
-                data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+                if (oldGroupId === newGroupId) {
+                    data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
+                    data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+                } else {
+                    data[oldGroupId].data.splice(oldDraggableIndex,1);
+                    data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
 
-                // color change
-                const rgbColor = data[newGroupId].color;
-                $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
-            }
+                    // color change
+                    const rgbColor = data[newGroupId].color;
+                    $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
+                }
 
+                await storageSet(data);
+            })();
+            // const oldGroupId = $(event.from).prop('id').slice(9);
+            // const newGroupId = $(event.to).prop('id').slice(9);
+            // const { oldDraggableIndex, newDraggableIndex } = event;
+            // const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+            //
+            // if (oldGroupId === newGroupId) {
+            //     data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
+            //     data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+            // } else {
+            //     data[oldGroupId].data.splice(oldDraggableIndex,1);
+            //     data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+            //
+            //     // color change
+            //     const rgbColor = data[newGroupId].color;
+            //     $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
+            // }
+            //
+            // chrome.storage.local.set(data,() => {
+            //     console.log('groups have been updated!');
+            // });
 
-            chrome.storage.local.set({[oldGroupId]: data[oldGroupId]},() => {
-                console.log('Old group has been updated!');
-                chrome.storage.local.set({[newGroupId]: data[newGroupId]}, () => {
-                    console.log('New group has been updated!');
-                });
-            });
+            // chrome.storage.local.set({[oldGroupId]: data[oldGroupId]},() => {
+            //     console.log('Old group has been updated!');
+            //     chrome.storage.local.set({[newGroupId]: data[newGroupId]}, () => {
+            //         console.log('New group has been updated!');
+            //     });
+            // });
 
             /*
             evt.item;  // dragged HTMLElement

@@ -1,3 +1,29 @@
+const createUrlBookmark = async (url,title,parentId) => {
+    return await bookmarkCreate({
+        parentId,
+        title,
+        url
+    });
+};
+
+const createUrlBookmarkProcess = async ({url,title,parentId,groupId,index,storageData,errorMsg}) => {
+    const urlTreeNodeOrErr = await createUrlBookmark(url,title,parentId);
+
+    if (urlTreeNodeOrErr === 'invalid url') {
+        errorMsg = urlTreeNodeOrErr;
+    } else {
+        storageData[groupId].data[index].bookmarkId = urlTreeNodeOrErr.id;
+    }
+    console.log(storageData[groupId].data[index].bookmarkId);
+    return { errorMsg, storageData };
+};
+
+const updateUrlBookmark = async (url,title,bookmarkId) => {
+    return await bookmarkUpdate(bookmarkId,{ url, title });
+};
+
+// const updateUrlBookmarkProcess = async ({ url,title,bookmarkId,groupId})
+
 const createGroupBookmark = async (storageData,groupId,urlDataLst) => {
     const folderTreeNode = await bookmarkCreate({
         index: 0,
@@ -11,16 +37,25 @@ const createGroupBookmark = async (storageData,groupId,urlDataLst) => {
         await storageSet({[groupId]: storageData[groupId]});
     }
 
-    await asyncForEach(urlDataLst, async ({ url, linkName }) => {
-        const urlTreeNode = await bookmarkCreate({
-            parentId: folderTreeNode.id,
+    let errorMsg = false;
+
+    await asyncForEach(urlDataLst, async ({ url, linkName },index) => {
+        const result = await createUrlBookmarkProcess({
+            url,
             title: linkName,
-            url
+            parentId: folderTreeNode.id,
+            groupId,
+            index,
+            storageData,
+            errorMsg
         });
 
-        // storageData[groupId].data[index].bookmarkId = urlTreeNode.id;
+        errorMsg = result.errorMsg;
+        storageData = result.storageData;
     });
+
     await storageSet({[groupId]: storageData[groupId]});
+    return errorMsg;
 };
 
 const updateGroupBookmark = async (storageData,groupId,urlDataLst) => {
@@ -37,33 +72,46 @@ const updateGroupBookmark = async (storageData,groupId,urlDataLst) => {
         await bookmarkRemove(bookmarkUrlNode.id);
     });
 
-    await asyncForEach(urlDataLst,async ({ linkName, url }) => {
-        const urlTreeNode = await bookmarkCreate({
-            parentId: bookmarkId,
+    let errorMsg = false;
+
+    await asyncForEach(urlDataLst,async ({ linkName, url },index) => {
+        const result = await createUrlBookmarkProcess({
+            url,
             title: linkName,
-            url
+            parentId: bookmarkId,
+            groupId,
+            index,
+            storageData,
+            errorMsg
         });
 
-        // storageData[groupId].data[index].bookmarkId = urlTreeNode.id;
+        errorMsg = result.errorMsg;
+        storageData = result.storageData;
     });
 
     await storageSet({[groupId]: storageData[groupId]});
+    return errorMsg;
 };
 
 const syncGroupToBookmark = async (storageData,groupId,urlDataLst) => {
-    console.log(urlDataLst);
     if (storageData[groupId].bookmarkId) {
-        await updateGroupBookmark(storageData,groupId,urlDataLst);
+        return await updateGroupBookmark(storageData,groupId,urlDataLst);
     } else {
-        await createGroupBookmark(storageData,groupId,urlDataLst);
+        return await createGroupBookmark(storageData,groupId,urlDataLst);
     }
 };
 
 const syncGroupsToBookmark = async storageData => {
     const groupIds = Object.keys(storageData);
 
+    let errorMsg = false;
+
     await asyncForEach(groupIds,async groupId => {
         const urlDataLst = storageData[groupId].data;
-        await syncGroupToBookmark(storageData,groupId,urlDataLst);
+        if (await syncGroupToBookmark(storageData,groupId,urlDataLst) === 'invalid url') {
+            errorMsg = 'invalid url';
+        }
     });
+
+    return errorMsg;
 };

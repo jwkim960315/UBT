@@ -11,8 +11,12 @@ asyncForEach = async (arr,callback) => {
 // chrome bookmark remove
 const bookmarkRemove = async bookmarkId => {
     return new Promise(resolve => {
-        chrome.bookmarks.remove(bookmarkId,removedTreeNode => {
-            return resolve(removedTreeNode);
+        chrome.bookmarks.remove(bookmarkId,() => {
+            if (chrome.runtime.lastError) {
+                return resolve(true);
+            }
+
+            return resolve(false);
         });
     });
 };
@@ -31,7 +35,7 @@ const bookmarkCreate = async options => {
     return new Promise(resolve => {
         chrome.bookmarks.create(options,bookmarkTreeNode => {
             if (chrome.runtime.lastError) {
-                return resolve(null);
+                return resolve('invalid url');
             }
 
             return resolve(bookmarkTreeNode);

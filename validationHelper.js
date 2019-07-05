@@ -1,46 +1,3 @@
-const diffUrls = (url1,url2) => {
-    const shorterUrl = (url1.length > url2.length) ? url2 : url1;
-    const longerUrl = (url2.length > url1.length) ? url2 : url1;
-    const diffNum = longerUrl.length - shorterUrl.length;
-
-    if (!diffNum) {
-        return '';
-    }
-
-    let startIndex = shorterUrl.length-1;
-    let endIndex = startIndex + diffNum;
-
-
-    for (i=0;i < shorterUrl.length;i++) {
-        if (shorterUrl[i] !== longerUrl[i]) {
-            startIndex = i;
-            endIndex = startIndex + diffNum;
-            break;
-        }
-    }
-
-    return longerUrl.slice(startIndex,endIndex);
-};
-
-const urlExists = (url,data,groupId,urlId) => {
-
-    if (url.slice(-1) !== '/') {
-        url+='/';
-    }
-
-    if (groupId === 'none' || groupId === undefined || urlId === 'none') {
-        return false;
-    } else if (urlId === undefined) {
-        console.log(urlId);
-        return data[groupId].data.some(urlData => urlData.url === url);
-    }
-
-    return data[groupId].data.some(urlData => {
-
-        return urlData.url === url && urlData.urlId !== urlId || diffUrls(urlData.url,(url)) === 'www.';
-    });
-};
-
 const morphFormValues = formValues => {
     return formValues.map(formValue => {
         switch(formValue.name) {
@@ -60,6 +17,18 @@ const morphFormValues = formValues => {
                 return formValue;
         }
     });
+};
+
+// validate url w/ chrome bookmark
+const isUrlValid = async url => {
+    let urlTreeNodeOrErr = await bookmarkCreate({ url });
+
+    if (urlTreeNodeOrErr === 'invalid url') {
+        return false;
+    } else {
+        await bookmarkRemove(urlTreeNodeOrErr.id);
+        return true;
+    }
 };
 
 const validator = formValues => {
@@ -85,7 +54,7 @@ const validator = formValues => {
                         name: formValue.name,
                         target: formValue.target,
                         error: false,
-                        message: 'valid url'
+                        message: ''
                     });
                 }
                 return;
@@ -134,5 +103,13 @@ const renderValidationError = (validatedValues,buttonTar) => {
         $(buttonTar).removeClass('disabled');
     } else {
         $(buttonTar).addClass('disabled');
+    }
+};
+
+const renderBookmarkableValidation = (error,successHTML,errorHTML) => {
+    if (!error) {
+        M.toast({ html: successHTML });
+    } else {
+        M.toast({ html: errorHTML });
     }
 };

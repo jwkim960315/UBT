@@ -1,7 +1,9 @@
+// init
 $(document).ready(() => {
-    chrome.storage.local.get(null, res => {
-        $('#data-display-area').html(`<pre>${JSON.stringify(res,undefined,4)}</pre>`);
-    });
+    (async () => {
+        let storageData = await storageGet();
+        $('#data-display-area').html(`<pre>${JSON.stringify(storageData,undefined,4)}</pre>`);
+    })();
 });
 
 // resizing textarea
@@ -11,16 +13,16 @@ $('#textarea').on('input',function() {
 
 // onSubmit data
 $('#submit-data-form').on('submit',function(e) {
-    e.preventDefault();
+    (async () => {
+        e.preventDefault();
 
-    const data = JSON.parse($('#textarea').val());
-    chrome.storage.local.clear(() => {
-        chrome.storage.local.set(data,() => {
-            M.toast({html: 'Successfully overwritten data!'});
-            chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
-        });
-    });
+        const storageData = JSON.parse($('#textarea').val());
 
+        await storageClear();
+        await storageSet(storageData);
+        M.toast({html: 'Successfully overwritten data!'});
+        chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+    })();
 });
 
 // copy data
