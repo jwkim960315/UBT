@@ -24,9 +24,12 @@ chrome.runtime.onMessage.addListener(req => {
 
 // initialization
 $(document).ready(async () => {
+    console.log('here');
     let storageData = storageDataGroupIdModifier(await storageGet());
     await storageClear();
-
+    await storageSet(storageData);
+    let urlIds = urlIdsToLst(storageData);
+    renderGroups(storageData,'.groups-placeholder',urlIds);
 
     chrome.storage.local.get(null,res => {
         // setting storageData to global var
@@ -35,8 +38,6 @@ $(document).ready(async () => {
             chrome.storage.local.set(storageData,() => {
                 urlIds = urlIdsToLst(storageData);
                 groupIds = tempGroupReorder(storageData,Object.keys(storageData));
-                console.log(storageData);
-                console.log(groupIds);
                 // rendering all the storage data
                 renderGroups(storageData,'.groups-placeholder',urlIds);
             });
