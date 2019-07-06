@@ -23,12 +23,11 @@ const morphFormValues = formValues => {
 const isUrlValid = async url => {
     let urlTreeNodeOrErr = await bookmarkCreate({ url });
 
-    if (urlTreeNodeOrErr === 'invalid url') {
-        return false;
-    } else {
+    if (urlTreeNodeOrErr) {
         await bookmarkRemove(urlTreeNodeOrErr.id);
         return true;
     }
+    return urlTreeNodeOrErr;
 };
 
 const validator = formValues => {
@@ -107,7 +106,7 @@ const renderValidationError = (validatedValues,buttonTar) => {
 };
 
 const renderBookmarkableValidation = (error,successHTML,errorHTML) => {
-    if (!error) {
+    if (error) {
         M.toast({ html: successHTML });
     } else {
         M.toast({ html: errorHTML });

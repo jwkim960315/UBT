@@ -103,14 +103,14 @@ const renderLinks = (groupData,index) => {
     }
 
     const urlDataHTML = urlData
-        .map(({ url, linkName, iconLink, urlId, bookmarkable }) => {
-            return renderUrl(url,linkName,iconLink,urlId,bookmarkable);
+        .map(({ url, linkName, iconLink, urlId }) => {
+            return renderUrl(url,linkName,iconLink,urlId);
         });
 
     return urlDataHTML.join('');
 };
 
-const renderUrl = (url,urlName,iconUrl,urlId,bookmarkable) => {
+const renderUrl = (url,urlName,iconUrl,urlId) => {
 
     let iconUrlHtml;
     let color;
@@ -121,16 +121,14 @@ const renderUrl = (url,urlName,iconUrl,urlId,bookmarkable) => {
         iconUrlHtml = `<img class="link-icon" src="${iconUrl}" width="16" height="16"/>`;
     }
 
-    if (bookmarkable) {
-        color = 'white';
-    } else {
-        color = 'red accent-2';
+    if (url.slice(-1) === '/') {
+        url = url.slice(0,url.length-1);
     }
 
     return `
         <div class="row url-buttons" id="url-data-${urlId}">
             <div class="col s12 m10">
-                <a href="${url}" id="url-${urlId}" class="url ${color} url-text btn" target="_blank">
+                <a href="${url}" id="url-${urlId}" class="url white url-text btn" target="_blank">
                     ${iconUrlHtml}
                     <p id="name-${urlId}">${urlName}</p>
                 </a>

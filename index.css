@@ -5,7 +5,8 @@
 .add-group,
 .add-link,
 .url,
-.sync-to-account
+.sync-with-bookmarks,
+.sync-with-account
 {
     display: flex;
     align-items: center;
@@ -76,7 +77,8 @@ body {
 .open-cancel,
 .open-all,
 .export-whole,
-.sync-to-account
+.sync-with-bookmarks,
+.sync-with-account
 {
     background-color: grey;
     color: #e0e0e0;
@@ -96,7 +98,8 @@ body {
 .open-cancel:hover,
 .open-all:hover,
 .export-whole:hover,
-.sync-to-account:hover
+.sync-with-bookmarks:hover,
+.sync-with-account:hover
 {
     color: white;
 }
@@ -216,11 +219,11 @@ input[id="search"]:focus {
     flex-direction: row;
 }
 
-.sync-to-account {
+.sync-with-bookmarks {
     margin-right: 10px;
 }
 
-.sync-to-account:hover {
+.sync-with-bookmarks:hover {
     background-color: rgb(15,157,88);
 }
 
@@ -229,4 +232,19 @@ input[id="search"]:focus {
     right: auto !important;
     bottom: 3%;
     left: 1%;
+}
+
+.nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sync-with-account {
+    margin-right: 10px;
+}
+
+.sync-with-account:hover {
+    background-color: rgb(15,157,88);
 }

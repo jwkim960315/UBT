@@ -1,5 +1,5 @@
-let storageData;
-let groupIds;
+// let storageData;
+// let groupIds;
 
 $(document).ready(() => {
     (async () => {
@@ -65,7 +65,7 @@ $(document).ready(() => {
 // save all tabs
 $('#save-all-tabs').click(function() {
     (async () => {
-        disableButtons();
+        // disableButtons();
         let storageData = await storageGet();
         const groupIds = Object.keys(storageData);
         const tabs = await tabsQuery({ currentWindow: true });
@@ -73,11 +73,14 @@ $('#save-all-tabs').click(function() {
         let urlIds = urlIdsToLst(storageData);
         const curDateNTime = curDateNTimeToString();
 
+        const treeNode = await createGroupBookmark('Temporary Group');
+
         let tempGroupData = {
             groupName: 'Temporary Group',
             color: 'rgb(0,0,0)',
             data: [],
-            createdAt: curDateNTime
+            createdAt: curDateNTime,
+            bookmarkId: treeNode.id
         };
 
         tabs.forEach(({ url, title, favIconUrl }) => {
@@ -87,16 +90,20 @@ $('#save-all-tabs').click(function() {
                 urlId,
                 linkName: title,
                 iconLink: favIconUrl,
-                url,
-                bookmarkable: true
+                url
             });
 
             urlIds.push(urlId);
         });
 
-        await storageSet({[groupId]: tempGroupData });
+        storageData[groupId] = tempGroupData;
+
+        obj = await condGroupBookmarkNUrls(storageData,groupId,tempGroupData.data,'Temporary Group');
+        storageData = obj.storageData;
+
+        await storageSet(storageData);
         $.notify("saved all tabs",'success');
-        enableButtons();
+        // enableButtons();
         chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
     })();
 });
@@ -113,14 +120,9 @@ $('#export-to-bookmarks').click(() => {
     (async () => {
         let storageData = await storageGet();
 
-        let errorMsg = await syncGroupsToBookmark(storageData);
+        storageData = await condGroupBookmarksNUrls(storageData);
 
-        if (errorMsg === 'invalid url') {
-            $.notify("There are some urls un-bookmarked",'error');
-        } else {
-            $.notify("Groups have been successfully synchronized",'success');
-        }
-
+        await storageSet(storageData);
     })();
 });
 
@@ -328,31 +330,44 @@ $('form.save-url').submit(function(e) {
         formValues = morphFormValues(formValues);
 
         let groupId;
+        let bookmarkId;
 
         if (formValues[0].value === 'create-new-group') {
             groupId = `group${idGenerator(groupIds)}`;
 
             formValues.splice(0,1);
 
+            const treeNode = await createGroupBookmark(formValues[0].value);
+            bookmarkId = treeNode.id;
+            console.log(bookmarkId);
+
             storageData[groupId] = {
                 groupName: formValues[0].value,
                 data: [],
                 color: 'rgb(0,0,0)',
-                createdAt: curDateNTimeToString()
+                createdAt: curDateNTimeToString(),
+                bookmarkId
             };
         } else if (formValues[0].value === 'temporary') {
             groupId = `group${idGenerator(groupIds)}`;
 
             const curDateNTime = curDateNTimeToString();
 
+            const treeNode = await createGroupBookmark('Temporary Group');
+            bookmarkId = treeNode.id;
+            console.log(bookmarkId);
+
             storageData[groupId] = {
                 groupName: 'Temporary Group',
                 data: [],
                 color: 'rgb(0,0,0)',
-                createdAt: curDateNTime
+                createdAt: curDateNTime,
+                bookmarkId
             };
         } else {
             groupId = $('select').children('option:selected').val();
+
+            bookmarkId = storageData[groupId].bookmarkId;
         }
 
         const validatedValues = validator(formValues);
@@ -362,41 +377,49 @@ $('form.save-url').submit(function(e) {
             let linkName = formValues[1].value;
             let url = formValues[2].value;
 
-            if (url.slice(-1) !== '/') {
-                url += '/';
-            }
+            // if (url.slice(-1) !== '/') {
+            //     url += '/';
+            // }
 
             const { favIconUrl } = (await tabsQuery({active: true}))[0];
-            let iconLink;
-            let bookmarkable = false;
+            let iconLink = '';
 
-            if (!favIconUrl || !favIconUrl.length) {
-                if (await isUrlValid(url)) {
-                    iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
-                    bookmarkable = true;
-                } else {
-                    iconLink = '';
-                }
+            if (!await isUrlValid(url)) {
+                $('#cover-spin').hide(0);
+                $('input[name="url"]').removeClass('valid');
+                $('input[name="url"]').addClass('invalid');
+                $('input[name="url"]').next('span').attr('data-error','invalid url');
             } else {
-                if (await isUrlValid(url)) {
-                    bookmarkable = true;
+
+                if (!favIconUrl || !favIconUrl.length) {
+                    if (url !== 'chrome://extensions/') {
+                        iconLink = `https://www.google.com/s2/favicons?domain=${url}`;
+                    }
+                } else {
+                    iconLink = favIconUrl;
                 }
-                iconLink = favIconUrl;
+                console.log(bookmarkId);
+                const urlTreeNode = await bookmarkCreate({
+                    parentId: bookmarkId,
+                    title: linkName,
+                    url
+                });
+
+                storageData[groupId].data.push({
+                    urlId,
+                    linkName,
+                    url,
+                    iconLink,
+                    bookmarkId: urlTreeNode.id
+                });
+
+                await storageSet({[groupId]: storageData[groupId]});
+                $('#cover-spin').hide(0);
+                $.notify("url has been successfully saved!",'success');
+                $('button[type="submit"]').addClass('disabled');
+                chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
             }
 
-            storageData[groupId].data.push({
-                urlId,
-                linkName,
-                url,
-                iconLink,
-                bookmarkable
-            });
-
-            await storageSet({[groupId]: storageData[groupId]});
-            $('#cover-spin').hide(0);
-            $.notify("url has been successfully saved!",'success');
-            $('button[type="submit"]').addClass('disabled');
-            chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
         } else {
             $('#cover-spin').hide(0);
         }

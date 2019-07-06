@@ -8,18 +8,40 @@ const initDND = data => {
         draggable: '.url-buttons',
         onEnd: event => {
             (async () => {
+                console.log(event);
                 let data = await storageGet();
                 const oldGroupId = $(event.from).prop('id').slice(9);
                 const newGroupId = $(event.to).prop('id').slice(9);
-                const { oldDraggableIndex, newDraggableIndex } = event;
-                const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
+                let obj;
+
+                let tmpUrlDataObj = {};
+                data[oldGroupId].data.forEach(urlData => tmpUrlDataObj[urlData.urlId] = urlData);
+                data[oldGroupId].data = [];
+                $(`#url-cont-${oldGroupId}`).find('.url-buttons').each(function() {
+                    const urlId = parseInt($(this).attr('id').slice(9));
+                    data[oldGroupId].data.push(tmpUrlDataObj[urlId]);
+                });
+
 
                 if (oldGroupId === newGroupId) {
-                    data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-                    data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
+
+                    obj = await condGroupBookmarkNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
+                    storageData = obj.storageData;
+
                 } else {
-                    data[oldGroupId].data.splice(oldDraggableIndex,1);
-                    data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
+                    data[newGroupId].data.forEach(urlData => tmpUrlDataObj[urlData.urlId] = urlData);
+                    data[newGroupId].data = [];
+
+                    $(`#url-cont-${newGroupId}`).find('.url-buttons').each(function() {
+                        const urlId = parseInt($(this).attr('id').slice(9));
+                        data[newGroupId].data.push(tmpUrlDataObj[urlId]);
+                    });
+
+                    obj = await condGroupBookmarkNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
+                    storageData = obj.storageData;
+                    obj = await condGroupBookmarkNUrls(data,newGroupId,data[newGroupId].data,data[newGroupId].groupName);
+                    storageData = obj.storageData;
+
 
                     // color change
                     const rgbColor = data[newGroupId].color;
@@ -27,34 +49,8 @@ const initDND = data => {
                 }
 
                 await storageSet(data);
-            })();
-            // const oldGroupId = $(event.from).prop('id').slice(9);
-            // const newGroupId = $(event.to).prop('id').slice(9);
-            // const { oldDraggableIndex, newDraggableIndex } = event;
-            // const draggedUrlData = data[oldGroupId].data[oldDraggableIndex];
-            //
-            // if (oldGroupId === newGroupId) {
-            //     data[oldGroupId].data[oldDraggableIndex] = data[oldGroupId].data[newDraggableIndex];
-            //     data[oldGroupId].data[newDraggableIndex] = draggedUrlData;
-            // } else {
-            //     data[oldGroupId].data.splice(oldDraggableIndex,1);
-            //     data[newGroupId].data.splice(newDraggableIndex,0,draggedUrlData);
-            //
-            //     // color change
-            //     const rgbColor = data[newGroupId].color;
-            //     $(`#${event.to.id}`).find('.url-text > p').css('color',rgbColor);
-            // }
-            //
-            // chrome.storage.local.set(data,() => {
-            //     console.log('groups have been updated!');
-            // });
 
-            // chrome.storage.local.set({[oldGroupId]: data[oldGroupId]},() => {
-            //     console.log('Old group has been updated!');
-            //     chrome.storage.local.set({[newGroupId]: data[newGroupId]}, () => {
-            //         console.log('New group has been updated!');
-            //     });
-            // });
+            })();
 
             /*
             evt.item;  // dragged HTMLElement

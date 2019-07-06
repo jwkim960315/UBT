@@ -127,6 +127,15 @@ const storageGet = async () => {
     });
 };
 
+// chrome storage remove
+const storageRemove = async groupId => {
+    return new Promise(resolve => {
+        chrome.storage.local.remove(groupId,() => {
+            return resolve(null);
+        });
+    });
+};
+
 // chrome tabs create
 const tabsCreate = async options => {
     return new Promise(resolve => {
@@ -239,12 +248,15 @@ const syncGroupsToBookmark = async storageData => {
 // execute once loaded
 chrome.windows.onCreated.addListener(window => {
     (async () => {
-        const { id } = (await tabsQuery({ windowId: window.id }))[0];
-
-        await tabsUpdate(id,{
-            active: true,
+        // const { id } = (await tabsQuery({ windowId: window.id }))[0];
+        await tabsCreate({
+            windowId: window.id,
             url: 'index.html'
         });
+        // await tabsUpdate(id,{
+        //     active: true,
+        //     url: 'index.html'
+        // });
     })();
 });
 
@@ -314,38 +326,63 @@ chrome.contextMenus.create({
 //     }
 // });
 
-chrome.bookmarks.onRemoved.addListener(async (id,removeInfo) => {
-    console.log('bookmark has been removed!');
-    console.log(removeInfo);
+chrome.bookmarks.onRemoved.addListener((id,removeInfo) => {
+    (async () => {
+        /*
+            delete group
+            delete url
 
-    let storageData = await storageGet();
+         */
 
-    const groupIds = Object.keys(storageData);
 
-    if (removeInfo.parentId === '1') {
-        const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === id)[0];
-
-        if (folderGroupId && storageData[folderGroupId].bookmarkId) {
-            delete storageData[folderGroupId].bookmarkId;
-
-            await storageSet({[folderGroupId]: storageData[folderGroupId]});
-        }
-    } else if (!removeInfo.node.children) {
-        const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === removeInfo.parentId)[0];
-
-        if (folderGroupId && storageData[folderGroupId].data.some(({ bookmarkId }) => bookmarkId === id)) {
-            const { index } = storageData[folderGroupId].data
-                            .map(({ bookmarkId },index) => { bookmarkId, index })
-                            .filter(({ bookmarkId, index}) => bookmarkId === id)[0];
-
-            delete storageData[folderGroupId].data[index].bookmarkId;
-
-            await storageSet({[folderGroupId]: storageData[folderGroupId]});
-        }
-    }
+        // console.log('bookmark has been removed!');
+        // console.log(removeInfo);
+        //
+        // let storageData = await storageGet();
+        //
+        // const groupIds = Object.keys(storageData);
+        //
+        // if (removeInfo.parentId === '1') {
+        //     console.log('removing id form group');
+        //     const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === id)[0];
+        //     console.log(folderGroupId);
+        //     if (folderGroupId && storageData[folderGroupId].bookmarkId) {
+        //         delete storageData[folderGroupId];
+        //         console.log(storageData);
+        //         await storageRemove(folderGroupId);
+        //         chrome.runtime.sendMessage({
+        //             todo: 'removeGroup',
+        //             groupId: folderGroupId
+        //         });
+        //     }
+        //
+        //
+        // } else if (!removeInfo.node.children && removeInfo.parentId !== "2") {
+        //     console.log('removing id from url');
+        //     const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === removeInfo.parentId)[0];
+        //     console.log(folderGroupId);
+        //     console.log(storageData[folderGroupId].data);
+        //     if (folderGroupId && storageData[folderGroupId].data.some(({ bookmarkId }) => bookmarkId === id)) {
+        //         console.log(storageData[folderGroupId].data);
+        //         // console.log(storageData);
+        //
+        //         // const { index } = storageData[folderGroupId].data
+        //         //     .map(({ bookmarkId },index) => { bookmarkId, index })
+        //         //     .filter(({ bookmarkId, index}) => bookmarkId === id)[0];
+        //
+        //         // storageData[folderGroupId].data.splice(index,1);
+        //         console.log(storageData);
+        //
+        //         // await storageRemove(storageData[folderGroupId].data[index].bookmarkId);
+        //     }
+        // }
+        //
+        // // chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
+    })();
 });
 
-chrome.storage.onChanged.addListener(changes => {
-    console.log('storage has been modified!');
-    console.log(changes);
-});
+// chrome.storage.onChanged.addListener(changes => {
+//     console.log('storage has been modified!');
+//     console.log(changes);
+// });
+
