@@ -339,7 +339,6 @@ $('form.save-url').submit(function(e) {
 
             const treeNode = await createGroupBookmark(formValues[0].value);
             bookmarkId = treeNode.id;
-            console.log(bookmarkId);
 
             storageData[groupId] = {
                 groupName: formValues[0].value,
@@ -355,7 +354,6 @@ $('form.save-url').submit(function(e) {
 
             const treeNode = await createGroupBookmark('Temporary Group');
             bookmarkId = treeNode.id;
-            console.log(bookmarkId);
 
             storageData[groupId] = {
                 groupName: 'Temporary Group',
@@ -398,7 +396,7 @@ $('form.save-url').submit(function(e) {
                 } else {
                     iconLink = favIconUrl;
                 }
-                console.log(bookmarkId);
+
                 const urlTreeNode = await bookmarkCreate({
                     parentId: bookmarkId,
                     title: linkName,

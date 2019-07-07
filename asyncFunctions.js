@@ -62,8 +62,6 @@ const bookmarkCreate = async options => {
 // chrome bookmarks update
 const bookmarkUpdate = async (bookmarkId,changes) => {
     return new Promise(resolve => {
-        console.log(bookmarkId);
-        console.log(changes);
         chrome.bookmarks.update(bookmarkId,changes,bookmarkTreeNode => {
             if (chrome.runtime.lastError) {
                 return resolve(false);

@@ -225,7 +225,6 @@ const updateGroupBookmark = async (storageData,groupId,urlDataLst) => {
 };
 
 const syncGroupToBookmark = async (storageData,groupId,urlDataLst) => {
-    console.log(urlDataLst);
     if (storageData[groupId].bookmarkId) {
         await updateGroupBookmark(storageData,groupId,urlDataLst);
     } else {
@@ -253,10 +252,6 @@ chrome.windows.onCreated.addListener(window => {
             windowId: window.id,
             url: 'index.html'
         });
-        // await tabsUpdate(id,{
-        //     active: true,
-        //     url: 'index.html'
-        // });
     })();
 });
 
@@ -272,117 +267,4 @@ chrome.contextMenus.create({
         })();
     }
 });
-
-// saving all tabs route
-// chrome.contextMenus.create({
-//     title: 'save all tabs',
-//     contexts: ["browser_action"],
-//     onclick: () => {
-//         (async () => {
-//             let storageData = await storageGet();
-//             const groupIds = Object.keys(storageData);
-//             const tabs = await tabsQuery({currentWindow: true});
-//             const groupId = `group${idGenerator(groupIds)}`;
-//             let urlIds = urlIdsToLst(storageData);
-//             const curDateNTime = curDateNTimeToString();
-//
-//             let tempGroupData = {
-//                 groupName: 'Temporary Group',
-//                 color    : 'rgb(0,0,0)',
-//                 data     : [],
-//                 createdAt: curDateNTime
-//             };
-//
-//             tabs.forEach(({url, title, favIconUrl}) => {
-//                 const urlId = idGenerator(urlIds);
-//
-//                 tempGroupData.data.push({
-//                     urlId,
-//                     linkName: title,
-//                     iconLink: favIconUrl,
-//                     url
-//                 });
-//
-//                 urlIds.push(urlId);
-//             });
-//
-//             await storageSet({[groupId]: tempGroupData});
-//             chrome.runtime.sendMessage({todo: 'reloadMainPage'});
-//         })();
-//     }
-// });
-
-// sync with bookmarks route
-// chrome.contextMenus.create({
-//     title: 'sync with bookmarks',
-//     contexts: ["browser_action"],
-//     onclick: () => {
-//         (async () => {
-//             let storageData = await storageGet();
-//             const groupIds = Object.keys(storageData);
-//
-//             await syncGroupsToBookmark(storageData);
-//         })();
-//     }
-// });
-
-chrome.bookmarks.onRemoved.addListener((id,removeInfo) => {
-    (async () => {
-        /*
-            delete group
-            delete url
-
-         */
-
-
-        // console.log('bookmark has been removed!');
-        // console.log(removeInfo);
-        //
-        // let storageData = await storageGet();
-        //
-        // const groupIds = Object.keys(storageData);
-        //
-        // if (removeInfo.parentId === '1') {
-        //     console.log('removing id form group');
-        //     const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === id)[0];
-        //     console.log(folderGroupId);
-        //     if (folderGroupId && storageData[folderGroupId].bookmarkId) {
-        //         delete storageData[folderGroupId];
-        //         console.log(storageData);
-        //         await storageRemove(folderGroupId);
-        //         chrome.runtime.sendMessage({
-        //             todo: 'removeGroup',
-        //             groupId: folderGroupId
-        //         });
-        //     }
-        //
-        //
-        // } else if (!removeInfo.node.children && removeInfo.parentId !== "2") {
-        //     console.log('removing id from url');
-        //     const folderGroupId = groupIds.filter(groupId => storageData[groupId].bookmarkId === removeInfo.parentId)[0];
-        //     console.log(folderGroupId);
-        //     console.log(storageData[folderGroupId].data);
-        //     if (folderGroupId && storageData[folderGroupId].data.some(({ bookmarkId }) => bookmarkId === id)) {
-        //         console.log(storageData[folderGroupId].data);
-        //         // console.log(storageData);
-        //
-        //         // const { index } = storageData[folderGroupId].data
-        //         //     .map(({ bookmarkId },index) => { bookmarkId, index })
-        //         //     .filter(({ bookmarkId, index}) => bookmarkId === id)[0];
-        //
-        //         // storageData[folderGroupId].data.splice(index,1);
-        //         console.log(storageData);
-        //
-        //         // await storageRemove(storageData[folderGroupId].data[index].bookmarkId);
-        //     }
-        // }
-        //
-        // // chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
-    })();
-});
-
-// chrome.storage.onChanged.addListener(changes => {
-//     console.log('storage has been modified!');
-//     console.log(changes);
-// });
 

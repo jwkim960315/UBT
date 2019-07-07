@@ -459,8 +459,6 @@ $(document).on('click','.export-whole',function() {
         const successHTML = `Successfully synchronized ${storageData[groupId].groupName}`;
         const errorHTML = `Urls in red cannot be bookmarked`;
 
-        console.log(storageData);
-
         renderBookmarkableValidation(obj.success,successHTML,errorHTML);
     })();
 });
@@ -598,7 +596,6 @@ $(document).on('submit','.add-url-form',function(e) {
         }];
 
         const validatedValues = validator(formValues);
-        console.log(validatedValues);
 
         if (validatedValues.submit) {
             // preloader
@@ -632,7 +629,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     const parentId = storageData[groupId].bookmarkId;
 
                     const treeNodeOrErr = await createUrlBookmark(storageData[groupId].data,urlId,parentId);
-                    console.log(treeNodeOrErr);
+
                     if (treeNodeOrErr) {
                         storageData[groupId].data[storageData[groupId].data.length-1].bookmarkId = treeNodeOrErr.id;
                     }
@@ -646,7 +643,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     await asyncForEach(storageData[groupId].data,async (urlData,index) => {
                         if (urlData.urlId === urlId) {
                             const { bookmarkId } = storageData[groupId].data[index];
-                            console.log(bookmarkId);
+
                             storageData[groupId].data[index] = {
                                 urlId,
                                 url,
@@ -659,8 +656,6 @@ $(document).on('submit','.add-url-form',function(e) {
                                 title: linkName,
                                 url
                             });
-
-                            console.log(treeNodeOrErr);
 
                             const successHTML = `Successfully bookmarked ${linkName}`;
                             const errorHTML = `${linkName} cannot be bookmarked`;
