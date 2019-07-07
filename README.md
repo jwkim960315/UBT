@@ -1,6 +1,6 @@
 # ![UTab Logo](./images/favicon-32x32(transparent).png)UTab
 
-Chrome extension that manages and saves url addresses and tabs
+Chrome extension that manages and saves url addresses, tabs, and bookmarks
 
 ## Features
 - Save url address with single click
@@ -8,7 +8,8 @@ Chrome extension that manages and saves url addresses and tabs
 - Create & edit url address name
 - Easily migrate data to & from computers for updates
 - Drag and drop url addresses to & from groups
-- Save all the tabs by just clicking once!
+- Save all the tabs by just clicking once
+- Sync with bookmarks for easy-access to websites!
 
 ## Getting Started
 
@@ -20,7 +21,7 @@ Recent version of Chrome browser
 
 ### Installing
 
-1. Open a terminal/git bash
+1. Open your terminal/git bash
 2. Download the git repository with the following command:
 ```
 git clone https://github.com/jwkim960315/UTab
@@ -35,11 +36,9 @@ git clone https://github.com/jwkim960315/UTab
 
 * Left-click icon to open up popup page.
 * Click *Save* button to save a current page's url address
-* Right-click icon and click *Open in new tab*
-* You can manage url addresses on this page
-* You can save all url addresses on current browser window by:
-    * Right-click icon
-    * Click *Save all tabs*
+* Right-click icon and click *Open management page*
+    * You can manage url addresses on this page
+* You can save all url addresses on current browser window
 * You can switch colors of groups on *index page* by:
     * Click on settings icon (positioned on the right corner of each group)
     * Click on *change color*
@@ -65,12 +64,21 @@ I have yet to test all the functionalities, so please report any issues.
 * [SortableJS](http://sortablejs.github.io/Sortable/) - JavaScript library for reorderable drag-and-drop lists
 * [MarkJS](https://markjs.io/) - JavaScript library for highlighting search terms
 
+## Caution
+
+* It has designed to be a uni-direction sync (chrome local storage -> bookmarks)
+    * Modifying bookmark will not alter any data on management page
+
 ## What's Next
 * Check for any reports on malfunctions/deficiencies & fix them
-* Deploy on Chrome Web Store on July 15th, 2019
+* Planning to publish on Chrome Web Store on July 15th, 2019
 
 ## Authors
 
 * **Sean Kim** - [github](https://github.com/jwkim960315)
 
+## Thanks To
+
+* **Alex Hong** - [github](https://github.com/alexhongs)
+    * for giving me advice on UX
 
