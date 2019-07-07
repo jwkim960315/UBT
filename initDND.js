@@ -8,7 +8,6 @@ const initDND = data => {
         draggable: '.url-buttons',
         onEnd: event => {
             (async () => {
-                console.log(event);
                 let data = await storageGet();
                 const oldGroupId = $(event.from).prop('id').slice(9);
                 const newGroupId = $(event.to).prop('id').slice(9);
@@ -25,8 +24,11 @@ const initDND = data => {
 
                 if (oldGroupId === newGroupId) {
 
-                    obj = await condGroupBookmarkNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
-                    storageData = obj.storageData;
+                    obj = await updateOrRemainGroupBookmarksNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
+
+                    if (obj) {
+                        data = obj.storageData;
+                    }
 
                 } else {
                     data[newGroupId].data.forEach(urlData => tmpUrlDataObj[urlData.urlId] = urlData);
@@ -37,10 +39,17 @@ const initDND = data => {
                         data[newGroupId].data.push(tmpUrlDataObj[urlId]);
                     });
 
-                    obj = await condGroupBookmarkNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
-                    storageData = obj.storageData;
-                    obj = await condGroupBookmarkNUrls(data,newGroupId,data[newGroupId].data,data[newGroupId].groupName);
-                    storageData = obj.storageData;
+                    obj = await updateOrRemainGroupBookmarksNUrls(data,oldGroupId,data[oldGroupId].data,data[oldGroupId].groupName);
+
+                    if (obj) {
+                        data = obj.storageData;
+                    }
+
+                    obj = await updateOrRemainGroupBookmarksNUrls(data,newGroupId,data[newGroupId].data,data[newGroupId].groupName);
+
+                    if (obj) {
+                        data = obj.storageData;
+                    }
 
 
                     // color change

@@ -65,10 +65,54 @@ $('.sync-with-account').click(() => {
     })();
 });
 
+// save all tabs
+$('.save-all-tabs').click(() => {
+    (async () => {
+        let storageData = await storageGet();
+
+        const groupIds = Object.keys(storageData);
+        const tabs = await tabsQuery({ currentWindow: true });
+        const groupId = `group${idGenerator(groupIds)}`;
+        let urlIds = urlIdsToLst(storageData);
+        const curDateNTime = curDateNTimeToString();
+
+        const treeNode = await createGroupBookmark('Temporary Group');
+
+        let tempGroupData = {
+            groupName: 'Temporary Group',
+            color: 'rgb(0,0,0)',
+            data: [],
+            createdAt: curDateNTime,
+            bookmarkId: treeNode.id
+        };
+
+        tabs.forEach(({ url, title, favIconUrl }) => {
+            const urlId = idGenerator(urlIds);
+
+            tempGroupData.data.push({
+                urlId,
+                linkName: title,
+                iconLink: favIconUrl,
+                url
+            });
+
+            urlIds.push(urlId);
+        });
+
+        storageData[groupId] = tempGroupData;
+
+        obj = await condGroupBookmarkNUrls(storageData,groupId,tempGroupData.data,'Temporary Group');
+        storageData = obj.storageData;
+        await storageSet(storageData);
+        M.toast({ html: 'saved all tabs on a current window'});
+        $('.group-cont').html('<div class="groups-placeholder"></div>');
+        renderGroups(storageData,'.groups-placeholder');
+    })();
+});
+
 // sync all groups with bookmarks
 $('.sync-with-bookmarks').click(() => {
     (async () => {
-        console.log('here');
         let storageData = await storageGet();
 
         storageData = await condGroupBookmarksNUrls(storageData);
@@ -588,7 +632,7 @@ $(document).on('submit','.add-url-form',function(e) {
                     const parentId = storageData[groupId].bookmarkId;
 
                     const treeNodeOrErr = await createUrlBookmark(storageData[groupId].data,urlId,parentId);
-
+                    console.log(treeNodeOrErr);
                     if (treeNodeOrErr) {
                         storageData[groupId].data[storageData[groupId].data.length-1].bookmarkId = treeNodeOrErr.id;
                     }
@@ -687,22 +731,23 @@ $(document).on('click','.url-delete',function() {
         const groupId = $(this).parents('.url-cont').prop('id').slice(9);
         const urlId = parseInt($(this).prop('id').slice(11));
         const { bookmarkId } = getUrlData(storageData[groupId].data,urlId);
+        let urlName;
 
-        // const { bookmarkId } = storageData[groupId].data.filter(urlData => urlData.urlId === urlId)[0];
-        console.log(bookmarkId);
         await asyncForEach(storageData[groupId].data,async (urlData,index) => {
             if (urlData.urlId === urlId) {
-                console.log(bookmarkId);
-                const treeNodeOrErr = await bookmarkRemove(bookmarkId);
-
-                const successHTML = `Successfully removed ${urlData.linkName} from bookmark`;
-                const errorHTML = `bookmark does not exist`;
-
-                renderBookmarkableValidation(treeNodeOrErr,successHTML,errorHTML);
-
+                urlName = urlData.linkName;
                 storageData[groupId].data.splice(index,1);
             }
         });
+
+        if (bookmarkId) {
+            const treeNodeOrErr = await bookmarkRemove(bookmarkId);
+
+            const successHTML = `Successfully removed ${urlName} from bookmark`;
+            const errorHTML = `bookmark does not exist`;
+
+            renderBookmarkableValidation(treeNodeOrErr,successHTML,errorHTML);
+        }
 
         await storageSet({[groupId]: storageData[groupId]});
         $(`#url-data-${urlId}`).remove();

@@ -6,7 +6,8 @@
 .add-link,
 .url,
 .sync-with-bookmarks,
-.sync-with-account
+.sync-with-account,
+.save-all-tabs
 {
     display: flex;
     align-items: center;
@@ -78,7 +79,8 @@ body {
 .open-all,
 .export-whole,
 .sync-with-bookmarks,
-.sync-with-account
+.sync-with-account,
+.save-all-tabs
 {
     background-color: grey;
     color: #e0e0e0;
@@ -99,7 +101,8 @@ body {
 .open-all:hover,
 .export-whole:hover,
 .sync-with-bookmarks:hover,
-.sync-with-account:hover
+.sync-with-account:hover,
+.save-all-tabs:hover
 {
     color: white;
 }
@@ -234,15 +237,12 @@ input[id="search"]:focus {
     left: 1%;
 }
 
-.nav {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+.save-all-tabs {
+    margin-right: 10px;
 }
 
-.sync-with-account {
-    margin-right: 10px;
+.save-all-tabs:hover {
+    background-color: rgb(66,133,244);
 }
 
 .sync-with-account:hover {
