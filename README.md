@@ -49,6 +49,8 @@ git clone https://github.com/jwkim960315/UTab
     * Click *options* (probably in your native language)
     * Click *Copy* if you want to copy the storage data
     * Paste the storage data and click *Save* if you want to overwrite storage data
+* Groups & url addresses are automatically pushed to bookmarks
+    * Any modifications on management page will be applied to bookmarks
 
 ### Testing
 
