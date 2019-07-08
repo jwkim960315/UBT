@@ -245,15 +245,15 @@ const syncGroupsToBookmark = async storageData => {
 
 
 // execute once loaded
-chrome.windows.onCreated.addListener(window => {
-    (async () => {
-        // const { id } = (await tabsQuery({ windowId: window.id }))[0];
-        await tabsCreate({
-            windowId: window.id,
-            url: 'index.html'
-        });
-    })();
-});
+// chrome.windows.onCreated.addListener(window => {
+//     (async () => {
+//         // const { id } = (await tabsQuery({ windowId: window.id }))[0];
+//         await tabsCreate({
+//             windowId: window.id,
+//             url: 'index.html'
+//         });
+//     })();
+// });
 
 
 
