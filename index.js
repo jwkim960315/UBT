@@ -67,11 +67,18 @@ $('.save-to-account').click(() => {
 $('.overwrite-with-account-data').click(() => {
     (async () => {
         let syncStorageData = await syncStorageGet();
+        let storageData = await storageGet();
+
+        await removeGroupBookmarks(storageData);
         await storageClear();
+
+        syncStorageData = await condGroupBookmarksNUrls(syncStorageData);
         await storageSet(syncStorageData);
+
         M.toast({ html: "Successfully overwritten with account's data" });
         chrome.runtime.sendMessage({ todo: 'reloadOptionsPage' });
-        location.reload();
+        // location.reload();
+        // renderGroups(syncStorageData,)
     })();
 });
 

@@ -131,7 +131,7 @@ const condGroupBookmarkNUrls = async (storageData,groupId,urlDataLst,groupName) 
             obj = await createUrlBookmarks(storageData,groupId,urlDataLst,parentId,success);
         } else {
             let treeNode = await createGroupBookmark(groupName);
-
+            console.log(treeNode.id);
             storageData[groupId].bookmarkId = treeNode.id;
 
             const parentId = treeNode.id;
@@ -191,4 +191,23 @@ const updateOrRemainGroupBookmarksNUrls = async (storageData,groupId,urlDataLst,
 
     return obj;
     // returns storageData
+};
+
+// remove all group bookmarks
+const removeGroupBookmarks = async storageData => {
+    const groupIds = Object.keys(storageData);
+    let bookmarkIds = [];
+    groupIds.forEach(groupId => {
+        const { bookmarkId } = storageData[groupId];
+
+        if (bookmarkId) {
+            bookmarkIds.push(bookmarkId);
+        }
+    });
+
+    console.log(bookmarkIds);
+
+    await asyncForEach(bookmarkIds,async bookmarkId => {
+        await bookmarksRemove(bookmarkId);
+    });
 };

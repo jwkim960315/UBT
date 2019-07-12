@@ -36,6 +36,7 @@ const bookmarkRemove = async bookmarkId => {
 
 // chrome bookmarks remove
 const bookmarksRemove = async bookmarkId => {
+    console.log(bookmarkId);
     return new Promise(resolve => {
         chrome.bookmarks.removeTree(bookmarkId,() => {
             if (chrome.runtime.lastError) {
