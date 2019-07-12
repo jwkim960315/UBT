@@ -5,9 +5,10 @@
 .add-group,
 .add-link,
 .url,
-.sync-with-bookmarks,
-.sync-with-account,
-.save-all-tabs
+.export-as-bookmarks,
+.save-to-account,
+.save-all-tabs,
+.overwrite-with-account-data
 {
     display: flex;
     align-items: center;
@@ -78,9 +79,10 @@ body {
 .open-cancel,
 .open-all,
 .export-whole,
-.sync-with-bookmarks,
-.sync-with-account,
-.save-all-tabs
+.export-as-bookmarks,
+.save-to-account,
+.save-all-tabs,
+.overwrite-with-account-data
 {
     background-color: grey;
     color: #e0e0e0;
@@ -100,9 +102,10 @@ body {
 .open-cancel:hover,
 .open-all:hover,
 .export-whole:hover,
-.sync-with-bookmarks:hover,
-.sync-with-account:hover,
-.save-all-tabs:hover
+.export-as-bookmarks:hover,
+.save-to-account:hover,
+.save-all-tabs:hover,
+.overwrite-with-account-data:hover
 {
     color: white;
 }
@@ -222,11 +225,11 @@ input[id="search"]:focus {
     flex-direction: row;
 }
 
-.sync-with-bookmarks {
+.export-as-bookmarks {
     margin-right: 10px;
 }
 
-.sync-with-bookmarks:hover {
+.export-as-bookmarks:hover {
     background-color: rgb(15,157,88);
 }
 
@@ -245,6 +248,10 @@ input[id="search"]:focus {
     background-color: rgb(66,133,244);
 }
 
-.sync-with-account:hover {
+.save-to-account:hover {
     background-color: rgb(15,157,88);
+}
+
+.overwrite-with-account-data:hover {
+    background-color: rgb(66,133,244);
 }

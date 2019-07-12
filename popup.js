@@ -65,7 +65,6 @@ $(document).ready(() => {
 // save all tabs
 $('#save-all-tabs').click(function() {
     (async () => {
-        // disableButtons();
         let storageData = await storageGet();
         const groupIds = Object.keys(storageData);
         const tabs = await tabsQuery({ currentWindow: true });
@@ -103,7 +102,6 @@ $('#save-all-tabs').click(function() {
 
         await storageSet(storageData);
         $.notify("saved all tabs",'success');
-        // enableButtons();
         chrome.runtime.sendMessage({ todo: 'reloadMainPage' });
     })();
 });

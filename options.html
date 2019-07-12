@@ -6,6 +6,10 @@
 
     <link rel="shortcut icon" href="favicon.ico" />
 
+    <!-- materialize icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+
     <!-- materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
@@ -14,12 +18,33 @@
 </head>
 <body>
 
-    <div class="logo-cont">
-        <a href="./index.html" class="brand-logo">
-            <img src="images/favicon-96x96.png" width="64" height="64" />
-        </a>
-    </div>
     <div class="container">
+        <div class="row valign-wrapper">
+            <div class="col logo-cont">
+                <a href="./index.html" class="brand-logo">
+                    <img src="images/favicon-96x96.png" width="64" height="64" />
+                </a>
+            </div>
+            <div class="col s3 space-placeholder"></div>
+            <div class="col overwrite-with-account-data-cont">
+                <a
+                    class="waves-effect waves-light btn overwrite-with-account-data tooltipped"
+                    data-position="bottom"
+                    data-tooltip="Overwrite with account's saved data"
+                >
+                    <i class="material-icons">input</i>Overwrite with account data
+                </a>
+            </div>
+            <div class="col save-groups-account-cont right">
+                <a
+                        class="waves-effect waves-light btn save-to-account tooltipped"
+                        data-position="bottom"
+                        data-tooltip="Save all groups to your account"
+                >
+                    <i class="material-icons">save</i>Save all groups
+                </a>
+            </div>
+        </div>
         <div class="row">
             <div class="card" id="data-display-card">
                 <div class="card-content">

@@ -1,5 +1,3 @@
-// chrome.storage.local.clear();
-
 // chrome runtime listener
 chrome.runtime.onMessage.addListener(req => {
     switch(req.todo) {
@@ -18,7 +16,6 @@ $(document).ready(() => {
         let storageData = storageDataGroupIdModifier(await storageGet());
         await storageClear();
         await storageSet(storageData);
-        console.log(storageData);
         renderGroups(storageData,'.groups-placeholder');
     })();
 });
@@ -56,12 +53,25 @@ $('#search').on('input', function() {
     })();
 });
 
-// sync with account's sync storage
-$('.sync-with-account').click(() => {
+// save groups to an account's sync storage
+$('.save-to-account').click(() => {
     (async () => {
         let localStorageData = await storageGet();
+        await syncStorageClear();
         await syncStorageSet(localStorageData);
         M.toast({html: 'Successfully synchronized with the account!'});
+    })();
+});
+
+// Overwrite data w/ account's data
+$('.overwrite-with-account-data').click(() => {
+    (async () => {
+        let syncStorageData = await syncStorageGet();
+        await storageClear();
+        await storageSet(syncStorageData);
+        M.toast({ html: "Successfully overwritten with account's data" });
+        chrome.runtime.sendMessage({ todo: 'reloadOptionsPage' });
+        location.reload();
     })();
 });
 
@@ -111,7 +121,7 @@ $('.save-all-tabs').click(() => {
 });
 
 // sync all groups with bookmarks
-$('.sync-with-bookmarks').click(() => {
+$('.export-as-bookmarks').click(() => {
     (async () => {
         let storageData = await storageGet();
 
@@ -261,13 +271,16 @@ $(document).on('click','.delete-group',function() {
 
 // edit group name
 $(document).on('click','.edit-group-name',function() {
-    const groupId = $(this).attr('id').slice(5);
+    (async () => {
+        let storageData = await storageGet();
+        const groupId = $(this).attr('id').slice(5);
 
-    const name = storageData[groupId].groupName;
+        const name = storageData[groupId].groupName;
 
-    $(`#card-header-${groupId}`).replaceWith(
-        renderGroupForm(name,groupId,false)
-    );
+        $(`#card-header-${groupId}`).replaceWith(
+            renderGroupForm(name,groupId,false)
+        );
+    })();
 });
 
 // change group color w/ wheel

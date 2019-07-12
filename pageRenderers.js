@@ -24,9 +24,9 @@ const renderGroups = (iterableObj,target,groupId=false) => {
                                     id="export-whole-${groupKey}" 
                                     class="btn waves-effect waves-light btn export-whole tooltipped"
                                     data-position="left" 
-                                    data-tooltip="Sync entire group with bookmark"
+                                    data-tooltip="Export entire group to bookmark"
                                 >
-                                    <i class="material-icons">sync</i>
+                                    <i class="material-icons">file_upload</i>
                                 </button>
                             </div>
                             <div class="col s12 m1 open-all-cont">
@@ -49,7 +49,7 @@ const renderGroups = (iterableObj,target,groupId=false) => {
                                     <i class="material-icons">settings</i>
                                 </button>
                                 <ul id='group-settings${groupKey.slice(5)}' class='dropdown-content'>
-                                    <li><a id="export-${groupKey}" class="export-group">sync with bookmark</a></li>
+                                    <li><a id="export-${groupKey}" class="export-group">export as bookmark</a></li>
                                     <li class="divider" tabindex="-1"></li>
                                     <li><a id="change-color-${groupKey}" class="change-color">change color</a></li>
                                     <li class="divider" tabindex="-1"></li>

@@ -65,7 +65,8 @@ const condUrlBookmark = async (storageData,groupId,urlDataLst,urlId,urlChanges) 
     const treeNodeOrErr = await bookmarkGet(bookmarkId);
     const parentId = storageData[groupId].bookmarkId;
 
-    if (treeNodeOrErr && treeNodeOrErr.parentId === parentId) {
+    if (treeNodeOrErr && treeNodeOrErr[0].parentId === parentId) {
+        console.log('should update bookmark');
         return await updateUrlBookmark(urlDataLst,urlId,urlChanges);
     }
 

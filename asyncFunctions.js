@@ -146,6 +146,15 @@ const syncStorageSet = async modifiedData => {
     });
 };
 
+// chrome sync storage clear
+const syncStorageClear = async () => {
+    return new Promise(resolve => {
+        chrome.storage.sync.clear(() => {
+            return resolve(true);
+        });
+    });
+};
+
 // chrome tabs create
 const tabsCreate = async options => {
     return new Promise(resolve => {

@@ -7,6 +7,7 @@ body {
 }
 
 .card {
+    color: grey;
     background-color: rgba(192,192,192,.1);
 }
 
@@ -45,6 +46,25 @@ label[for="textarea"].active
     left: 1%;
 }
 
-.card {
-    color: grey;
+.save-to-account,
+.overwrite-with-account-data
+{
+    display: flex;
+    align-items: center;
+    background-color: grey;
+    color: #e0e0e0;
+}
+
+.save-to-account:hover,
+.overwrite-with-account-data:hover
+{
+    color: white;
+}
+
+.save-to-account:hover {
+    background-color: rgb(15,157,88);
+}
+
+.overwrite-with-account-data:hover {
+    background-color: rgb(66,133,244);
 }
