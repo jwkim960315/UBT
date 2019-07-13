@@ -1,4 +1,4 @@
-# ![UTab Logo](./images/favicon-32x32(transparent).png)UTab
+# ![UTab Logo](./images/logo-32x32.svg)UBT
 
 Chrome extension that manages and saves url addresses, tabs, and bookmarks
 
@@ -24,7 +24,7 @@ Recent version of Chrome browser
 1. Open your terminal/git bash
 2. Download the git repository with the following command:
 ```
-git clone https://github.com/jwkim960315/UTab
+git clone https://github.com/jwkim960315/UBT
 ```
 3. Open your Chrome browser
 4. Open the Extension Management page by navigating to <chrome://extensions>.
