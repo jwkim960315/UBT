@@ -374,7 +374,10 @@ $('form.save-url').submit(function(e) {
             let linkName = formValues[1].value;
             let url = formValues[2].value;
 
-            const { favIconUrl } = (await tabsQuery({active: true}))[0];
+            const { favIconUrl } = (await tabsQuery({
+                active: true,
+                currentWindow: true
+            }))[0];
             let iconLink = '';
 
             if (!await isUrlValid(url)) {
