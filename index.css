@@ -11,6 +11,9 @@
 .overwrite-with-account-data
 {
     display: flex;
+}
+
+.url {
     align-items: center;
 }
 
@@ -217,7 +220,6 @@ input[id="search"]:focus {
 
 .card-title {
     word-wrap: break-word;
-    /*overflow: auto;*/
 }
 
 .top-buttons-cont {
@@ -254,4 +256,28 @@ input[id="search"]:focus {
 
 .overwrite-with-account-data:hover {
     background-color: rgb(66,133,244);
+}
+
+/*@media only screen and (max-width: 601px) {*/
+    /*.export-whole-cont,*/
+    /*.open-all-cont,*/
+    /*.dropdown-trigger-cont*/
+    /*{*/
+        /*width: 100% !important;*/
+    /*}*/
+/*}*/
+
+@media only screen and (max-width: 809px) {
+    .group-header-placeholder {
+        width: 0% !important;
+    }
+
+    .export-whole-cont,
+    .open-all-cont,
+    .dropdown-trigger-cont,
+    .url-edit-cont,
+    .url-delete-cont
+    {
+        width: calc(100%/6) !important;
+    }
 }

@@ -15,10 +15,11 @@ const renderGroups = (iterableObj,target,groupId=false) => {
                 <div class="card" id="card-${groupKey}">
                     <div class="card-content">
                         <div class="row" id="card-header-${groupKey}">
-                            <div class="col s12 m9">
+                            <div class="col s12 m4">
                                 <span id="${groupKey}" class="card-title">${iterableObj[groupKey].groupName}</span>
                                 <div class="created-at-cont"><p class="created-at">${iterableObj[groupKey].createdAt}</p></div>
                             </div>
+                            <div class="col s5 group-header-placeholder"></div>
                             <div class="col s12 m1 export-whole-cont">
                                 <button 
                                     id="export-whole-${groupKey}" 
@@ -39,7 +40,7 @@ const renderGroups = (iterableObj,target,groupId=false) => {
                                     <i class="material-icons">tab</i>
                                 </button>
                             </div>
-                            <div class="col s12 m1">
+                            <div class="col s12 m1 dropdown-trigger-cont">
                                 <button 
                                     class='dropdown-trigger btn tooltipped' 
                                     data-target='group-settings${groupKey.slice(5)}'
@@ -61,7 +62,7 @@ const renderGroups = (iterableObj,target,groupId=false) => {
                                 </ul>
                             </div>
                         </div>
-                        <div class="url-cont" id="url-cont-${groupKey}">
+                        <div class="url-cont row" id="url-cont-${groupKey}">
                             ${renderLinks(iterableObj,parseInt(groupKey.slice(5)))}
                         </div>
                         <div id="new-url-data-${groupKey}" class="row new-url-data">
@@ -133,7 +134,7 @@ const renderUrl = (url,urlName,iconUrl,urlId) => {
                     <p id="name-${urlId}">${urlName}</p>
                 </a>
             </div>
-            <div class="col s12 m1">
+            <div class="col s12 m1 url-edit-cont">
                 <button 
                     id="url-edit-${urlId}" 
                     class="waves-effect waves-light btn url-edit tooltipped" 
@@ -144,7 +145,7 @@ const renderUrl = (url,urlName,iconUrl,urlId) => {
                     <i class="material-icons">edit</i>
                 </button>
             </div>
-            <div class="col s12 m1">
+            <div class="col s12 m1 url-delete-cont">
                 <button 
                     id="url-delete-${urlId}" 
                     class="waves-effect waves-light btn url-delete tooltipped" 
