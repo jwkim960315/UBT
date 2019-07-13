@@ -258,15 +258,6 @@ input[id="search"]:focus {
     background-color: rgb(66,133,244);
 }
 
-/*@media only screen and (max-width: 601px) {*/
-    /*.export-whole-cont,*/
-    /*.open-all-cont,*/
-    /*.dropdown-trigger-cont*/
-    /*{*/
-        /*width: 100% !important;*/
-    /*}*/
-/*}*/
-
 @media only screen and (max-width: 809px) {
     .group-header-placeholder {
         width: 0% !important;
