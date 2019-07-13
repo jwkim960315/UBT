@@ -69,15 +69,22 @@ $('.overwrite-with-account-data').click(() => {
         let syncStorageData = await syncStorageGet();
         let storageData = await storageGet();
 
-        await removeGroupBookmarks(storageData);
+        if (Object.keys(storageData).length) {
+            await removeGroupBookmarks(storageData);
+        }
+
         await storageClear();
 
-        syncStorageData = await condGroupBookmarksNUrls(syncStorageData);
+        if (Object.keys(syncStorageData).length) {
+            syncStorageData = await condGroupBookmarksNUrls(syncStorageData);
+        }
+
         await storageSet(syncStorageData);
 
         M.toast({ html: "Successfully overwritten with account's data" });
         chrome.runtime.sendMessage({ todo: 'reloadOptionsPage' });
-        location.reload();
+        $('.group-cont').html('<div class="groups-placeholder"></div>');
+        renderGroups(syncStorageData,'.groups-placeholder');
     })();
 });
 
