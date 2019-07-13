@@ -1,7 +1,7 @@
 {
   "name": "UBT",
   "description": "saves and manages url addresses, tabs, and bookmarks",
-  "version": "1.0",
+  "version": "0.1.0",
   "manifest_version": 2,
   "icons": {
     "16": "images/favicon-96x96.png",

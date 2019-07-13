@@ -77,8 +77,7 @@ $('.overwrite-with-account-data').click(() => {
 
         M.toast({ html: "Successfully overwritten with account's data" });
         chrome.runtime.sendMessage({ todo: 'reloadOptionsPage' });
-        // location.reload();
-        // renderGroups(syncStorageData,)
+        location.reload();
     })();
 });
 
