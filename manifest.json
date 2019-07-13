@@ -1,11 +1,11 @@
 {
-  "name": "UTab",
-  "description": "Manages && organizes tabs && urls",
+  "name": "UBT",
+  "description": "saves and manages url addresses, tabs, and bookmarks",
   "version": "1.0",
   "manifest_version": 2,
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "UTab",
+    "default_title": "UBT",
     "default_icon": {
       "16": "images/favicon-96x96.png",
       "32": "images/favicon-96x96.png"
