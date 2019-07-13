@@ -1,6 +1,3 @@
-// let storageData;
-// let groupIds;
-
 $(document).ready(() => {
     (async () => {
         let storageData = await storageGet();
@@ -35,7 +32,11 @@ $(document).ready(() => {
 
         // automatically inserts current page url to input
 
-        let { title, url } = (await tabsQuery({ active: true }))[0];
+        let { title, url } = (await tabsQuery({
+            active: true,
+            currentWindow: true
+        }))[0];
+
         $('#urlName').val(title);
         $('label[for="urlName"]').addClass('active');
 
@@ -372,10 +373,6 @@ $('form.save-url').submit(function(e) {
             let urlId = idGenerator(urlIdsToLst(storageData));
             let linkName = formValues[1].value;
             let url = formValues[2].value;
-
-            // if (url.slice(-1) !== '/') {
-            //     url += '/';
-            // }
 
             const { favIconUrl } = (await tabsQuery({active: true}))[0];
             let iconLink = '';
